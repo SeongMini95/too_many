@@ -1,0 +1,5 @@
+### querydsl ###
+**/src/main/generated/
+
+### properties ###
+application*.yml
