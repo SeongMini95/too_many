@@ -25,6 +25,7 @@ public class DatabaseCleaner {
         tableNames = entityManager.getMetamodel().getEntities().stream()
                 .filter(entity -> entity.getJavaType().getAnnotation(Entity.class) != null)
                 .map(this::getTableName)
+                .filter(v -> !v.equals("region_code"))
                 .collect(Collectors.toList());
     }
 
