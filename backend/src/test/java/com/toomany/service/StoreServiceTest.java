@@ -5,7 +5,7 @@ import com.toomany.common.maps.entity.PlaceList;
 import com.toomany.domain.review.Review;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.store.repository.StoreRepository;
-import com.toomany.dto.request.store.SearchStoreRequestDto;
+import com.toomany.dto.request.store.SearchStoreListRequestDto;
 import com.toomany.dto.response.store.SearchStoreListResponseDto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,8 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,7 +57,7 @@ class StoreServiceTest {
                 ))
                 .build();
 
-        private final SearchStoreRequestDto requestDto = SearchStoreRequestDto.builder()
+        private final SearchStoreListRequestDto requestDto = SearchStoreListRequestDto.builder()
                 .query("스시소라")
                 .x("")
                 .y("")
@@ -68,10 +67,11 @@ class StoreServiceTest {
         @Test
         void 매장_목록을_가져온다() {
             // given
-            given(kakaoMapsClient.getPlace(any(SearchStoreRequestDto.class))).willReturn(placeList);
+            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(false))).willReturn(placeList);
 
             List<Store> stores = new ArrayList<>();
             stores.add(Store.builder()
+                    .id(1L)
                     .kakaoPlaceId(23829251L)
                     .likeCnt(5)
                     .build());
@@ -96,7 +96,7 @@ class StoreServiceTest {
         @Test
         void 매장_목록을_가져온다_없는_매장() {
             // given
-            given(kakaoMapsClient.getPlace(any(SearchStoreRequestDto.class))).willReturn(placeList);
+            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(false))).willReturn(placeList);
             given(storeRepository.findAllByKakaoPlaceIdIn(anyList())).willReturn(Collections.emptyList());
 
             // when

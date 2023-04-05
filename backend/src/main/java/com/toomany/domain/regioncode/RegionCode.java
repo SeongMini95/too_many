@@ -18,7 +18,7 @@ public class RegionCode extends BaseTimeEntity {
 
     @Id
     @Column(name = "code", nullable = false, length = 10)
-    private String id;
+    private String code;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "up_code")
@@ -34,8 +34,8 @@ public class RegionCode extends BaseTimeEntity {
     private List<RegionCode> regionCodes = new ArrayList<>();
 
     @Builder
-    public RegionCode(String id, RegionCode upCode, int regionDepth, String regionName) {
-        this.id = id;
+    public RegionCode(String code, RegionCode upCode, int regionDepth, String regionName) {
+        this.code = code;
         this.upCode = upCode;
         this.regionDepth = regionDepth;
         this.regionName = regionName;
