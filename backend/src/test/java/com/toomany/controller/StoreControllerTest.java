@@ -8,7 +8,7 @@ import com.toomany.domain.regioncode.repository.RegionCodeRepository;
 import com.toomany.domain.review.Review;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.store.repository.StoreRepository;
-import com.toomany.dto.request.store.SearchStoreRequestDto;
+import com.toomany.dto.request.store.SearchStoreListRequestDto;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
@@ -24,8 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,7 +46,7 @@ class StoreControllerTest extends AcceptanceTest {
     @Nested
     class searchStoreList {
 
-        private final SearchStoreRequestDto requestDto = SearchStoreRequestDto.builder()
+        private final SearchStoreListRequestDto requestDto = SearchStoreListRequestDto.builder()
                 .query("스시코우지")
                 .x("")
                 .y("")
@@ -72,8 +70,8 @@ class StoreControllerTest extends AcceptanceTest {
                     .storeName("스시코우지")
                     .addressName("서울 강남구 논현동 92")
                     .roadAddressName("서울 강남구 도산대로 318")
-                    .x(BigDecimal.valueOf(127.03662909986537))
-                    .y(BigDecimal.valueOf(37.52186058560857))
+                    .x(508095)
+                    .y(1117328)
                     .likeCnt(5)
                     .build();
             store.writeReview(Review.builder()

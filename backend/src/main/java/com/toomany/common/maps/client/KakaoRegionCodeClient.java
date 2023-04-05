@@ -1,7 +1,6 @@
 package com.toomany.common.maps.client;
 
-import com.toomany.common.maps.entity.PlaceList;
-import com.toomany.dto.request.store.SearchStoreListRequestDto;
+import com.toomany.common.maps.entity.KakaoRegionCode;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,39 +16,26 @@ import java.util.Collections;
 import java.util.Map;
 
 @Component
-public class KakaoMapsClient {
+public class KakaoRegionCodeClient {
 
     private final String restId;
     private final String uri;
-    private final WebClient mapsClient;
+    private final WebClient regionCodeClient;
 
-    public KakaoMapsClient(@Value("${oauth.kakao.rest-id}") String restId,
-                           @Value("${oauth.kakao.uri.maps}") String uri,
-                           WebClient webClient) {
+    public KakaoRegionCodeClient(@Value("${oauth.kakao.rest-id}") String restId,
+                                 @Value("${oauth.kakao.uri.region-code}") String uri,
+                                 WebClient webClient) {
         this.restId = restId;
         this.uri = uri;
-        this.mapsClient = getMapsClient(webClient);
+        this.regionCodeClient = getRegionCodeClient(webClient);
     }
 
-    public PlaceList getPlaceList(SearchStoreListRequestDto requestDto, boolean register) {
-        return mapsClient.get()
-                .uri(uriBuilder -> {
-                    uriBuilder
-                            .queryParam("query", requestDto.getQuery())
-                            .queryParam("category_group_code", "FD6")
-                            .queryParam("x", requestDto.getX())
-                            .queryParam("y", requestDto.getY())
-                            .queryParam("page", requestDto.getPage());
-
-                    if (register) {
-                        uriBuilder
-                                .queryParam("radius", 0)
-                                .queryParam("size", 1)
-                                .queryParam("sort", "distance");
-                    }
-
-                    return uriBuilder.build();
-                })
+    public KakaoRegionCode getRegionCode(String x, String y) {
+        return regionCodeClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("x", x)
+                        .queryParam("y", y)
+                        .build())
                 .headers(header -> {
                     header.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
                     header.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
@@ -66,13 +52,13 @@ public class KakaoMapsClient {
                                 return new ApiException(ApiErrorCode.SEARCH_MAPS, (String) body.get("message"));
                             }
                         }))
-                .bodyToMono(new ParameterizedTypeReference<PlaceList>() {
+                .bodyToMono(new ParameterizedTypeReference<KakaoRegionCode>() {
                 })
                 .blockOptional()
                 .orElseThrow(() -> new ApiException(ApiErrorCode.SEARCH_MAPS));
     }
 
-    private WebClient getMapsClient(WebClient webClient) {
+    private WebClient getRegionCodeClient(WebClient webClient) {
         return webClient.mutate()
                 .baseUrl(uri)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)

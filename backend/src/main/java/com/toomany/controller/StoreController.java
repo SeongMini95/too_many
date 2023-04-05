@@ -1,6 +1,6 @@
 package com.toomany.controller;
 
-import com.toomany.dto.request.store.SearchStoreRequestDto;
+import com.toomany.dto.request.store.SearchStoreListRequestDto;
 import com.toomany.dto.response.store.SearchStoreListResponseDto;
 import com.toomany.service.StoreService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class StoreController {
     private final StoreService storeService;
 
     @GetMapping("/searchStoreList")
-    public ResponseEntity<SearchStoreListResponseDto> searchStoreList(SearchStoreRequestDto requestDto) {
+    public ResponseEntity<SearchStoreListResponseDto> searchStoreList(SearchStoreListRequestDto requestDto) {
         SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
         return ResponseEntity.ok(responseDto);
     }

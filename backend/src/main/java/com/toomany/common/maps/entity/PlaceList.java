@@ -17,10 +17,13 @@ public class PlaceList {
     private Meta meta;
     private List<Document> documents = new ArrayList<>();
 
+    private String[] categoryNames;
+
     @Builder
-    public PlaceList(Meta meta, List<Document> documents) {
+    public PlaceList(Meta meta, List<Document> documents, String[] categoryNames) {
         this.meta = meta;
         this.documents = documents;
+        this.categoryNames = categoryNames;
     }
 
     @NoArgsConstructor
@@ -73,5 +76,25 @@ public class PlaceList {
         return documents.stream()
                 .map(v -> Long.parseLong(v.getId()))
                 .collect(Collectors.toList());
+    }
+
+    public boolean exist() {
+        return meta.getTotalCount() != 0;
+    }
+
+    public int getDepth() {
+        setCategoryNames();
+        return categoryNames.length - 1;
+    }
+
+    public String getLastCategoryName() {
+        setCategoryNames();
+        return categoryNames[categoryNames.length - 1];
+    }
+
+    private void setCategoryNames() {
+        if (categoryNames == null) {
+            categoryNames = documents.get(0).getCategoryName().split(" > ");
+        }
     }
 }

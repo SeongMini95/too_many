@@ -1,7 +1,7 @@
 package com.toomany.common.maps.client;
 
 import com.toomany.common.maps.entity.PlaceList;
-import com.toomany.dto.request.store.SearchStoreRequestDto;
+import com.toomany.dto.request.store.SearchStoreListRequestDto;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import okhttp3.mockwebserver.MockResponse;
@@ -67,7 +67,11 @@ class KakaoMapsClientTest {
             "    \"total_count\": 2\n" +
             "  }\n" +
             "}";
-    private static final String ERROR_RESPONSE = "{\n" +
+    private static final String ERROR_CODE_RESPONSE = "{\n" +
+            "  \"code\": -2,\n" +
+            "  \"msg\": \"The input parameter value is not in the service area\"\n" +
+            "}";
+    private static final String ERROR_TYPE_RESPONSE = "{\n" +
             "  \"errorType\": \"MissingParameter\",\n" +
             "  \"message\": \"query parameter required\"\n" +
             "}";
@@ -86,7 +90,7 @@ class KakaoMapsClientTest {
     @Nested
     class getPlace {
 
-        private final SearchStoreRequestDto requestDto = SearchStoreRequestDto.builder()
+        private final SearchStoreListRequestDto requestDto = SearchStoreListRequestDto.builder()
                 .query("스시소라")
                 .x("")
                 .y("")
@@ -107,7 +111,7 @@ class KakaoMapsClientTest {
             );
 
             // when
-            PlaceList placeList = kakaoMapsClient.getPlace(requestDto);
+            PlaceList placeList = kakaoMapsClient.getPlaceList(requestDto, false);
 
             // then
             for (int i = 0; i < IDS.length; i++) {
@@ -117,11 +121,10 @@ class KakaoMapsClientTest {
         }
 
         @Test
-        void 카카오에서_ErrorCode가_오면_SearchMapsException를_발생한다() {
+        void register를_위한_키워드로_장소를_검색한다() {
             // given
             mockWebServer.enqueue(new MockResponse()
-                    .setStatus("HTTP/1.1 400")
-                    .setBody(ERROR_RESPONSE)
+                    .setBody(KEYWORD_SEARCH_RESPONSE)
                     .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
 
             KakaoMapsClient kakaoMapsClient = new KakaoMapsClient(
@@ -131,10 +134,55 @@ class KakaoMapsClientTest {
             );
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> kakaoMapsClient.getPlace(requestDto));
+            PlaceList placeList = kakaoMapsClient.getPlaceList(requestDto, true);
+
+            // then
+            assertThat(placeList.getDocuments().get(0).getId()).isEqualTo(IDS[0]);
+            assertThat(placeList.getDocuments().get(0).getPlaceName()).isEqualTo(PLACE_NAMES[0]);
+        }
+
+        @Test
+        void 카카오에서_ErrorCode가_오면_SearchMapsException를_발생한다() {
+            // given
+            mockWebServer.enqueue(new MockResponse()
+                    .setStatus("HTTP/1.1 400")
+                    .setBody(ERROR_CODE_RESPONSE)
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+
+            KakaoMapsClient kakaoMapsClient = new KakaoMapsClient(
+                    "restId",
+                    String.format("http://%s:%s", mockWebServer.getHostName(), mockWebServer.getPort()),
+                    WebClient.create()
+            );
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> kakaoMapsClient.getPlaceList(requestDto, false));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.SEARCH_MAPS);
+            assertThat(exception.getCause().getMessage()).isEqualTo("The input parameter value is not in the service area");
+        }
+
+        @Test
+        void 카카오에서_ErrorType이_오면_SearchMapsException를_발생한다() {
+            // given
+            mockWebServer.enqueue(new MockResponse()
+                    .setStatus("HTTP/1.1 400")
+                    .setBody(ERROR_TYPE_RESPONSE)
+                    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
+
+            KakaoMapsClient kakaoMapsClient = new KakaoMapsClient(
+                    "restId",
+                    String.format("http://%s:%s", mockWebServer.getHostName(), mockWebServer.getPort()),
+                    WebClient.create()
+            );
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> kakaoMapsClient.getPlaceList(requestDto, false));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.SEARCH_MAPS);
+            assertThat(exception.getCause().getMessage()).isEqualTo("query parameter required");
         }
 
         @Test
@@ -151,7 +199,7 @@ class KakaoMapsClientTest {
             );
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> kakaoMapsClient.getPlace(requestDto));
+            ApiException exception = assertThrows(ApiException.class, () -> kakaoMapsClient.getPlaceList(requestDto, false));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.SEARCH_MAPS);

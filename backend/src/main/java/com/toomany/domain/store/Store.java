@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,11 +44,11 @@ public class Store extends BaseTimeEntity {
     @Column(name = "road_address_name", nullable = false, length = 100)
     private String roadAddressName;
 
-    @Column(name = "x", nullable = false, precision = 20, scale = 17)
-    private BigDecimal x;
+    @Column(name = "x", nullable = false)
+    private int x;
 
-    @Column(name = "y", nullable = false, precision = 20, scale = 18)
-    private BigDecimal y;
+    @Column(name = "y", nullable = false)
+    private int y;
 
     @Column(name = "like_cnt")
     private int likeCnt;
@@ -58,7 +57,8 @@ public class Store extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();
 
     @Builder
-    public Store(Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, BigDecimal x, BigDecimal y, int likeCnt) {
+    public Store(Long id, Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, int x, int y, int likeCnt) {
+        this.id = id;
         this.kakaoPlaceId = kakaoPlaceId;
         this.category = category;
         this.regionCode = regionCode;
@@ -68,6 +68,16 @@ public class Store extends BaseTimeEntity {
         this.x = x;
         this.y = y;
         this.likeCnt = likeCnt;
+    }
+
+    public void updateStoreInfo(Store store) {
+        this.category = store.getCategory();
+        this.regionCode = store.getRegionCode();
+        this.storeName = store.getStoreName();
+        this.addressName = store.getAddressName();
+        this.roadAddressName = store.getRoadAddressName();
+        this.x = store.getX();
+        this.y = store.getY();
     }
 
     public void writeReview(Review review) {
