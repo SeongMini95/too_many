@@ -4,7 +4,7 @@ import com.toomany.common.maps.client.KakaoMapsClient;
 import com.toomany.common.maps.entity.PlaceList;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.store.repository.StoreRepository;
-import com.toomany.dto.request.store.SearchStoreRequestDto;
+import com.toomany.dto.request.store.SearchStoreListRequestDto;
 import com.toomany.dto.response.store.SearchStoreListResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +20,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
 
     @Transactional(readOnly = true)
-    public SearchStoreListResponseDto searchStoreList(SearchStoreRequestDto requestDto) {
-        PlaceList placeList = kakaoMapsClient.getPlace(requestDto);
+    public SearchStoreListResponseDto searchStoreList(SearchStoreListRequestDto requestDto) {
+        PlaceList placeList = kakaoMapsClient.getPlaceList(requestDto, false);
         List<Store> stores = storeRepository.findAllByKakaoPlaceIdIn(placeList.getKakaoPlaceIds());
 
         return new SearchStoreListResponseDto(placeList, stores);

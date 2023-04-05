@@ -1,6 +1,8 @@
 package com.toomany.domain.review;
 
 import com.toomany.domain.BaseTimeEntity;
+import com.toomany.domain.reviewimage.ReviewImage;
+import com.toomany.domain.reviewrecommend.ReviewRecommend;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.user.User;
 import lombok.AccessLevel;
@@ -9,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -35,11 +39,27 @@ public class Review extends BaseTimeEntity {
     @Column(name = "revisit_yn", nullable = false)
     private boolean revisitYn;
 
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewImage> reviewImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewRecommend> reviewRecommends = new ArrayList<>();
+
     @Builder
     public Review(User user, Store store, String content, boolean revisitYn) {
         this.user = user;
         this.store = store;
         this.content = content;
         this.revisitYn = revisitYn;
+    }
+
+    public void addImages(List<ReviewImage> reviewImages) {
+        this.reviewImages.clear();
+        this.reviewImages.addAll(reviewImages);
+    }
+
+    public void addRecommends(List<ReviewRecommend> reviewRecommends) {
+        this.reviewRecommends.clear();
+        this.reviewRecommends.addAll(reviewRecommends);
     }
 }
