@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Getter
-public class PlaceList {
+public class KakaoPlaceList {
 
     private Meta meta;
     private List<Document> documents = new ArrayList<>();
@@ -20,7 +20,7 @@ public class PlaceList {
     private String[] categoryNames;
 
     @Builder
-    public PlaceList(Meta meta, List<Document> documents, String[] categoryNames) {
+    public KakaoPlaceList(Meta meta, List<Document> documents, String[] categoryNames) {
         this.meta = meta;
         this.documents = documents;
         this.categoryNames = categoryNames;

@@ -1,6 +1,6 @@
 package com.toomany.common.maps.client;
 
-import com.toomany.common.maps.entity.PlaceInfo;
+import com.toomany.common.maps.entity.KakaoPlaceInfo;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import okhttp3.mockwebserver.MockResponse;
@@ -62,7 +62,7 @@ class KakaoPlaceClientTest {
     }
 
     @Nested
-    class getPlaceInfo {
+    class getKakaoPlaceInfo {
 
         @Test
         void 매장_디테일_정보를_가져온다() {
@@ -77,19 +77,19 @@ class KakaoPlaceClientTest {
             );
 
             // when
-            PlaceInfo placeInfo = kakaoPlaceClient.getPlaceInfo(23829251L);
+            KakaoPlaceInfo kakaoPlaceInfo = kakaoPlaceClient.getKakaoPlaceInfo(23829251L);
 
             // then
-            assertThat(placeInfo.getPlaceId()).isEqualTo(23829251L);
-            assertThat(placeInfo.getPlaceName()).isEqualTo("스시코우지");
-            assertThat(placeInfo.getRoadAddress()).isEqualTo("서울 강남구 도산대로 318 어넥스 B동 3층");
-            assertThat(placeInfo.getAddress()).isEqualTo("서울 강남구 논현동 92");
-            assertThat(placeInfo.getX()).isEqualTo(508095);
-            assertThat(placeInfo.getY()).isEqualTo(1117328);
+            assertThat(kakaoPlaceInfo.getPlaceId()).isEqualTo(23829251L);
+            assertThat(kakaoPlaceInfo.getPlaceName()).isEqualTo("스시코우지");
+            assertThat(kakaoPlaceInfo.getRoadAddress()).isEqualTo("서울 강남구 도산대로 318 어넥스 B동 3층");
+            assertThat(kakaoPlaceInfo.getAddress()).isEqualTo("서울 강남구 논현동 92");
+            assertThat(kakaoPlaceInfo.getX()).isEqualTo(508095);
+            assertThat(kakaoPlaceInfo.getY()).isEqualTo(1117328);
         }
 
         @Test
-        void 존재하지_않는_매장_디테일_정보를_가져오면_NotExistPlaceException를_발생한다() {
+        void 존재하지_않는_매장_디테일_정보를_가져오면_KakaoNotExistPlaceException를_발생한다() {
             // given
             mockWebServer.enqueue(new MockResponse()
                     .setBody(NOT_EXIST_RESPONSE)
@@ -101,14 +101,14 @@ class KakaoPlaceClientTest {
             );
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> kakaoPlaceClient.getPlaceInfo(23829251L));
+            ApiException exception = assertThrows(ApiException.class, () -> kakaoPlaceClient.getKakaoPlaceInfo(23829251L));
 
             // then
-            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.NOT_EXIST_PLACE);
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE);
         }
 
         @Test
-        void ResponseData가_올바르지_않으면_SearchMapsException를_발생한다() {
+        void ResponseData가_올바르지_않으면_KakaoNotExistPlaceException를_발생한다() {
             // given
             mockWebServer.enqueue(new MockResponse()
                     .setBody("")
@@ -120,10 +120,10 @@ class KakaoPlaceClientTest {
             );
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> kakaoPlaceClient.getPlaceInfo(23829251L));
+            ApiException exception = assertThrows(ApiException.class, () -> kakaoPlaceClient.getKakaoPlaceInfo(23829251L));
 
             // then
-            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.SEARCH_MAPS);
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE);
         }
     }
 }

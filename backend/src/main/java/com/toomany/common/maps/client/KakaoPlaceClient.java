@@ -1,6 +1,6 @@
 package com.toomany.common.maps.client;
 
-import com.toomany.common.maps.entity.PlaceInfo;
+import com.toomany.common.maps.entity.KakaoPlaceInfo;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +24,8 @@ public class KakaoPlaceClient {
         this.placeClient = getPlaceClient(webClient);
     }
 
-    public PlaceInfo getPlaceInfo(Long placeId) {
-        PlaceInfo placeInfo = placeClient.get()
+    public KakaoPlaceInfo getKakaoPlaceInfo(Long placeId) {
+        KakaoPlaceInfo kakaoPlaceInfo = placeClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .build(placeId))
                 .headers(header -> {
@@ -33,19 +33,19 @@ public class KakaoPlaceClient {
                     header.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
                 })
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<PlaceInfo>() {
+                .bodyToMono(new ParameterizedTypeReference<KakaoPlaceInfo>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new ApiException(ApiErrorCode.SEARCH_MAPS));
-        
-        validate(placeInfo);
+                .orElseThrow(() -> new ApiException(ApiErrorCode.KAKAO_NOT_EXIST_PLACE));
 
-        return placeInfo;
+        validate(kakaoPlaceInfo);
+
+        return kakaoPlaceInfo;
     }
 
-    public void validate(PlaceInfo placeInfo) {
-        if (!placeInfo.getIsExist()) {
-            throw new ApiException(ApiErrorCode.NOT_EXIST_PLACE);
+    private void validate(KakaoPlaceInfo kakaoPlaceInfo) {
+        if (!kakaoPlaceInfo.getIsExist()) {
+            throw new ApiException(ApiErrorCode.KAKAO_NOT_EXIST_PLACE);
         }
     }
 

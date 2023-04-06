@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SearchStoreListRequestDto {
+public class SearchPlaceListRequestDto {
 
     private String query;
     private String x;
@@ -29,7 +29,7 @@ public class SearchStoreListRequestDto {
     }
 
     @Builder
-    public SearchStoreListRequestDto(String query, String x, String y, Integer page) {
+    public SearchPlaceListRequestDto(String query, String x, String y, Integer page) {
         this.query = query;
         this.x = x;
         this.y = y;

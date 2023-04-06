@@ -1,6 +1,6 @@
 package com.toomany.controller;
 
-import com.toomany.common.maps.client.KakaoMapsClient;
+import com.toomany.common.maps.client.KakaoKeywordClient;
 import com.toomany.common.maps.client.KakaoPlaceClient;
 import com.toomany.common.maps.client.KakaoRegionCodeClient;
 import com.toomany.controller.support.AcceptanceTest;
@@ -51,7 +51,7 @@ class ReviewControllerTest extends AcceptanceTest {
     private KakaoPlaceClient kakaoPlaceClient;
 
     @SpyBean
-    private KakaoMapsClient kakaoMapsClient;
+    private KakaoKeywordClient kakaoKeywordClient;
 
     @SpyBean
     private KakaoRegionCodeClient kakaoRegionCodeClient;
@@ -121,7 +121,7 @@ class ReviewControllerTest extends AcceptanceTest {
         }
 
         @Test
-        void 매장을_찾을_수_없으면_NotExistPlace를_발생한다() throws Exception {
+        void 매장을_찾을_수_없으면_KakaoNotExistPlace를_발생한다() throws Exception {
             // given
             startMockWebServer();
 
@@ -138,8 +138,8 @@ class ReviewControllerTest extends AcceptanceTest {
                     .extract();
 
             // then
-            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.NOT_EXIST_PLACE.getHttpStatus().value());
-            assertThat(response.asString()).isEqualTo(ApiErrorCode.NOT_EXIST_PLACE.getMessage());
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE.getMessage());
 
             closeMockWebServer();
         }
@@ -334,7 +334,7 @@ class ReviewControllerTest extends AcceptanceTest {
 
     private void setMapsWebServer(boolean success) {
         String uri = String.format("http://%s:%s", mapsWebServer.getHostName(), mapsWebServer.getPort());
-        ReflectionTestUtils.setField(kakaoMapsClient, "mapsClient", WebClient.create().mutate().baseUrl(uri).defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build());
+        ReflectionTestUtils.setField(kakaoKeywordClient, "mapsClient", WebClient.create().mutate().baseUrl(uri).defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build());
 
         String successResponse = "{\n" +
                 "  \"documents\": [\n" +

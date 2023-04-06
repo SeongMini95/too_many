@@ -1,11 +1,11 @@
 package com.toomany.service;
 
-import com.toomany.common.maps.client.KakaoMapsClient;
+import com.toomany.common.maps.client.KakaoKeywordClient;
 import com.toomany.common.maps.client.KakaoPlaceClient;
 import com.toomany.common.maps.client.KakaoRegionCodeClient;
+import com.toomany.common.maps.entity.KakaoPlaceInfo;
+import com.toomany.common.maps.entity.KakaoPlaceList;
 import com.toomany.common.maps.entity.KakaoRegionCode;
-import com.toomany.common.maps.entity.PlaceInfo;
-import com.toomany.common.maps.entity.PlaceList;
 import com.toomany.domain.category.Category;
 import com.toomany.domain.category.repository.CategoryRepository;
 import com.toomany.domain.regioncode.RegionCode;
@@ -16,7 +16,7 @@ import com.toomany.domain.store.repository.StoreRepository;
 import com.toomany.domain.user.User;
 import com.toomany.domain.user.repository.UserRepository;
 import com.toomany.dto.request.review.WriteReviewRequestDto;
-import com.toomany.dto.request.store.SearchStoreListRequestDto;
+import com.toomany.dto.request.store.SearchPlaceListRequestDto;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -59,7 +59,7 @@ class ReviewServiceTest {
     private KakaoPlaceClient kakaoPlaceClient;
 
     @Mock
-    private KakaoMapsClient kakaoMapsClient;
+    private KakaoKeywordClient kakaoKeywordClient;
 
     @Mock
     private KakaoRegionCodeClient kakaoRegionCodeClient;
@@ -68,17 +68,17 @@ class ReviewServiceTest {
     @Nested
     class writeReview {
 
-        private final PlaceInfo placeInfo = PlaceInfo.builder()
+        private final KakaoPlaceInfo kakaoPlaceInfo = KakaoPlaceInfo.builder()
                 .isExist(true)
-                .basicInfo(PlaceInfo.BasicInfo.builder()
+                .basicInfo(KakaoPlaceInfo.BasicInfo.builder()
                         .cid(23829251L)
-                        .address(PlaceInfo.BasicInfo.Address.builder()
+                        .address(KakaoPlaceInfo.BasicInfo.Address.builder()
                                 .addrbunho("92")
                                 .addrdetail("어넥스 B동 3층")
-                                .newaddr(PlaceInfo.BasicInfo.Address.Newaddr.builder()
+                                .newaddr(KakaoPlaceInfo.BasicInfo.Address.Newaddr.builder()
                                         .newaddrfull("도산대로 318")
                                         .build())
-                                .region(PlaceInfo.BasicInfo.Address.Region.builder()
+                                .region(KakaoPlaceInfo.BasicInfo.Address.Region.builder()
                                         .fullname("서울 강남구 논현동")
                                         .newaddrfullname("서울 강남구")
                                         .build())
@@ -89,14 +89,14 @@ class ReviewServiceTest {
                         .build())
                 .build();
 
-        private final PlaceList placeList = PlaceList.builder()
-                .meta(PlaceList.Meta.builder()
+        private final KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
+                .meta(KakaoPlaceList.Meta.builder()
                         .isEnd(true)
                         .pageableCount(1)
                         .totalCount(1)
                         .build())
                 .documents(List.of(
-                        PlaceList.Document.builder()
+                        KakaoPlaceList.Document.builder()
                                 .id("23829251")
                                 .placeName("스시코우지")
                                 .categoryName("음식점 > 일식 > 초밥,롤")
@@ -138,8 +138,8 @@ class ReviewServiceTest {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
             given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
@@ -172,23 +172,23 @@ class ReviewServiceTest {
         }
 
         @Test
-        void 매장을_찾을_수_없으면_NotExistPlace를_발생한다() {
+        void 매장을_찾을_수_없으면_KakaoNotExistPlace를_발생한다() {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
 
-            PlaceList placeList = PlaceList.builder()
-                    .meta(PlaceList.Meta.builder()
+            KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
+                    .meta(KakaoPlaceList.Meta.builder()
                             .totalCount(0)
                             .build())
                     .build();
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             // when
             ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, requestDto));
 
             // then
-            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.NOT_EXIST_PLACE);
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE);
         }
 
         @Test
@@ -196,8 +196,8 @@ class ReviewServiceTest {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             Category category = mock(Category.class);
             given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.of(category));
@@ -222,8 +222,8 @@ class ReviewServiceTest {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
             given(categoryRepository.findByCategoryDepthAndCategoryName(eq(1), anyString())).willReturn(Optional.of(mock(Category.class)));
@@ -248,8 +248,8 @@ class ReviewServiceTest {
         void region_code가_없으면_RegionNotFoundException를_발생한다() {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
             given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
@@ -269,8 +269,8 @@ class ReviewServiceTest {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
-            given(kakaoPlaceClient.getPlaceInfo(anyLong())).willReturn(placeInfo);
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(true))).willReturn(placeList);
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
             given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
