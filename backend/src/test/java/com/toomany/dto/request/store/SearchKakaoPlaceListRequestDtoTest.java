@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SearchStoreListRequestDtoTest {
+class SearchKakaoPlaceListRequestDtoTest {
 
     @Nested
     class setX {
@@ -13,7 +13,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void x를_설정한다() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setX("127");
@@ -25,7 +25,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void x를_설정한다_null() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setX(null);
@@ -41,7 +41,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void y를_설정한다() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setY("34");
@@ -53,7 +53,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void y를_설정한다_null() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setY(null);
@@ -69,7 +69,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void page를_설정한다() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setPage(3);
@@ -81,7 +81,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void page를_설정한다_null() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setPage(null);
@@ -93,7 +93,7 @@ class SearchStoreListRequestDtoTest {
         @Test
         void page를_설정한다_negative() {
             // given
-            SearchStoreListRequestDto requestDto = new SearchStoreListRequestDto();
+            SearchPlaceListRequestDto requestDto = new SearchPlaceListRequestDto();
 
             // when
             requestDto.setPage(-1);

@@ -1,6 +1,6 @@
 package com.toomany.controller;
 
-import com.toomany.common.maps.client.KakaoMapsClient;
+import com.toomany.common.maps.client.KakaoKeywordClient;
 import com.toomany.controller.support.AcceptanceTest;
 import com.toomany.domain.category.Category;
 import com.toomany.domain.category.repository.CategoryRepository;
@@ -8,7 +8,7 @@ import com.toomany.domain.regioncode.repository.RegionCodeRepository;
 import com.toomany.domain.review.Review;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.store.repository.StoreRepository;
-import com.toomany.dto.request.store.SearchStoreListRequestDto;
+import com.toomany.dto.request.store.SearchPlaceListRequestDto;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
@@ -39,14 +39,14 @@ class StoreControllerTest extends AcceptanceTest {
     private CategoryRepository categoryRepository;
 
     @SpyBean
-    private KakaoMapsClient kakaoMapsClient;
+    private KakaoKeywordClient kakaoKeywordClient;
 
     private MockWebServer mockWebServer;
 
     @Nested
-    class searchStoreList {
+    class searchKakaoPlaceList {
 
-        private final SearchStoreListRequestDto requestDto = SearchStoreListRequestDto.builder()
+        private final SearchPlaceListRequestDto requestDto = SearchPlaceListRequestDto.builder()
                 .query("스시코우지")
                 .x("")
                 .y("")
@@ -167,7 +167,7 @@ class StoreControllerTest extends AcceptanceTest {
 
     private void setMapsClinet() {
         String uri = String.format("http://%s:%s", mockWebServer.getHostName(), mockWebServer.getPort());
-        ReflectionTestUtils.setField(kakaoMapsClient, "mapsClient", WebClient.create().mutate().baseUrl(uri).defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build());
+        ReflectionTestUtils.setField(kakaoKeywordClient, "mapsClient", WebClient.create().mutate().baseUrl(uri).defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build());
 
         String response = "{\n" +
                 "  \"documents\": [\n" +

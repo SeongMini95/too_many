@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
-public class PlaceInfo {
+public class KakaoPlaceInfo {
 
     private boolean isExist;
     private BasicInfo basicInfo;
@@ -76,7 +76,7 @@ public class PlaceInfo {
     }
 
     @Builder
-    public PlaceInfo(boolean isExist, BasicInfo basicInfo) {
+    public KakaoPlaceInfo(boolean isExist, BasicInfo basicInfo) {
         this.isExist = isExist;
         this.basicInfo = basicInfo;
     }

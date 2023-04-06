@@ -7,21 +7,21 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PlaceListTest {
+class KakaoPlaceListTest {
 
     private static final String CATEGORY_NAME = "음식점 > 일식 > 초밥,롤";
     private static final String[] CATEGORY_NAMES = CATEGORY_NAME.split(" > ");
-    private static final PlaceList NOT_EXIST_NAME_PLACE_LIST = PlaceList.builder()
+    private static final KakaoPlaceList NOT_EXIST_NAME_PLACE_LIST = KakaoPlaceList.builder()
             .documents(List.of(
-                    PlaceList.Document.builder()
+                    KakaoPlaceList.Document.builder()
                             .categoryName(CATEGORY_NAME)
                             .build()
             ))
             .build();
-    private static final PlaceList EXIST_NAME_PLACE_LIST = PlaceList.builder()
+    private static final KakaoPlaceList EXIST_NAME_PLACE_LIST = KakaoPlaceList.builder()
             .categoryNames(CATEGORY_NAMES)
             .documents(List.of(
-                    PlaceList.Document.builder()
+                    KakaoPlaceList.Document.builder()
                             .categoryName(CATEGORY_NAME)
                             .build()
             ))
@@ -33,15 +33,15 @@ class PlaceListTest {
         @Test
         void 매장_id를_가져온다() {
             // given
-            PlaceList placeList = PlaceList.builder()
+            KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
                     .documents(List.of(
-                            PlaceList.Document.builder().id("1").build(),
-                            PlaceList.Document.builder().id("2").build()
+                            KakaoPlaceList.Document.builder().id("1").build(),
+                            KakaoPlaceList.Document.builder().id("2").build()
                     ))
                     .build();
 
             // when
-            List<Long> placeIds = placeList.getKakaoPlaceIds();
+            List<Long> placeIds = kakaoPlaceList.getKakaoPlaceIds();
 
             // then
             assertThat(placeIds.size()).isEqualTo(2);
@@ -56,14 +56,14 @@ class PlaceListTest {
         @Test
         void 데이터가_존재한다() {
             // given
-            PlaceList placeList = PlaceList.builder()
-                    .meta(PlaceList.Meta.builder()
+            KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
+                    .meta(KakaoPlaceList.Meta.builder()
                             .totalCount(2)
                             .build())
                     .build();
 
             // when
-            boolean exist = placeList.exist();
+            boolean exist = kakaoPlaceList.exist();
 
             // then
             assertThat(exist).isTrue();
@@ -72,14 +72,14 @@ class PlaceListTest {
         @Test
         void 데이터_없다() {
             // given
-            PlaceList placeList = PlaceList.builder()
-                    .meta(PlaceList.Meta.builder()
+            KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
+                    .meta(KakaoPlaceList.Meta.builder()
                             .totalCount(0)
                             .build())
                     .build();
 
             // when
-            boolean exist = placeList.exist();
+            boolean exist = kakaoPlaceList.exist();
 
             // then
             assertThat(exist).isFalse();

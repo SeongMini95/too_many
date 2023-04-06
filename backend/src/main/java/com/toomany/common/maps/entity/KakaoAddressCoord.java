@@ -2,8 +2,6 @@ package com.toomany.common.maps.entity;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.toomany.exception.ApiErrorCode;
-import com.toomany.exception.ApiException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,13 +11,13 @@ import java.util.List;
 
 @NoArgsConstructor
 @Getter
-public class KakaoRegionCode {
+public class KakaoAddressCoord {
 
     private Meta meta;
     private List<Document> documents = new ArrayList<>();
 
     @Builder
-    public KakaoRegionCode(Meta meta, List<Document> documents) {
+    public KakaoAddressCoord(Meta meta, List<Document> documents) {
         this.meta = meta;
         this.documents = documents;
     }
@@ -39,28 +37,27 @@ public class KakaoRegionCode {
 
     @NoArgsConstructor
     @Getter
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Document {
 
-        private String regionType;
-        private String code;
+        private String x;
+        private String y;
 
         @Builder
-        public Document(String regionType, String code) {
-            this.regionType = regionType;
-            this.code = code;
+        public Document(String x, String y) {
+            this.x = x;
+            this.y = y;
         }
     }
 
     public boolean exist() {
-        return meta.getTotalCount() > 0 && documents.stream().anyMatch(v -> v.getRegionType().equals("B"));
+        return meta.getTotalCount() > 0;
     }
 
-    public String getCode() {
-        return documents.stream()
-                .filter(v -> v.getRegionType().equals("B"))
-                .findFirst()
-                .map(Document::getCode)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.KAKAO_SEARCH_REGION_CODE));
+    public String getX() {
+        return documents.get(0).getX();
+    }
+
+    public String getY() {
+        return documents.get(0).getY();
     }
 }

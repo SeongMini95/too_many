@@ -1,8 +1,8 @@
 package com.toomany.dto.response.store;
 
-import com.toomany.common.maps.entity.PlaceList;
-import com.toomany.common.maps.entity.PlaceList.Document;
-import com.toomany.common.maps.entity.PlaceList.Meta;
+import com.toomany.common.maps.entity.KakaoPlaceList;
+import com.toomany.common.maps.entity.KakaoPlaceList.Document;
+import com.toomany.common.maps.entity.KakaoPlaceList.Meta;
 import com.toomany.domain.store.Store;
 import lombok.Getter;
 
@@ -16,11 +16,11 @@ public class SearchStoreListResponseDto {
     private final MetaResponseDto meta;
     private final List<StoreResponseDto> stores;
 
-    public SearchStoreListResponseDto(PlaceList placeList, List<Store> stores) {
-        this.meta = new MetaResponseDto(placeList.getMeta());
+    public SearchStoreListResponseDto(KakaoPlaceList kakaoPlaceList, List<Store> stores) {
+        this.meta = new MetaResponseDto(kakaoPlaceList.getMeta());
 
         List<Store> copyStores = new ArrayList<>(stores);
-        this.stores = placeList.getDocuments().stream()
+        this.stores = kakaoPlaceList.getDocuments().stream()
                 .map(v -> {
                     Store store = copyStores.stream()
                             .filter(v2 -> v2.getKakaoPlaceId().equals(Long.parseLong(v.getId())))
