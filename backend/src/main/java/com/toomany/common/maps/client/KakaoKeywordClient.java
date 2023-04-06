@@ -1,7 +1,7 @@
 package com.toomany.common.maps.client;
 
-import com.toomany.common.maps.entity.PlaceList;
-import com.toomany.dto.request.store.SearchStoreListRequestDto;
+import com.toomany.common.maps.entity.KakaoPlaceList;
+import com.toomany.dto.request.store.SearchPlaceListRequestDto;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,21 +17,21 @@ import java.util.Collections;
 import java.util.Map;
 
 @Component
-public class KakaoMapsClient {
+public class KakaoKeywordClient {
 
     private final String restId;
     private final String uri;
     private final WebClient mapsClient;
 
-    public KakaoMapsClient(@Value("${oauth.kakao.rest-id}") String restId,
-                           @Value("${oauth.kakao.uri.maps}") String uri,
-                           WebClient webClient) {
+    public KakaoKeywordClient(@Value("${oauth.kakao.rest-id}") String restId,
+                              @Value("${oauth.kakao.uri.keyword}") String uri,
+                              WebClient webClient) {
         this.restId = restId;
         this.uri = uri;
         this.mapsClient = getMapsClient(webClient);
     }
 
-    public PlaceList getPlaceList(SearchStoreListRequestDto requestDto, boolean register) {
+    public KakaoPlaceList getKakaoPlaceList(SearchPlaceListRequestDto requestDto, boolean register) {
         return mapsClient.get()
                 .uri(uriBuilder -> {
                     uriBuilder
@@ -61,15 +61,15 @@ public class KakaoMapsClient {
                         }).map(body -> {
                             Integer code = (Integer) body.get("code");
                             if (code != null) {
-                                return new ApiException(ApiErrorCode.SEARCH_MAPS, (String) body.get("msg"));
+                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_PLACE, (String) body.get("msg"));
                             } else {
-                                return new ApiException(ApiErrorCode.SEARCH_MAPS, (String) body.get("message"));
+                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_PLACE, (String) body.get("message"));
                             }
                         }))
-                .bodyToMono(new ParameterizedTypeReference<PlaceList>() {
+                .bodyToMono(new ParameterizedTypeReference<KakaoPlaceList>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new ApiException(ApiErrorCode.SEARCH_MAPS));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.KAKAO_SEARCH_PLACE));
     }
 
     private WebClient getMapsClient(WebClient webClient) {

@@ -1,11 +1,11 @@
 package com.toomany.service;
 
-import com.toomany.common.maps.client.KakaoMapsClient;
-import com.toomany.common.maps.entity.PlaceList;
+import com.toomany.common.maps.client.KakaoKeywordClient;
+import com.toomany.common.maps.entity.KakaoPlaceList;
 import com.toomany.domain.review.Review;
 import com.toomany.domain.store.Store;
 import com.toomany.domain.store.repository.StoreRepository;
-import com.toomany.dto.request.store.SearchStoreListRequestDto;
+import com.toomany.dto.request.store.SearchPlaceListRequestDto;
 import com.toomany.dto.response.store.SearchStoreListResponseDto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class StoreServiceTest {
     private StoreService storeService;
 
     @Mock
-    private KakaoMapsClient kakaoMapsClient;
+    private KakaoKeywordClient kakaoKeywordClient;
 
     @Mock
     private StoreRepository storeRepository;
@@ -37,14 +37,14 @@ class StoreServiceTest {
     @Nested
     class searchStoreList {
 
-        private final PlaceList placeList = PlaceList.builder()
-                .meta(PlaceList.Meta.builder()
+        private final KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
+                .meta(KakaoPlaceList.Meta.builder()
                         .pageableCount(1)
                         .isEnd(true)
                         .totalCount(1)
                         .build())
                 .documents(List.of(
-                        PlaceList.Document.builder()
+                        KakaoPlaceList.Document.builder()
                                 .id("23829251")
                                 .placeName("스시코우지")
                                 .categoryName("음식점 > 일식 > 초밥,롤")
@@ -57,7 +57,7 @@ class StoreServiceTest {
                 ))
                 .build();
 
-        private final SearchStoreListRequestDto requestDto = SearchStoreListRequestDto.builder()
+        private final SearchPlaceListRequestDto requestDto = SearchPlaceListRequestDto.builder()
                 .query("스시소라")
                 .x("")
                 .y("")
@@ -67,7 +67,7 @@ class StoreServiceTest {
         @Test
         void 매장_목록을_가져온다() {
             // given
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(false))).willReturn(placeList);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(false))).willReturn(kakaoPlaceList);
 
             List<Store> stores = new ArrayList<>();
             stores.add(Store.builder()
@@ -82,11 +82,11 @@ class StoreServiceTest {
             SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
 
             // then
-            assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(placeList.getMeta().getPageableCount());
-            assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(placeList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(placeList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
+            assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getStores().size()).isEqualTo(placeList.getDocuments().size());
+            assertThat(responseDto.getStores().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
             for (int i = 0; i < responseDto.getStores().size(); i++) {
                 assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
                 assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());
@@ -96,18 +96,18 @@ class StoreServiceTest {
         @Test
         void 매장_목록을_가져온다_없는_매장() {
             // given
-            given(kakaoMapsClient.getPlaceList(any(SearchStoreListRequestDto.class), eq(false))).willReturn(placeList);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(false))).willReturn(kakaoPlaceList);
             given(storeRepository.findAllByKakaoPlaceIdIn(anyList())).willReturn(Collections.emptyList());
 
             // when
             SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
 
             // then
-            assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(placeList.getMeta().getPageableCount());
-            assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(placeList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(placeList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
+            assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getStores().size()).isEqualTo(placeList.getDocuments().size());
+            assertThat(responseDto.getStores().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
             for (int i = 0; i < responseDto.getStores().size(); i++) {
                 assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(0);
                 assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(0);

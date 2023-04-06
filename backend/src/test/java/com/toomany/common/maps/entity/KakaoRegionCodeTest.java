@@ -14,6 +14,68 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class KakaoRegionCodeTest {
 
     @Nested
+    class exist {
+
+        @Test
+        void 존재한다() {
+            // given
+            KakaoRegionCode kakaoRegionCode = KakaoRegionCode.builder()
+                    .meta(KakaoRegionCode.Meta.builder()
+                            .totalCount(1)
+                            .build())
+                    .documents(List.of(
+                            KakaoRegionCode.Document.builder()
+                                    .regionType("B")
+                                    .build()
+                    ))
+                    .build();
+
+            // when
+            boolean exist = kakaoRegionCode.exist();
+
+            // then
+            assertThat(exist).isTrue();
+        }
+
+        @Test
+        void 존재하지_않는다_count가_0() {
+            // given
+            KakaoRegionCode kakaoRegionCode = KakaoRegionCode.builder()
+                    .meta(KakaoRegionCode.Meta.builder()
+                            .totalCount(0)
+                            .build())
+                    .build();
+
+            // when
+            boolean exist = kakaoRegionCode.exist();
+
+            // then
+            assertThat(exist).isFalse();
+        }
+
+        @Test
+        void 존재하지_않는다_법정동이_없음() {
+            // given
+            KakaoRegionCode kakaoRegionCode = KakaoRegionCode.builder()
+                    .meta(KakaoRegionCode.Meta.builder()
+                            .totalCount(1)
+                            .build())
+                    .documents(List.of(
+                            KakaoRegionCode.Document.builder()
+                                    .regionType("H")
+                                    .build()
+                    ))
+                    .build();
+
+            // when
+            boolean exist = kakaoRegionCode.exist();
+
+            // then
+            assertThat(exist).isFalse();
+        }
+    }
+
+    @Nested
     class getCode {
 
         @Test
@@ -34,7 +96,7 @@ class KakaoRegionCodeTest {
         }
 
         @Test
-        void document가_없으면_NotExistPlaceException를_발생한다() {
+        void document가_없으면_KakaoSearchRegionCodeException를_발생한다() {
             // given
             KakaoRegionCode kakaoRegionCode = KakaoRegionCode.builder().documents(Collections.emptyList()).build();
 
@@ -42,7 +104,7 @@ class KakaoRegionCodeTest {
             ApiException exception = assertThrows(ApiException.class, kakaoRegionCode::getCode);
 
             // then
-            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.NOT_EXIST_PLACE);
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.KAKAO_SEARCH_REGION_CODE);
         }
     }
 }

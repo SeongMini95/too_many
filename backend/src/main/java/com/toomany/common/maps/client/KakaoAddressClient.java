@@ -1,6 +1,6 @@
 package com.toomany.common.maps.client;
 
-import com.toomany.common.maps.entity.KakaoRegionCode;
+import com.toomany.common.maps.entity.KakaoAddressCoord;
 import com.toomany.exception.ApiErrorCode;
 import com.toomany.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,25 +16,25 @@ import java.util.Collections;
 import java.util.Map;
 
 @Component
-public class KakaoRegionCodeClient {
+public class KakaoAddressClient {
 
     private final String restId;
     private final String uri;
-    private final WebClient regionCodeClient;
+    private final WebClient addressClient;
 
-    public KakaoRegionCodeClient(@Value("${oauth.kakao.rest-id}") String restId,
-                                 @Value("${oauth.kakao.uri.region-code}") String uri,
-                                 WebClient webClient) {
+    public KakaoAddressClient(@Value("${oauth.kakao.rest-id}") String restId,
+                              @Value("${oauth.kakao.uri.address}") String uri,
+                              WebClient webClient) {
         this.restId = restId;
         this.uri = uri;
-        this.regionCodeClient = getRegionCodeClient(webClient);
+        this.addressClient = getAddressClient(webClient);
     }
 
-    public KakaoRegionCode getRegionCode(String x, String y) {
-        KakaoRegionCode kakaoRegionCode = regionCodeClient.get()
+    public KakaoAddressCoord getKakaoAddressCoord(String address) {
+        KakaoAddressCoord kakaoAddressCoord = addressClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .queryParam("x", x)
-                        .queryParam("y", y)
+                        .queryParam("query", address)
+                        .queryParam("size", 1)
                         .build())
                 .headers(header -> {
                     header.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -47,28 +47,28 @@ public class KakaoRegionCodeClient {
                         }).map(body -> {
                             Integer code = (Integer) body.get("code");
                             if (code != null) {
-                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_REGION_CODE, (String) body.get("msg"));
+                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_ADDRESS, (String) body.get("msg"));
                             } else {
-                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_REGION_CODE, (String) body.get("message"));
+                                return new ApiException(ApiErrorCode.KAKAO_SEARCH_ADDRESS, (String) body.get("message"));
                             }
                         }))
-                .bodyToMono(new ParameterizedTypeReference<KakaoRegionCode>() {
+                .bodyToMono(new ParameterizedTypeReference<KakaoAddressCoord>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new ApiException(ApiErrorCode.KAKAO_SEARCH_REGION_CODE));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.KAKAO_SEARCH_ADDRESS));
 
-        validate(kakaoRegionCode);
+        validate(kakaoAddressCoord);
 
-        return kakaoRegionCode;
+        return kakaoAddressCoord;
     }
 
-    private void validate(KakaoRegionCode kakaoRegionCode) {
-        if (!kakaoRegionCode.exist()) {
-            throw new ApiException(ApiErrorCode.KAKAO_NOT_EXIST_REGION_CODE);
+    private void validate(KakaoAddressCoord kakaoAddressCoord) {
+        if (!kakaoAddressCoord.exist()) {
+            throw new ApiException(ApiErrorCode.KAKAO_NOE_EXIST_ADDRESS);
         }
     }
 
-    private WebClient getRegionCodeClient(WebClient webClient) {
+    private WebClient getAddressClient(WebClient webClient) {
         return webClient.mutate()
                 .baseUrl(uri)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
