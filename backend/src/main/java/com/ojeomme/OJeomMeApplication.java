@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TooManyApplication {
+public class OJeomMeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TooManyApplication.class, args);
+        SpringApplication.run(OJeomMeApplication.class, args);
     }
 }

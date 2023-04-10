@@ -2,6 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.dto.response.region.CoordOfRegionResponseDto;
 import com.ojeomme.dto.response.region.RegionCodeListResponseDto;
+import com.ojeomme.dto.response.region.RegionCodeOfCoordResponseDto;
 import com.ojeomme.service.RegionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,9 @@ public class RegionController {
     private final RegionService regionService;
 
     @GetMapping("/regionOfCoord")
-    public ResponseEntity<String> getRegionCodeOfCoord(@RequestParam String x, @RequestParam String y) {
-        String code = regionService.getRegionCodeOfCoord(x, y);
-        return ResponseEntity.ok(code);
+    public ResponseEntity<RegionCodeOfCoordResponseDto> getRegionCodeOfCoord(@RequestParam String x, @RequestParam String y) {
+        RegionCodeOfCoordResponseDto responseDto = regionService.getRegionCodeOfCoord(x, y);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/coordOfRegion")

@@ -8,6 +8,7 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.region.CoordOfRegionResponseDto;
 import com.ojeomme.dto.response.region.RegionCodeListResponseDto;
+import com.ojeomme.dto.response.region.RegionCodeOfCoordResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -50,22 +51,38 @@ class RegionServiceTest {
             // given
             KakaoRegionCode kakaoRegionCode = mock(KakaoRegionCode.class);
             given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
-            given(kakaoRegionCode.getCode()).willReturn("2671025321");
+            given(kakaoRegionCode.getCode()).willReturn("2671025021");
 
             RegionCode regionCode = RegionCode.builder()
-                    .code("2671025321")
+                    .code("2671025021")
                     .upCode(RegionCode.builder()
-                            .code("2671025300")
+                            .code("2671025000")
+                            .upCode(RegionCode.builder()
+                                    .code("2671000000")
+                                    .upCode(RegionCode.builder()
+                                            .code("2600000000")
+                                            .regionDepth(1)
+                                            .regionName("부산")
+                                            .build())
+                                    .regionDepth(2)
+                                    .regionName("기장군")
+                                    .build())
+                            .regionDepth(3)
+                            .regionName("기장읍")
                             .build())
                     .regionDepth(4)
+                    .regionName("동부리")
                     .build();
-            given(regionCodeRepository.findById(eq("2671025321"))).willReturn(Optional.of(regionCode));
+            given(regionCodeRepository.findById(eq("2671025021"))).willReturn(Optional.of(regionCode));
+            given(regionCodeRepository.findById(eq("2671000000"))).willReturn(Optional.of(regionCode.getUpCode().getUpCode()));
+            given(regionCodeRepository.findById(eq("2600000000"))).willReturn(Optional.of(regionCode.getUpCode().getUpCode().getUpCode()));
 
             // when
-            String code = regionService.getRegionCodeOfCoord("127", "34");
+            RegionCodeOfCoordResponseDto responseDto = regionService.getRegionCodeOfCoord("127", "34");
 
             // then
-            assertThat(code).isEqualTo("2671025300");
+            assertThat(responseDto.getCode()).isEqualTo("2671025000");
+            assertThat(responseDto.getAddress()).isEqualTo("부산 기장군 기장읍");
         }
 
         @Test
@@ -73,22 +90,33 @@ class RegionServiceTest {
             // given
             KakaoRegionCode kakaoRegionCode = mock(KakaoRegionCode.class);
             given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
-            given(kakaoRegionCode.getCode()).willReturn("2671025321");
+            given(kakaoRegionCode.getCode()).willReturn("2671025000");
 
             RegionCode regionCode = RegionCode.builder()
-                    .code("2671025321")
+                    .code("2671025000")
                     .upCode(RegionCode.builder()
-                            .code("2671025300")
+                            .code("2671000000")
+                            .upCode(RegionCode.builder()
+                                    .code("2600000000")
+                                    .regionDepth(1)
+                                    .regionName("부산")
+                                    .build())
+                            .regionDepth(2)
+                            .regionName("기장군")
                             .build())
                     .regionDepth(3)
+                    .regionName("기장읍")
                     .build();
-            given(regionCodeRepository.findById(eq("2671025321"))).willReturn(Optional.of(regionCode));
+            given(regionCodeRepository.findById(eq("2671025000"))).willReturn(Optional.of(regionCode));
+            given(regionCodeRepository.findById(eq("2671000000"))).willReturn(Optional.of(regionCode.getUpCode()));
+            given(regionCodeRepository.findById(eq("2600000000"))).willReturn(Optional.of(regionCode.getUpCode().getUpCode()));
 
             // when
-            String code = regionService.getRegionCodeOfCoord("127", "34");
+            RegionCodeOfCoordResponseDto responseDto = regionService.getRegionCodeOfCoord("127", "34");
 
             // then
-            assertThat(code).isEqualTo("2671025321");
+            assertThat(responseDto.getCode()).isEqualTo("2671025000");
+            assertThat(responseDto.getAddress()).isEqualTo("부산 기장군 기장읍");
         }
 
         @Test
@@ -150,6 +178,7 @@ class RegionServiceTest {
             CoordOfRegionResponseDto responseDto = regionService.getCoordOfRegionCode("1111010100");
 
             // then
+            assertThat(responseDto.getAddress()).isEqualTo("서울특별시 종로구 청운동");
             assertThat(responseDto.getX()).isEqualTo("127");
             assertThat(responseDto.getY()).isEqualTo("34");
         }
@@ -198,6 +227,7 @@ class RegionServiceTest {
             CoordOfRegionResponseDto responseDto = regionService.getCoordOfRegionCode("2671025021");
 
             // then
+            assertThat(responseDto.getAddress()).isEqualTo("부산 기장군 기장읍");
             assertThat(responseDto.getX()).isEqualTo("127");
             assertThat(responseDto.getY()).isEqualTo("34");
         }

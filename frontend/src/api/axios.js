@@ -1,5 +1,5 @@
 import axios from "axios";
-import { tokenProvider } from "../utils/jwt";
+import { tokenProvider } from "../utils/jwtUtils";
 import { API_PATH } from "../constants/path";
 import authApi from "./auth";
 
