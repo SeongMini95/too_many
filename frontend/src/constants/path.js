@@ -16,6 +16,11 @@ const API_PATH = {
         REISSUE: '/api/auth/reissue',
         CHECK: 'api/auth/check',
     },
+    REGION: {
+        GET_REGION_CODE_OF_COORD: '/api/region/regionOfCoord',
+        GET_COORD_OF_REGION_CODE: '/api/region/coordOfRegion',
+        GET_REGION_CODE_LIST: '/api/region/list'
+    }
 }
 
 export { BROWSER_PATH, API_PATH };

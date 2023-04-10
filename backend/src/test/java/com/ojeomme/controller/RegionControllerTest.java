@@ -46,10 +46,13 @@ class RegionControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.asString()).isEqualTo("2671025300");
+            assertThat(jsonPath.getString("code")).isEqualTo("2671025300");
+            assertThat(jsonPath.getString("address")).isEqualTo("부산광역시 기장군 장안읍");
 
             closeMockWebServer();
         }
@@ -66,10 +69,13 @@ class RegionControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.asString()).isEqualTo("2671025300");
+            assertThat(jsonPath.getString("code")).isEqualTo("2671025300");
+            assertThat(jsonPath.getString("address")).isEqualTo("부산광역시 기장군 장안읍");
 
             closeMockWebServer();
         }

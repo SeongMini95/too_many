@@ -7,6 +7,7 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.region.CoordOfRegionResponseDto;
 import com.ojeomme.dto.response.region.RegionCodeListResponseDto;
+import com.ojeomme.dto.response.region.RegionCodeOfCoordResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +28,18 @@ public class RegionService {
     private final KakaoAddressClient kakaoAddressClient;
 
     @Transactional(readOnly = true)
-    public String getRegionCodeOfCoord(String x, String y) {
+    public RegionCodeOfCoordResponseDto getRegionCodeOfCoord(String x, String y) {
         String kakaoCode = kakaoRegionCodeClient.getRegionCode(x, y).getCode();
 
         RegionCode regionCode = regionCodeRepository.findById(kakaoCode).orElseThrow(() -> new ApiException(ApiErrorCode.REGION_CODE_NOT_FOUND));
-        if (regionCode.getRegionDepth() == 4) { // depth가 4면 상위 지역 가져온다.
-            return regionCode.getUpCode().getCode();
+        if (regionCode.getRegionDepth() == 4) {
+            regionCode = regionCode.getUpCode();
         }
 
-        return regionCode.getCode();
+        // 마지막 지역 코드로 주소를 얻는다.
+        String address = getAddressOfRegionCode(regionCode);
+
+        return new RegionCodeOfCoordResponseDto(regionCode.getCode(), address);
     }
 
     @Transactional(readOnly = true)
@@ -46,6 +50,22 @@ public class RegionService {
         }
 
         // 마지막 지역 코드로 주소를 얻는다.
+        String address = getAddressOfRegionCode(regionCode);
+
+        // 주소로 좌표를 얻는다.
+        KakaoAddressCoord kakaoAddressCoord = kakaoAddressClient.getKakaoAddressCoord(address);
+
+        return new CoordOfRegionResponseDto(address, kakaoAddressCoord.getX(), kakaoAddressCoord.getY());
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "regionCodeList", key = "#root.methodName")
+    public RegionCodeListResponseDto getRegionCodeList() {
+        List<RegionCode> regionCodes = regionCodeRepository.findAllByRegionDepthNot(4);
+        return new RegionCodeListResponseDto(regionCodes);
+    }
+
+    private String getAddressOfRegionCode(RegionCode regionCode) {
         List<RegionCode> regionCodes = new ArrayList<>();
         regionCodes.add(regionCode);
 
@@ -56,19 +76,8 @@ public class RegionService {
             regionCodes.add(0, upRegionCode);
         }
 
-        // 주소로 좌표를 얻는다.
-        String address = regionCodes.stream()
+        return regionCodes.stream()
                 .map(RegionCode::getRegionName)
                 .collect(Collectors.joining(" "));
-        KakaoAddressCoord kakaoAddressCoord = kakaoAddressClient.getKakaoAddressCoord(address);
-
-        return new CoordOfRegionResponseDto(kakaoAddressCoord.getX(), kakaoAddressCoord.getY());
-    }
-
-    @Transactional(readOnly = true)
-    @Cacheable(value = "regionCodeList", key = "#root.methodName")
-    public RegionCodeListResponseDto getRegionCodeList() {
-        List<RegionCode> regionCodes = regionCodeRepository.findAllByRegionDepthNot(4);
-        return new RegionCodeListResponseDto(regionCodes);
     }
 }

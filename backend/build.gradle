@@ -92,7 +92,7 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, excludes: [
-                    '**/TooManyApplication*',
+                    '**/OJeomMeApplication*',
                     '**/config/*Config*',
                     '**/domain/BaseTimeEntity*',
                     '**/domain/**/converter/*Converter*',
@@ -130,7 +130,7 @@ jacocoTestCoverageVerification {
             }
 
             excludes = [
-                    '**.TooManyApplication*',
+                    '**.OJeomMeApplication*',
                     '**.config.*Config*',
                     '**.domain.BaseTimeEntity*',
                     '**.domain.**.converter.*Converter*',
