@@ -20,20 +20,24 @@ const SelectRegion = () => {
 
     useEffect(() => {
         const getRegionCodeList = async () => {
-            const { regions } = await regionApi.getRegionCodeList();
-            const code = regions[0].code;
-            const name = regions[0].name;
+            try {
+                const { regions } = await regionApi.getRegionCodeList();
+                const code = regions[0].code;
+                const name = regions[0].name;
 
-            setRegionCodeList(regions);
-            setInputs({
-                ...inputs,
-                region1: code
-            });
-            setCurrentPosition({
-                ...currentPosition,
-                code,
-                name
-            });
+                setRegionCodeList(regions);
+                setInputs({
+                    ...inputs,
+                    region1: code
+                });
+                setCurrentPosition({
+                    ...currentPosition,
+                    code,
+                    name
+                });
+            } catch (e) {
+                alert(e.response.data);
+            }
         }
 
         getRegionCodeList();

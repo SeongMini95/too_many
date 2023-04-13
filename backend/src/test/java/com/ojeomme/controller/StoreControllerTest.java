@@ -88,7 +88,7 @@ class StoreControllerTest extends AcceptanceTest {
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .body(requestDto)
-                    .when().get("/api/store/searchStoreList")
+                    .when().get("/api/store/searchPlaceList")
                     .then().log().all()
                     .extract();
 
@@ -101,17 +101,17 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
             assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
 
-            assertThat(jsonPath.getString("stores[0].storeId")).isEqualTo(store.getId().toString());
-            assertThat(jsonPath.getString("stores[0].placeId")).isEqualTo("23829251");
-            assertThat(jsonPath.getString("stores[0].placeName")).isEqualTo("스시코우지");
-            assertThat(jsonPath.getString("stores[0].categoryName")).isEqualTo("초밥,롤");
-            assertThat(jsonPath.getString("stores[0].phone")).isEqualTo("02-541-6200");
-            assertThat(jsonPath.getString("stores[0].addressName")).isEqualTo("서울 강남구 논현동 92");
-            assertThat(jsonPath.getString("stores[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
-            assertThat(jsonPath.getString("stores[0].x")).isEqualTo("127.03662909986537");
-            assertThat(jsonPath.getString("stores[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("stores[0].likeCnt")).isEqualTo(5);
-            assertThat(jsonPath.getInt("stores[0].reviewCnt")).isEqualTo(1);
+            assertThat(jsonPath.getString("places[0].storeId")).isEqualTo(store.getId().toString());
+            assertThat(jsonPath.getString("places[0].placeId")).isEqualTo("23829251");
+            assertThat(jsonPath.getString("places[0].placeName")).isEqualTo("스시코우지");
+            assertThat(jsonPath.getString("places[0].categoryName")).isEqualTo("초밥,롤");
+            assertThat(jsonPath.getString("places[0].phone")).isEqualTo("02-541-6200");
+            assertThat(jsonPath.getString("places[0].addressName")).isEqualTo("서울 강남구 논현동 92");
+            assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
+            assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
+            assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
+            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(5);
+            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(1);
 
             closeMockWebServer();
         }
@@ -127,7 +127,7 @@ class StoreControllerTest extends AcceptanceTest {
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .body(requestDto)
-                    .when().get("/api/store/searchStoreList")
+                    .when().get("/api/store/searchPlaceList")
                     .then().log().all()
                     .extract();
 
@@ -140,17 +140,17 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
             assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
 
-            assertThat(jsonPath.getString("stores[0].storeId")).isBlank();
-            assertThat(jsonPath.getString("stores[0].placeId")).isEqualTo("23829251");
-            assertThat(jsonPath.getString("stores[0].placeName")).isEqualTo("스시코우지");
-            assertThat(jsonPath.getString("stores[0].categoryName")).isEqualTo("초밥,롤");
-            assertThat(jsonPath.getString("stores[0].phone")).isEqualTo("02-541-6200");
-            assertThat(jsonPath.getString("stores[0].addressName")).isEqualTo("서울 강남구 논현동 92");
-            assertThat(jsonPath.getString("stores[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
-            assertThat(jsonPath.getString("stores[0].x")).isEqualTo("127.03662909986537");
-            assertThat(jsonPath.getString("stores[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("stores[0].likeCnt")).isEqualTo(0);
-            assertThat(jsonPath.getInt("stores[0].reviewCnt")).isEqualTo(0);
+            assertThat(jsonPath.getString("places[0].storeId")).isBlank();
+            assertThat(jsonPath.getString("places[0].placeId")).isEqualTo("23829251");
+            assertThat(jsonPath.getString("places[0].placeName")).isEqualTo("스시코우지");
+            assertThat(jsonPath.getString("places[0].categoryName")).isEqualTo("초밥,롤");
+            assertThat(jsonPath.getString("places[0].phone")).isEqualTo("02-541-6200");
+            assertThat(jsonPath.getString("places[0].addressName")).isEqualTo("서울 강남구 논현동 92");
+            assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
+            assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
+            assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
+            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(0);
+            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(0);
 
             closeMockWebServer();
         }

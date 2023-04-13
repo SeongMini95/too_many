@@ -5,11 +5,12 @@ import com.ojeomme.common.maps.entity.KakaoPlaceList;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.SearchStoreListResponseDto;
+import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,10 +21,10 @@ public class StoreService {
     private final StoreRepository storeRepository;
 
     @Transactional(readOnly = true)
-    public SearchStoreListResponseDto searchStoreList(SearchPlaceListRequestDto requestDto) {
+    public SearchPlaceListResponseDto searchPlaceList(@Valid SearchPlaceListRequestDto requestDto) {
         KakaoPlaceList kakaoPlaceList = kakaoKeywordClient.getKakaoPlaceList(requestDto, false);
         List<Store> stores = storeRepository.findAllByKakaoPlaceIdIn(kakaoPlaceList.getKakaoPlaceIds());
 
-        return new SearchStoreListResponseDto(kakaoPlaceList, stores);
+        return new SearchPlaceListResponseDto(kakaoPlaceList, stores);
     }
 }

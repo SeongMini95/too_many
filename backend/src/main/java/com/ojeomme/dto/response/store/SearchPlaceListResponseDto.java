@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-public class SearchStoreListResponseDto {
+public class SearchPlaceListResponseDto {
 
     private final MetaResponseDto meta;
-    private final List<StoreResponseDto> stores;
+    private final List<PlaceResponseDto> places;
 
-    public SearchStoreListResponseDto(KakaoPlaceList kakaoPlaceList, List<Store> stores) {
+    public SearchPlaceListResponseDto(KakaoPlaceList kakaoPlaceList, List<Store> places) {
         this.meta = new MetaResponseDto(kakaoPlaceList.getMeta());
 
-        List<Store> copyStores = new ArrayList<>(stores);
-        this.stores = kakaoPlaceList.getDocuments().stream()
+        List<Store> copyStores = new ArrayList<>(places);
+        this.places = kakaoPlaceList.getDocuments().stream()
                 .map(v -> {
                     Store store = copyStores.stream()
                             .filter(v2 -> v2.getKakaoPlaceId().equals(Long.parseLong(v.getId())))
@@ -30,7 +30,7 @@ public class SearchStoreListResponseDto {
                         copyStores.remove(store);
                     }
 
-                    return new StoreResponseDto(v, store);
+                    return new PlaceResponseDto(v, store);
                 })
                 .collect(Collectors.toList());
     }
@@ -54,7 +54,7 @@ public class SearchStoreListResponseDto {
     }
 
     @Getter
-    public static class StoreResponseDto {
+    public static class PlaceResponseDto {
 
         private final String storeId;
         private final String placeId;
@@ -68,7 +68,7 @@ public class SearchStoreListResponseDto {
         private final int likeCnt;
         private final int reviewCnt;
 
-        public StoreResponseDto(Document document, Store store) {
+        public PlaceResponseDto(Document document, Store store) {
             String[] categoryNames = document.getCategoryName().split(" > ");
 
             this.storeId = store != null ? store.getId().toString() : "";
