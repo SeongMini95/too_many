@@ -8,6 +8,8 @@ import { useRecoilValue } from "recoil";
 import { loginState } from "./recoils/auth";
 import SelectRegion from "./pages/Layout/SelectRegion";
 import Main from "./pages/Layout/Main";
+import PrivateRouter from "./router/PrivateRouter";
+import SearchPlaceList from "./pages/Store/SearchPlaceList";
 
 function App() {
     const isLogin = useRecoilValue(loginState);
@@ -21,6 +23,10 @@ function App() {
                 <Route path={BROWSER_PATH.AUTH.LOGIN} element={<Login />} />
                 <Route path={BROWSER_PATH.AUTH.KAKAO_LOGIN} element={<KakaoLogin />} />
                 <Route path={BROWSER_PATH.AUTH.NAVER_LOGIN} element={<NaverLogin />} />
+
+                <Route element={<PrivateRouter />}>
+                    <Route path={BROWSER_PATH.STORE.SEARCH_PLACE_LIST} element={<SearchPlaceList />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );

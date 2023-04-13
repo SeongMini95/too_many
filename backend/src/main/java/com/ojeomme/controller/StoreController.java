@@ -1,7 +1,7 @@
 package com.ojeomme.controller;
 
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.SearchStoreListResponseDto;
+import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +16,9 @@ public class StoreController {
 
     private final StoreService storeService;
 
-    @GetMapping("/searchStoreList")
-    public ResponseEntity<SearchStoreListResponseDto> searchPlaceList(SearchPlaceListRequestDto requestDto) {
-        SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
+    @GetMapping("/searchPlaceList")
+    public ResponseEntity<SearchPlaceListResponseDto> searchPlaceList(SearchPlaceListRequestDto requestDto) {
+        SearchPlaceListResponseDto responseDto = storeService.searchPlaceList(requestDto);
         return ResponseEntity.ok(responseDto);
     }
 }

@@ -5,6 +5,9 @@ const BROWSER_PATH = {
         NAVER_LOGIN: '/auth/naver/login',
         KAKAO_LOGIN: '/auth/kakao/login',
     },
+    STORE: {
+        SEARCH_PLACE_LIST: '/store/searchPlaceList'
+    }
 }
 
 const API_PATH = {
@@ -20,6 +23,9 @@ const API_PATH = {
         GET_REGION_CODE_OF_COORD: '/api/region/regionOfCoord',
         GET_COORD_OF_REGION_CODE: '/api/region/coordOfRegion',
         GET_REGION_CODE_LIST: '/api/region/list'
+    },
+    STORE: {
+        SEARCH_PLACE_LIST: '/api/store/searchPlaceList'
     }
 }
 

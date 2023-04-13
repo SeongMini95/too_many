@@ -6,7 +6,7 @@ import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.SearchStoreListResponseDto;
+import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class StoreServiceTest {
     private StoreRepository storeRepository;
 
     @Nested
-    class searchStoreList {
+    class searchPlaceList {
 
         private final KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
                 .meta(KakaoPlaceList.Meta.builder()
@@ -79,17 +79,17 @@ class StoreServiceTest {
             given(storeRepository.findAllByKakaoPlaceIdIn(anyList())).willReturn(stores);
 
             // when
-            SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
+            SearchPlaceListResponseDto responseDto = storeService.searchPlaceList(requestDto);
 
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
             assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getStores().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
-            for (int i = 0; i < responseDto.getStores().size(); i++) {
-                assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
-                assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());
+            assertThat(responseDto.getPlaces().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
+            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
+                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
+                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());
             }
         }
 
@@ -100,17 +100,17 @@ class StoreServiceTest {
             given(storeRepository.findAllByKakaoPlaceIdIn(anyList())).willReturn(Collections.emptyList());
 
             // when
-            SearchStoreListResponseDto responseDto = storeService.searchStoreList(requestDto);
+            SearchPlaceListResponseDto responseDto = storeService.searchPlaceList(requestDto);
 
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
             assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getStores().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
-            for (int i = 0; i < responseDto.getStores().size(); i++) {
-                assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(0);
-                assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(0);
+            assertThat(responseDto.getPlaces().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
+            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
+                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(0);
+                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(0);
             }
         }
     }
