@@ -9,7 +9,7 @@ const PrivateRouter = () => {
     const navigate = useNavigate();
 
     const isLogin = useRecoilValue(loginState);
-    const accessToken = useRecoilValue(accessTokenState);
+    const accessToken = useRecoilValue(accessTokenState)
 
     useEffect(() => {
         if (!isLogin && !accessToken) {

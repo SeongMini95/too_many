@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { tokenProvider } from "../utils/jwt";
+import { tokenProvider } from "../utils/jwtUtils";
 
 const loginState = atom({
     key: 'loginState',

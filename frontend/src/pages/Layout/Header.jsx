@@ -5,6 +5,8 @@ import { accessTokenState, loginState, refreshTokenState } from "../../recoils/a
 import { userInfoState } from "../../recoils/user";
 import authApi from "../../api/auth";
 import { BROWSER_PATH } from "../../constants/path";
+import { positionState } from "../../recoils/position";
+import { positionProvider } from "../../utils/positionUtils";
 
 const Header = () => {
     const navigate = useNavigate();
@@ -15,9 +17,10 @@ const Header = () => {
     const [accessToken, setAccessToken] = useRecoilState(accessTokenState);
     const setRefreshToken = useSetRecoilState(refreshTokenState);
     const resetUserInfo = useResetRecoilState(userInfoState);
+    const setPosition = useSetRecoilState(positionState);
 
     useEffect(() => {
-        const check = async () => {
+        const authCheck = async () => {
             try {
                 if (!accessToken) {
                     return;
@@ -38,7 +41,16 @@ const Header = () => {
             }
         }
 
-        check();
+        authCheck();
+    }, []);
+
+    useEffect(() => {
+        const position = positionProvider.getPosition();
+        if (position) {
+            setPosition(JSON.parse(position));
+        } else {
+            setPosition('');
+        }
     }, []);
 
     const handlerLogout = () => {

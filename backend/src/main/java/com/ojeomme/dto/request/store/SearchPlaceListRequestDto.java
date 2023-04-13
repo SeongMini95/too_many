@@ -6,13 +6,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @NoArgsConstructor
 @Getter
 @Setter
 public class SearchPlaceListRequestDto {
 
+    @NotNull(message = "검색어를 입력하세요.")
+    @NotBlank(message = "검색어를 입력하세요.")
     private String query;
+
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String x;
+
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String y;
     private Integer page;
 
