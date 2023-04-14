@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +64,9 @@ class ReviewServiceTest {
 
     @Mock
     private KakaoRegionCodeClient kakaoRegionCodeClient;
+
+    @Mock
+    private ImageService imageService;
 
 
     @Nested
@@ -124,17 +128,17 @@ class ReviewServiceTest {
                 .build();
 
         private final WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
-                .placeId(23829251L)
                 .revisitYn(true)
+                .startScore(5)
                 .content("리뷰")
-                .images(List.of("image1", "image2"))
+                .images(List.of("http://localhost:4000/temp/2023/4/14/image1.png", "http://localhost:4000/temp/2023/4/14/image2.png"))
                 .recommends(List.of("1", "2"))
                 .x("127.03662909986537")
                 .y("37.52186058560857")
                 .build();
 
         @Test
-        void 등록이_안된_store_존재하지_않는_category() {
+        void 등록이_안된_store_존재하지_않는_category() throws IOException {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
@@ -150,8 +154,11 @@ class ReviewServiceTest {
             Store store = mock(Store.class);
             given(storeRepository.save(any(Store.class))).willReturn(store);
 
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
             // when
-            Long storeId = reviewService.writeReview(1L, requestDto);
+            Long storeId = reviewService.writeReview(1L, 23829251L, requestDto);
 
             // then
             assertThat(storeId).isNotNull();
@@ -165,7 +172,7 @@ class ReviewServiceTest {
             given(userRepository.findById(anyLong())).willReturn(Optional.empty());
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, requestDto));
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, 23829251L, requestDto));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND);
@@ -185,14 +192,14 @@ class ReviewServiceTest {
             given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, requestDto));
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, 23829251L, requestDto));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.KAKAO_NOT_EXIST_PLACE);
         }
 
         @Test
-        void 등록이_안된_store_존재하는_category() {
+        void 등록이_안된_store_존재하는_category() throws IOException {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
@@ -208,8 +215,11 @@ class ReviewServiceTest {
             Store store = mock(Store.class);
             given(storeRepository.save(any(Store.class))).willReturn(store);
 
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
             // when
-            Long storeId = reviewService.writeReview(1L, requestDto);
+            Long storeId = reviewService.writeReview(1L, 23829251L, requestDto);
 
             // then
             assertThat(storeId).isNotNull();
@@ -218,7 +228,7 @@ class ReviewServiceTest {
         }
 
         @Test
-        void category가_null이지만_상위_category는_존재() {
+        void category가_null이지만_상위_category는_존재() throws IOException {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
@@ -235,8 +245,11 @@ class ReviewServiceTest {
             Store store = mock(Store.class);
             given(storeRepository.save(any(Store.class))).willReturn(store);
 
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
             // when
-            Long storeId = reviewService.writeReview(1L, requestDto);
+            Long storeId = reviewService.writeReview(1L, 23829251L, requestDto);
 
             // then
             assertThat(storeId).isNotNull();
@@ -258,14 +271,14 @@ class ReviewServiceTest {
             given(regionCodeRepository.findById(anyString())).willReturn(Optional.empty());
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, requestDto));
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, 23829251L, requestDto));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.REGION_CODE_NOT_FOUND);
         }
 
         @Test
-        void store가_존재할_때() {
+        void store가_존재할_때() throws IOException {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
@@ -281,8 +294,11 @@ class ReviewServiceTest {
             Store store = mock(Store.class);
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.of(store));
 
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
             // when
-            Long storeId = reviewService.writeReview(1L, requestDto);
+            Long storeId = reviewService.writeReview(1L, 23829251L, requestDto);
 
             // then
             assertThat(storeId).isNotNull();
