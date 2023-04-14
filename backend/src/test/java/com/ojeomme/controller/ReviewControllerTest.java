@@ -29,6 +29,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +62,8 @@ class ReviewControllerTest extends AcceptanceTest {
     @SpyBean
     private KakaoRegionCodeClient kakaoRegionCodeClient;
 
+    private static final String UPLOAD_PATH = "build/resources/test";
+
     private MockWebServer placeWebServer;
     private MockWebServer mapsWebServer;
     private MockWebServer regionCodeWebServer;
@@ -64,10 +72,10 @@ class ReviewControllerTest extends AcceptanceTest {
     class writeReview {
 
         private final WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
-                .placeId(23829251L)
+                .startScore(5)
                 .revisitYn(true)
                 .content("리뷰 작성 리뷰 작성 리뷰 작성")
-                .images(List.of("http://localhost:4000/image1.jpg"))
+                .images(List.of("http://localhost:4000/temp/2023/4/14/image1.png"))
                 .recommends(List.of("1", "2"))
                 .x("127.03662909986537")
                 .y("37.52186058560857")
@@ -84,12 +92,14 @@ class ReviewControllerTest extends AcceptanceTest {
             setMapsWebServer(true);
             setRegionCodeWebServer(code);
 
+            createImage();
+
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -111,7 +121,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -133,7 +143,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -157,12 +167,14 @@ class ReviewControllerTest extends AcceptanceTest {
                     .categoryName("초밥,롤")
                     .build());
 
+            createImage();
+
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -187,12 +199,14 @@ class ReviewControllerTest extends AcceptanceTest {
                     .categoryName("일식")
                     .build());
 
+            createImage();
+
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -218,7 +232,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -262,12 +276,14 @@ class ReviewControllerTest extends AcceptanceTest {
                     .build());
             storeRepository.save(store);
 
+            createImage();
+
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review")
+                    .when().post("/api/review/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -277,6 +293,17 @@ class ReviewControllerTest extends AcceptanceTest {
             assertThat(response.as(Long.class)).isNotNull();
 
             closeMockWebServer();
+        }
+
+        private void createImage() throws Exception {
+            BufferedImage bufferedImage = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+
+            File tempFile = Paths.get(UPLOAD_PATH, "/temp/2023/4/14/image1.png").toFile();
+            Files.createDirectories(tempFile.getParentFile().toPath());
+
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            ImageIO.write(bufferedImage, "png", outputStream);
+            outputStream.close();
         }
     }
 
