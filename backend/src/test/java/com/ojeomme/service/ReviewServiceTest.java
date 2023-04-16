@@ -129,7 +129,7 @@ class ReviewServiceTest {
 
         private final WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
                 .revisitYn(true)
-                .startScore(5)
+                .starScore(5)
                 .content("리뷰")
                 .images(List.of("http://localhost:4000/temp/2023/4/14/image1.png", "http://localhost:4000/temp/2023/4/14/image2.png"))
                 .recommends(List.of("1", "2"))
