@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.URL;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,13 +22,15 @@ import java.util.stream.Collectors;
 @Getter
 public class WriteReviewRequestDto {
 
-    @NotNull(message = "매장을 선택하세요.")
-    private Long placeId;
-
     @NotNull(message = "리뷰를 작성하세요.")
     @NotBlank(message = "리뷰를 작성하세요.")
     @Size(min = 10, max = 2000, message = "리뷰는 10자 ~ 2000자 이내로 작성하세요.")
     private String content;
+
+    @NotNull(message = "별점을 입력하세요.")
+    @Min(value = 1, message = "별점은 최소 1점 입니다.")
+    @Max(value = 5, message = "별점은 최대 5점 입니다.")
+    private Integer starScore;
 
     private boolean revisitYn;
 
@@ -47,9 +47,9 @@ public class WriteReviewRequestDto {
     private String y;
 
     @Builder
-    public WriteReviewRequestDto(Long placeId, String content, boolean revisitYn, List<String> images, List<String> recommends, String x, String y) {
-        this.placeId = placeId;
+    public WriteReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<String> recommends, String x, String y) {
         this.content = content;
+        this.starScore = starScore;
         this.revisitYn = revisitYn;
         this.images = images;
         this.recommends = recommends;
@@ -57,10 +57,12 @@ public class WriteReviewRequestDto {
         this.y = y;
     }
 
-    public Review toReview(User user, Store store) {
+    public Review toReview(User user, Store store, List<String> images) {
+        this.images = images;
         Review review = Review.builder()
                 .user(user)
                 .store(store)
+                .starScore(starScore)
                 .content(content)
                 .revisitYn(revisitYn)
                 .build();

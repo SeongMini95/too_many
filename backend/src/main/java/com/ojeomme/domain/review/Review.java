@@ -33,6 +33,9 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    @Column(name = "star_score")
+    private int starScore;
+
     @Column(name = "content", nullable = false, length = 2000)
     private String content;
 
@@ -46,9 +49,10 @@ public class Review extends BaseTimeEntity {
     private List<ReviewRecommend> reviewRecommends = new ArrayList<>();
 
     @Builder
-    public Review(User user, Store store, String content, boolean revisitYn) {
+    public Review(User user, Store store, int starScore, String content, boolean revisitYn) {
         this.user = user;
         this.store = store;
+        this.starScore = starScore;
         this.content = content;
         this.revisitYn = revisitYn;
     }

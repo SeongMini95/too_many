@@ -22,6 +22,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class ReviewService {
@@ -33,11 +37,12 @@ public class ReviewService {
     private final KakaoPlaceClient kakaoPlaceClient;
     private final KakaoKeywordClient kakaoKeywordClient;
     private final KakaoRegionCodeClient kakaoRegionCodeClient;
+    private final ImageService imageService;
 
     @Transactional
-    public Long writeReview(Long userId, WriteReviewRequestDto requestDto) {
+    public Long writeReview(Long userId, Long placeId, WriteReviewRequestDto requestDto) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-        KakaoPlaceInfo kakaoPlaceInfo = kakaoPlaceClient.getKakaoPlaceInfo(requestDto.getPlaceId());
+        KakaoPlaceInfo kakaoPlaceInfo = kakaoPlaceClient.getKakaoPlaceInfo(placeId);
         KakaoPlaceList kakaoPlaceList = kakaoKeywordClient.getKakaoPlaceList(SearchPlaceListRequestDto.builder()
                 .query(kakaoPlaceInfo.getPlaceName())
                 .x(requestDto.getX())
@@ -100,7 +105,12 @@ public class ReviewService {
         }
 
         // 리뷰 작성
-        store.writeReview(requestDto.toReview(user, store));
+        List<String> images = new ArrayList<>();
+        for (String v : requestDto.getImages()) {
+            String url = imageService.copyImage(v);
+            images.add(url);
+        }
+        store.writeReview(requestDto.toReview(user, store, images));
 
         return store.getId();
     }
