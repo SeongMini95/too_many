@@ -30,7 +30,7 @@ public class WriteReviewRequestDto {
     @NotNull(message = "별점을 입력하세요.")
     @Min(value = 1, message = "별점은 최소 1점 입니다.")
     @Max(value = 5, message = "별점은 최대 5점 입니다.")
-    private Integer startScore;
+    private Integer starScore;
 
     private boolean revisitYn;
 
@@ -47,9 +47,9 @@ public class WriteReviewRequestDto {
     private String y;
 
     @Builder
-    public WriteReviewRequestDto(String content, Integer startScore, boolean revisitYn, List<String> images, List<String> recommends, String x, String y) {
+    public WriteReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<String> recommends, String x, String y) {
         this.content = content;
-        this.startScore = startScore;
+        this.starScore = starScore;
         this.revisitYn = revisitYn;
         this.images = images;
         this.recommends = recommends;
@@ -62,7 +62,7 @@ public class WriteReviewRequestDto {
         Review review = Review.builder()
                 .user(user)
                 .store(store)
-                .startScore(startScore)
+                .starScore(starScore)
                 .content(content)
                 .revisitYn(revisitYn)
                 .build();

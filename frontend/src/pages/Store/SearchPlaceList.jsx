@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from "recoil";
 import { positionState } from "../../recoils/position";
 import storeApi from "../../api/store";
+import WriteReview from "../Review/writeReview";
 
 const SearchPlaceList = () => {
     const { x, y } = useRecoilValue(positionState);
@@ -19,6 +20,12 @@ const SearchPlaceList = () => {
     });
     const placeObserver = useRef(null);
     const [lastPlace, setLastPlace] = useState(null);
+    const [writeReview, setWriteReview] = useState(false);
+    const refPlaceInfo = useRef({
+        placeId: '',
+        x: '',
+        y: ''
+    });
 
     useEffect(() => {
         placeObserver.current = new IntersectionObserver(entries => {
@@ -81,6 +88,11 @@ const SearchPlaceList = () => {
                 <button onClick={handlerClickSearchPlaceList}>검색</button>
             </div>
             <div>
+                <div>
+                    {writeReview && (
+                        <WriteReview placeId={refPlaceInfo.current.placeId} x={refPlaceInfo.current.x} y={refPlaceInfo.current.y} onClickClose={() => setWriteReview(false)} />
+                    )}
+                </div>
                 {placeListInfo.places.map(v => (
                     <div key={v.placeId} style={{ border: '1px solid black' }}>
                         <p>storeId: {v.storeId}</p>
@@ -94,7 +106,15 @@ const SearchPlaceList = () => {
                         <p>y: {v.y}</p>
                         <p>likeCnt: {v.likeCnt}</p>
                         <p>reviewCnt: {v.reviewCnt}</p>
-                        <button>이 매장 리뷰 작성</button>
+                        <button onClick={() => {
+                            setWriteReview(true);
+                            refPlaceInfo.current = {
+                                placeId: v.placeId,
+                                x: v.x,
+                                y: v.y
+                            }
+                        }}>이 매장 리뷰 작성
+                        </button>
                     </div>
                 ))}
                 <div ref={setLastPlace} />

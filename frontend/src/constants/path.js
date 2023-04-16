@@ -26,6 +26,12 @@ const API_PATH = {
     },
     STORE: {
         SEARCH_PLACE_LIST: '/api/store/searchPlaceList'
+    },
+    IMAGE: {
+        UPLOAD: '/api/image/upload'
+    },
+    REVIEW: {
+        WRITE_REVIEW: '/api/review/:placeId'
     }
 }
 

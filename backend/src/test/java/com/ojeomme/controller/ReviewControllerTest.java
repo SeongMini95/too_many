@@ -72,7 +72,7 @@ class ReviewControllerTest extends AcceptanceTest {
     class writeReview {
 
         private final WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
-                .startScore(5)
+                .starScore(5)
                 .revisitYn(true)
                 .content("리뷰 작성 리뷰 작성 리뷰 작성")
                 .images(List.of("http://localhost:4000/temp/2023/4/14/image1.png"))
