@@ -22,7 +22,8 @@ public enum ApiErrorCode {
     REGION_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 주소가 없습니다.\n관리자에게 문의하세요."),
     IMAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 크기는 %dMB를 초과할 수 없습니다."),
     IMAGE_MIME_TYPE(HttpStatus.BAD_REQUEST, "이미지 형식이 아닙니다."),
-    IMAGE_HOST_NOT_SUPPORT(HttpStatus.BAD_REQUEST, "지원하지 않는 URL 형식입니다.");
+    IMAGE_HOST_NOT_SUPPORT(HttpStatus.BAD_REQUEST, "지원하지 않는 URL 형식입니다."),
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "매장을 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private String message;
