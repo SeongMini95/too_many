@@ -414,11 +414,10 @@ class AuthControllerTest extends AcceptanceTest {
         @Test
         void 로그인_상태를_검증하는데_유저를_찾을수_없으면_false를_리턴한다() {
             // given
-            userRepository.delete(user);
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
+                    .auth().oauth2(notExistAccessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()

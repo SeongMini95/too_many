@@ -11,12 +11,15 @@ import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.ReviewListResponseDto.ReviewResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,6 +47,9 @@ class ReviewServiceTest {
 
     @InjectMocks
     private ReviewService reviewService;
+
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -67,6 +74,49 @@ class ReviewServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class getReviewList {
+
+        @Test
+        void 리뷰_리스트를_가져온다() {
+            // given
+            ReviewResponseDto reviewResponseDto1 = ReviewResponseDto.builder()
+                    .reviewId(1L)
+                    .nickname("nick1")
+                    .starScore(4)
+                    .content("리뷰1")
+                    .revisitYn(false)
+                    .images(Set.of("http://localhost:4000/image1.png"))
+                    .recommends(Set.of("1"))
+                    .build();
+            ReviewResponseDto reviewResponseDto2 = ReviewResponseDto.builder()
+                    .reviewId(2L)
+                    .nickname("nick2")
+                    .starScore(5)
+                    .content("리뷰2")
+                    .revisitYn(false)
+                    .images(Set.of("http://localhost:4000/image2.png"))
+                    .recommends(Set.of("2"))
+                    .build();
+            ReviewListResponseDto reviewListResponseDto = new ReviewListResponseDto(List.of(reviewResponseDto1, reviewResponseDto2));
+            given(reviewRepository.getReviewList(anyLong(), anyLong())).willReturn(reviewListResponseDto);
+
+            // when
+            ReviewListResponseDto responseDto = reviewService.getReviewList(1L, 1L);
+
+            // then
+            assertThat(responseDto.getReviews().size()).isEqualTo(reviewListResponseDto.getReviews().size());
+            for (int i = 0; i < responseDto.getReviews().size(); i++) {
+                assertThat(responseDto.getReviews().get(i).getReviewId()).isEqualTo(reviewListResponseDto.getReviews().get(i).getReviewId());
+                assertThat(responseDto.getReviews().get(i).getNickname()).isEqualTo(reviewListResponseDto.getReviews().get(i).getNickname());
+                assertThat(responseDto.getReviews().get(i).getStarScore()).isEqualTo(reviewListResponseDto.getReviews().get(i).getStarScore());
+                assertThat(responseDto.getReviews().get(i).getContent()).isEqualTo(reviewListResponseDto.getReviews().get(i).getContent());
+                assertThat(responseDto.getReviews().get(i).getImages()).isEqualTo(reviewListResponseDto.getReviews().get(i).getImages());
+                assertThat(responseDto.getReviews().get(i).getRecommends()).isEqualTo(reviewListResponseDto.getReviews().get(i).getRecommends());
+            }
+        }
+    }
 
 
     @Nested

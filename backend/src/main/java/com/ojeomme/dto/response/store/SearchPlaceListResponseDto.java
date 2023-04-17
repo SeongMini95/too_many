@@ -56,8 +56,8 @@ public class SearchPlaceListResponseDto {
     @Getter
     public static class PlaceResponseDto {
 
-        private final String storeId;
-        private final String placeId;
+        private final Long storeId;
+        private final Long placeId;
         private final String placeName;
         private final String categoryName;
         private final String phone;
@@ -71,8 +71,8 @@ public class SearchPlaceListResponseDto {
         public PlaceResponseDto(Document document, Store store) {
             String[] categoryNames = document.getCategoryName().split(" > ");
 
-            this.storeId = store != null ? store.getId().toString() : "";
-            this.placeId = document.getId();
+            this.storeId = store != null ? store.getId() : null;
+            this.placeId = Long.parseLong(document.getId());
             this.placeName = document.getPlaceName();
             this.categoryName = categoryNames[categoryNames.length - 1];
             this.phone = document.getPhone();
