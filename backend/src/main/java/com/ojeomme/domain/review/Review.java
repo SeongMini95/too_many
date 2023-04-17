@@ -11,8 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -42,27 +42,31 @@ public class Review extends BaseTimeEntity {
     @Column(name = "revisit_yn", nullable = false)
     private boolean revisitYn;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImage> reviewImages = new ArrayList<>();
+    @Column(name = "like_cnt", nullable = false)
+    private int likeCnt;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewRecommend> reviewRecommends = new ArrayList<>();
+    private Set<ReviewImage> reviewImages = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ReviewRecommend> reviewRecommends = new LinkedHashSet<>();
 
     @Builder
-    public Review(User user, Store store, int starScore, String content, boolean revisitYn) {
+    public Review(User user, Store store, int starScore, String content, boolean revisitYn, int likeCnt) {
         this.user = user;
         this.store = store;
         this.starScore = starScore;
         this.content = content;
         this.revisitYn = revisitYn;
+        this.likeCnt = likeCnt;
     }
 
-    public void addImages(List<ReviewImage> reviewImages) {
+    public void addImages(Set<ReviewImage> reviewImages) {
         this.reviewImages.clear();
         this.reviewImages.addAll(reviewImages);
     }
 
-    public void addRecommends(List<ReviewRecommend> reviewRecommends) {
+    public void addRecommends(Set<ReviewRecommend> reviewRecommends) {
         this.reviewRecommends.clear();
         this.reviewRecommends.addAll(reviewRecommends);
     }

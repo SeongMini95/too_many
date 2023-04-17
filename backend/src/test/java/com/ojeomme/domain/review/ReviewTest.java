@@ -6,7 +6,7 @@ import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,7 @@ class ReviewTest {
             // given
             Review review = new Review();
 
-            List<ReviewImage> reviewImages = List.of(
+            Set<ReviewImage> reviewImages = Set.of(
                     ReviewImage.builder().imageUrl("111").build(),
                     ReviewImage.builder().imageUrl("222").build()
             );
@@ -29,10 +29,7 @@ class ReviewTest {
             review.addImages(reviewImages);
 
             // then
-            assertThat(review.getReviewImages().size()).isEqualTo(reviewImages.size());
-            for (int i = 0; i < review.getReviewImages().size(); i++) {
-                assertThat(review.getReviewImages().get(i).getImageUrl()).isEqualTo(reviewImages.get(i).getImageUrl());
-            }
+            assertThat(review.getReviewImages()).isEqualTo(reviewImages);
         }
     }
 
@@ -44,7 +41,7 @@ class ReviewTest {
             // given
             Review review = new Review();
 
-            List<ReviewRecommend> reviewRecommends = List.of(
+            Set<ReviewRecommend> reviewRecommends = Set.of(
                     ReviewRecommend.builder().recommendType(RecommendType.TASTE).build(),
                     ReviewRecommend.builder().recommendType(RecommendType.VALUE_FOR_MONEY).build()
             );
@@ -53,10 +50,7 @@ class ReviewTest {
             review.addRecommends(reviewRecommends);
 
             // then
-            assertThat(review.getReviewRecommends().size()).isEqualTo(reviewRecommends.size());
-            for (int i = 0; i < review.getReviewRecommends().size(); i++) {
-                assertThat(review.getReviewRecommends().get(i).getRecommendType()).isEqualTo(reviewRecommends.get(i).getRecommendType());
-            }
+            assertThat(review.getReviewRecommends()).isEqualTo(reviewRecommends);
         }
     }
 }
