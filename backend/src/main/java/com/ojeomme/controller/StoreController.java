@@ -2,7 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StoreReviewsResponseDto;
+import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +27,8 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreReviewsResponseDto> getStoreReviews(@PathVariable Long storeId) {
-        StoreReviewsResponseDto responseDto = storeService.getStoreReviews(storeId);
+    public ResponseEntity<StorePreviewImagesResponseDto> getStoreReviews(@PathVariable Long storeId) {
+        StorePreviewImagesResponseDto responseDto = storeService.getStore(storeId);
         return ResponseEntity.ok(responseDto);
     }
 }

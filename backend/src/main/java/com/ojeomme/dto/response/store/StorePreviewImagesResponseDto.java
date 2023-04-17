@@ -1,6 +1,5 @@
 package com.ojeomme.dto.response.store;
 
-import com.ojeomme.dto.response.review.ReviewListResponseDto.ReviewResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,16 +7,14 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
-public class StoreReviewsResponseDto {
+public class StorePreviewImagesResponseDto {
 
     private final StoreResponseDto store;
     private final List<String> previewImages;
-    private final List<ReviewResponseDto> reviews;
 
-    public StoreReviewsResponseDto(StoreResponseDto store, List<String> previewImages, List<ReviewResponseDto> reviews) {
+    public StorePreviewImagesResponseDto(StoreResponseDto store, List<String> previewImages) {
         this.store = store;
         this.previewImages = previewImages;
-        this.reviews = reviews;
     }
 
     @NoArgsConstructor

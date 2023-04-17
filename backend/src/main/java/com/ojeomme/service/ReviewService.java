@@ -10,12 +10,14 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.review.ReviewListResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import java.util.List;
 @Service
 public class ReviewService {
 
+    private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
@@ -113,5 +116,10 @@ public class ReviewService {
         store.writeReview(requestDto.toReview(user, store, images));
 
         return store.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewListResponseDto getReviewList(Long storeId, Long reviewId) {
+        return reviewRepository.getReviewList(storeId, reviewId);
     }
 }
