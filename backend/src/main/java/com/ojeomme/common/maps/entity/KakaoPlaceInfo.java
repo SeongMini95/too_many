@@ -3,6 +3,7 @@ package com.ojeomme.common.maps.entity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @NoArgsConstructor
 @Getter
@@ -18,16 +19,12 @@ public class KakaoPlaceInfo {
         private Long cid;
         private Address address;
         private String placenamefull;
-        private int wpointx;
-        private int wpointy;
 
         @Builder
-        public BasicInfo(Long cid, Address address, String placenamefull, int wpointx, int wpointy) {
+        public BasicInfo(Long cid, Address address, String placenamefull) {
             this.cid = cid;
             this.address = address;
             this.placenamefull = placenamefull;
-            this.wpointx = wpointx;
-            this.wpointy = wpointy;
         }
 
         @NoArgsConstructor
@@ -94,21 +91,20 @@ public class KakaoPlaceInfo {
     }
 
     public String getRoadAddress() {
-        return String.format("%s %s %s",
+        String roadAddress = String.format("%s %s",
                 basicInfo.getAddress().getRegion().getNewaddrfullname(),
-                basicInfo.getAddress().getNewaddr().getNewaddrfull(),
-                basicInfo.getAddress().getAddrdetail());
+                basicInfo.getAddress().getNewaddr().getNewaddrfull()
+        );
+
+        String addrDetail = basicInfo.getAddress().getAddrdetail();
+        if (StringUtils.isNotBlank(addrDetail)) {
+            roadAddress += " " + addrDetail;
+        }
+
+        return roadAddress;
     }
 
     public String getAddress() {
         return String.format("%s %s", basicInfo.getAddress().getRegion().getFullname(), basicInfo.getAddress().getAddrbunho());
-    }
-
-    public int getX() {
-        return basicInfo.getWpointx();
-    }
-
-    public int getY() {
-        return basicInfo.getWpointy();
     }
 }

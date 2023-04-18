@@ -8,6 +8,12 @@ const storeApi = {
         const { data } = await authAxios.get(url);
 
         return data;
+    },
+    getStore: async (storeId) => {
+        const url = urlUtils.setPath(API_PATH.STORE.GET_STORE, { storeId });
+        const { data } = await authAxios.get(url);
+
+        return data;
     }
 }
 

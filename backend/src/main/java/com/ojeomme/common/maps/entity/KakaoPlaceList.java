@@ -79,7 +79,7 @@ public class KakaoPlaceList {
     }
 
     public boolean exist() {
-        return meta.getTotalCount() != 0;
+        return meta.getTotalCount() == 1;
     }
 
     public int getDepth() {
@@ -90,6 +90,14 @@ public class KakaoPlaceList {
     public String getLastCategoryName() {
         setCategoryNames();
         return categoryNames[categoryNames.length - 1];
+    }
+
+    public String getX() {
+        return documents.get(0).getX();
+    }
+
+    public String getY() {
+        return documents.get(0).getY();
     }
 
     private void setCategoryNames() {

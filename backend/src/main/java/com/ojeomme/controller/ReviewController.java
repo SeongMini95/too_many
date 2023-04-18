@@ -3,6 +3,7 @@ package com.ojeomme.controller;
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/{placeId}")
-    public ResponseEntity<Long> writeReview(@LoginUser Long userId, @PathVariable Long placeId, @Valid @RequestBody WriteReviewRequestDto requestDto) throws IOException {
-        Long storeId = reviewService.writeReview(userId, placeId, requestDto);
-        return ResponseEntity.ok(storeId);
+    public ResponseEntity<WriteReviewResponseDto> writeReview(@LoginUser Long userId, @PathVariable Long placeId, @Valid @RequestBody WriteReviewRequestDto requestDto) throws IOException {
+        WriteReviewResponseDto responseDto = reviewService.writeReview(userId, placeId, requestDto);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/{storeId}")

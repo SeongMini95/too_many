@@ -84,8 +84,6 @@ class KakaoPlaceClientTest {
             assertThat(kakaoPlaceInfo.getPlaceName()).isEqualTo("스시코우지");
             assertThat(kakaoPlaceInfo.getRoadAddress()).isEqualTo("서울 강남구 도산대로 318 어넥스 B동 3층");
             assertThat(kakaoPlaceInfo.getAddress()).isEqualTo("서울 강남구 논현동 92");
-            assertThat(kakaoPlaceInfo.getX()).isEqualTo(508095);
-            assertThat(kakaoPlaceInfo.getY()).isEqualTo(1117328);
         }
 
         @Test

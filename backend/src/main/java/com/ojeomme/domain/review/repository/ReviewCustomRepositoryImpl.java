@@ -36,9 +36,9 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .fetchFirst();
 
         // 페이징
-        BooleanBuilder gtReviewId = new BooleanBuilder();
+        BooleanBuilder ltReviewId = new BooleanBuilder();
         if (reviewId != null) {
-            gtReviewId.and(review.id.gt(reviewId));
+            ltReviewId.and(review.id.lt(reviewId));
         }
 
         List<ReviewListResponseDto.ReviewResponseDto> getReviewList = factory
@@ -48,7 +48,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .leftJoin(review.reviewRecommends, reviewRecommend)
                 .where(
                         review.store.id.eq(storeId),
-                        gtReviewId
+                        ltReviewId
                 )
                 .orderBy(review.id.desc(), reviewImage.id.asc())
                 .limit(5 * imageCnt * recommendCnt) // 5개씩 가져오기
@@ -57,12 +57,14 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                                 .list(Projections.fields(
                                         ReviewListResponseDto.ReviewResponseDto.class,
                                         review.id.as("reviewId"),
+                                        review.user.id.as("userId"),
                                         review.user.nickname,
                                         review.starScore,
                                         review.content,
                                         review.revisitYn,
                                         set(reviewImage.imageUrl).as("images"),
-                                        set(reviewRecommend.recommendType.stringValue()).as("recommends")
+                                        set(reviewRecommend.recommendType.stringValue()).as("recommends"),
+                                        review.createDatetime.as("createDate")
                                 ))
                 );
 

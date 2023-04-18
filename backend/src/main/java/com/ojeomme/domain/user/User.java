@@ -38,7 +38,8 @@ public class User extends BaseTimeEntity {
     private String profile;
 
     @Builder
-    public User(String oauthId, OauthProvider oauthProvider, String nickname, String email, String profile) {
+    public User(Long id, String oauthId, OauthProvider oauthProvider, String nickname, String email, String profile) {
+        this.id = id;
         this.oauthId = oauthId;
         this.oauthProvider = oauthProvider;
         this.nickname = nickname;
