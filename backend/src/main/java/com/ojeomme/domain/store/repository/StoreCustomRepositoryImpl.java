@@ -26,6 +26,8 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                                 store.category.categoryName,
                                 store.addressName,
                                 store.roadAddressName,
+                                store.x,
+                                store.y,
                                 store.likeCnt
                         ))
                         .from(store)

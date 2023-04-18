@@ -10,6 +10,7 @@ import SelectRegion from "./pages/Layout/SelectRegion";
 import Main from "./pages/Layout/Main";
 import PrivateRouter from "./router/PrivateRouter";
 import SearchPlaceList from "./pages/Store/SearchPlaceList";
+import StoreReviews from "./pages/Store/StoreReviews";
 
 function App() {
     const isLogin = useRecoilValue(loginState);
@@ -26,6 +27,7 @@ function App() {
 
                 <Route element={<PrivateRouter />}>
                     <Route path={BROWSER_PATH.STORE.SEARCH_PLACE_LIST} element={<SearchPlaceList />} />
+                    <Route path={BROWSER_PATH.STORE.GET_STORE_REVIEWS} element={<StoreReviews />} />
                 </Route>
             </Routes>
         </BrowserRouter>

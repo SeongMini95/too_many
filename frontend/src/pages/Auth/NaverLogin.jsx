@@ -27,10 +27,11 @@ const NaverLogin = () => {
                     setAccessToken(accessToken);
                     setRefreshToken(refreshToken);
 
-                    const { result, nickname, profile } = await authApi.check();
+                    const { result, id, nickname, profile } = await authApi.check();
                     if (result) {
                         setIsLogin(true);
                         setUserInfo({
+                            id: id,
                             nickname: nickname,
                             profile: profile
                         });

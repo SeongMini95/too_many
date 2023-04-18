@@ -8,6 +8,15 @@ const reviewApi = {
         const { data } = await authAxios.post(url, param);
 
         return data;
+    },
+    getReviewList: async (storeId, reviewId) => {
+        let url = urlUtils.setPath(API_PATH.REVIEW.GET_REVIEW_LIST, { storeId });
+        if (reviewId) {
+            url = urlUtils.setParam(url, { reviewId });
+        }
+        const { data } = await authAxios.get(url);
+
+        return data;
     }
 }
 

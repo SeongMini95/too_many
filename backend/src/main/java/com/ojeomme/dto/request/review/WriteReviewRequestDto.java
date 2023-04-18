@@ -39,12 +39,12 @@ public class WriteReviewRequestDto {
 
     private List<String> recommends = new ArrayList<>();
 
-    @NotNull(message = "잘못된 요청입니다.")
-    @NotBlank(message = "잘못된 요청입니다.")
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String x;
 
-    @NotNull(message = "잘못된 요청입니다.")
-    @NotBlank(message = "잘못된 요청입니다.")
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String y;
 
     @Builder

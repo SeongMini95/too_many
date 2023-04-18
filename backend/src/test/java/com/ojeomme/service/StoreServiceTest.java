@@ -2,7 +2,6 @@ package com.ojeomme.service;
 
 import com.ojeomme.common.maps.client.KakaoKeywordClient;
 import com.ojeomme.common.maps.entity.KakaoPlaceList;
-import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
@@ -58,6 +57,8 @@ class StoreServiceTest {
                     .categoryName("초밥,롤")
                     .addressName("서울 강남구 논현동 92")
                     .roadAddressName("서울 강남구 도산대로 318")
+                    .x("127")
+                    .y("34")
                     .likeCnt(10)
                     .build();
             List<String> previewImages = List.of(
@@ -81,6 +82,8 @@ class StoreServiceTest {
             assertThat(responseDto.getStore().getCategoryName()).isEqualTo(store.getCategoryName());
             assertThat(responseDto.getStore().getAddressName()).isEqualTo(store.getAddressName());
             assertThat(responseDto.getStore().getRoadAddressName()).isEqualTo(store.getRoadAddressName());
+            assertThat(responseDto.getStore().getX()).isEqualTo(store.getX());
+            assertThat(responseDto.getStore().getY()).isEqualTo(store.getY());
             assertThat(responseDto.getStore().getLikeCnt()).isEqualTo(store.getLikeCnt());
 
             assertThat(responseDto.getPreviewImages().size()).isEqualTo(previewImages.size());
@@ -143,7 +146,6 @@ class StoreServiceTest {
                     .kakaoPlaceId(23829251L)
                     .likeCnt(5)
                     .build());
-            stores.get(0).writeReview(Review.builder().build());
             given(storeRepository.findAllByKakaoPlaceIdIn(anyList())).willReturn(stores);
 
             // when

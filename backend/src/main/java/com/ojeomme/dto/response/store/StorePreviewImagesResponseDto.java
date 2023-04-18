@@ -27,16 +27,20 @@ public class StorePreviewImagesResponseDto {
         private String categoryName;
         private String addressName;
         private String roadAddressName;
+        private String x;
+        private String y;
         private int likeCnt;
 
         @Builder
-        public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String addressName, String roadAddressName, int likeCnt) {
+        public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String addressName, String roadAddressName, String x, String y, int likeCnt) {
             this.storeId = storeId;
             this.placeId = placeId;
             this.storeName = storeName;
             this.categoryName = categoryName;
             this.addressName = addressName;
             this.roadAddressName = roadAddressName;
+            this.x = x;
+            this.y = y;
             this.likeCnt = likeCnt;
         }
     }

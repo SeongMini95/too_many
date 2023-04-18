@@ -107,8 +107,8 @@ public class AcceptanceTest {
                 .storeName("스시소라 광화문점")
                 .addressName("서울 종로구 청진동 146")
                 .roadAddressName("서울 종로구 종로 19")
-                .x(495551)
-                .y(1130840)
+                .x("127.03662909986537")
+                .y("37.52186058560857")
                 .likeCnt(5)
                 .build();
         store = storeRepository.save(store);

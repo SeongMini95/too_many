@@ -91,6 +91,29 @@ class KakaoPlaceInfoTest {
             // then
             assertThat(roadAddress).isEqualTo("서울시 강남구 도산대로 318 어넥스 B동 3층");
         }
+
+        @Test
+        void 상세주소가_없다() {
+            // given
+            KakaoPlaceInfo kakaoPlaceInfo = KakaoPlaceInfo.builder()
+                    .basicInfo(KakaoPlaceInfo.BasicInfo.builder()
+                            .address(KakaoPlaceInfo.BasicInfo.Address.builder()
+                                    .newaddr(KakaoPlaceInfo.BasicInfo.Address.Newaddr.builder()
+                                            .newaddrfull("도산대로 318")
+                                            .build())
+                                    .region(KakaoPlaceInfo.BasicInfo.Address.Region.builder()
+                                            .newaddrfullname("서울시 강남구")
+                                            .build())
+                                    .build())
+                            .build())
+                    .build();
+
+            // when
+            String roadAddress = kakaoPlaceInfo.getRoadAddress();
+
+            // then
+            assertThat(roadAddress).isEqualTo("서울시 강남구 도산대로 318");
+        }
     }
 
     @Nested
@@ -115,46 +138,6 @@ class KakaoPlaceInfoTest {
 
             // then
             assertThat(address).isEqualTo("서울시 강남구 논현동 92");
-        }
-    }
-
-    @Nested
-    class getX {
-
-        @Test
-        void x좌표를_가져온다() {
-            // given
-            KakaoPlaceInfo kakaoPlaceInfo = KakaoPlaceInfo.builder()
-                    .basicInfo(KakaoPlaceInfo.BasicInfo.builder()
-                            .wpointx(508095)
-                            .build())
-                    .build();
-
-            // when
-            int x = kakaoPlaceInfo.getX();
-
-            // then
-            assertThat(x).isEqualTo(508095);
-        }
-    }
-
-    @Nested
-    class getY {
-
-        @Test
-        void y좌표를_가져온다() {
-            // given
-            KakaoPlaceInfo kakaoPlaceInfo = KakaoPlaceInfo.builder()
-                    .basicInfo(KakaoPlaceInfo.BasicInfo.builder()
-                            .wpointy(1117328)
-                            .build())
-                    .build();
-
-            // when
-            int y = kakaoPlaceInfo.getY();
-
-            // then
-            assertThat(y).isEqualTo(1117328);
         }
     }
 }
