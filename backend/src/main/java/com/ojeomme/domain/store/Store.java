@@ -44,11 +44,11 @@ public class Store extends BaseTimeEntity {
     @Column(name = "road_address_name", nullable = false, length = 100)
     private String roadAddressName;
 
-    @Column(name = "x", nullable = false)
-    private int x;
+    @Column(name = "x", nullable = false, length = 20)
+    private String x;
 
-    @Column(name = "y", nullable = false)
-    private int y;
+    @Column(name = "y", nullable = false, length = 20)
+    private String y;
 
     @Column(name = "like_cnt")
     private int likeCnt;
@@ -57,7 +57,7 @@ public class Store extends BaseTimeEntity {
     private List<Review> reviews = new ArrayList<>();
 
     @Builder
-    public Store(Long id, Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, int x, int y, int likeCnt) {
+    public Store(Long id, Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, String x, String y, int likeCnt) {
         this.id = id;
         this.kakaoPlaceId = kakaoPlaceId;
         this.category = category;

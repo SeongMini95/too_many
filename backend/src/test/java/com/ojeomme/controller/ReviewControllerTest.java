@@ -9,16 +9,19 @@ import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
+import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
-import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
 import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +38,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReviewControllerTest extends AcceptanceTest {
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -52,6 +56,9 @@ class ReviewControllerTest extends AcceptanceTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @SpyBean
     private KakaoPlaceClient kakaoPlaceClient;
@@ -67,6 +74,45 @@ class ReviewControllerTest extends AcceptanceTest {
     private MockWebServer placeWebServer;
     private MockWebServer mapsWebServer;
     private MockWebServer regionCodeWebServer;
+
+    @Nested
+    class getReviewList {
+
+        @Test
+        void 리뷰_리스트를_가져온다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .when().get("/api/review/{storeId}", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            LocalDate now = LocalDate.now();
+
+            // then
+            assertThat(jsonPath.getList("reviews").size()).isEqualTo(store.getReviews().size());
+            for (int i = 0; i < jsonPath.getList("reviews").size(); i++) {
+                assertThat(jsonPath.getLong("reviews[" + i + "].reviewId")).isEqualTo(store.getReviews().get(i).getId());
+                assertThat(jsonPath.getString("reviews[" + i + "].nickname")).isEqualTo(store.getReviews().get(i).getUser().getNickname());
+                assertThat(jsonPath.getInt("reviews[" + i + "].starScore")).isEqualTo(store.getReviews().get(i).getStarScore());
+                assertThat(jsonPath.getString("reviews[" + i + "].content")).isEqualTo(store.getReviews().get(i).getContent());
+                assertThat(jsonPath.getBoolean("reviews[" + i + "].revisitYn")).isEqualTo(store.getReviews().get(i).isRevisitYn());
+                assertThat(CollectionUtils.isEqualCollection(
+                        jsonPath.getList("reviews[" + i + "].images"),
+                        store.getReviews().get(i).getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toSet())
+                )).isTrue();
+                assertThat(CollectionUtils.isEqualCollection(
+                        jsonPath.getList("reviews[" + i + "].recommends"),
+                        store.getReviews().get(i).getReviewRecommends().stream().map(v -> v.getRecommendType().getCode()).collect(Collectors.toSet())
+                )).isTrue();
+                assertThat(jsonPath.getString("reviews[" + i + "].createDate")).isEqualTo(now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+            }
+        }
+    }
 
     @Nested
     class writeReview {
@@ -103,10 +149,21 @@ class ReviewControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Long.class)).isNotNull();
+            assertThat(jsonPath.getLong("storeId")).isNotNull();
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images").size()).isEqualTo(requestDto.getImages().size());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
             closeMockWebServer();
         }
@@ -114,11 +171,10 @@ class ReviewControllerTest extends AcceptanceTest {
         @Test
         void 유저가_존재하지_않으면_UserNotFoundException를_발생한다() {
             // given
-            userRepository.delete(user);
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
+                    .auth().oauth2(notExistAccessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
                     .when().post("/api/review/{placeId}", 23829251L)
@@ -178,10 +234,21 @@ class ReviewControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Long.class)).isNotNull();
+            assertThat(jsonPath.getLong("storeId")).isNotNull();
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images").size()).isEqualTo(requestDto.getImages().size());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
             closeMockWebServer();
         }
@@ -210,10 +277,21 @@ class ReviewControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Long.class)).isNotNull();
+            assertThat(jsonPath.getLong("storeId")).isNotNull();
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images").size()).isEqualTo(requestDto.getImages().size());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
             closeMockWebServer();
         }
@@ -264,17 +342,17 @@ class ReviewControllerTest extends AcceptanceTest {
                     .storeName("스시코우지")
                     .addressName("서울 강남구 논현동 92")
                     .roadAddressName("서울 강남구 도산대로 318")
-                    .x(508095)
-                    .y(1117328)
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
                     .likeCnt(5)
                     .build();
-            store.writeReview(Review.builder()
+            store = storeRepository.save(store);
+            reviewRepository.save(Review.builder()
                     .store(store)
                     .user(user)
                     .content("리뷰 작성")
                     .revisitYn(true)
                     .build());
-            storeRepository.save(store);
 
             createImage();
 
@@ -283,14 +361,25 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/{placeId}", store.getKakaoPlaceId())
                     .then().log().all()
                     .extract();
+
+            JsonPath jsonPath = response.jsonPath();
 
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Long.class)).isNotNull();
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images").size()).isEqualTo(requestDto.getImages().size());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
             closeMockWebServer();
         }

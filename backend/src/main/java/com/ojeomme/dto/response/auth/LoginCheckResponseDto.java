@@ -11,14 +11,18 @@ public class LoginCheckResponseDto {
     private final boolean result;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final Long id;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String nickname;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String profile;
 
     @Builder
-    public LoginCheckResponseDto(boolean result, String nickname, String profile) {
+    public LoginCheckResponseDto(boolean result, Long id, String nickname, String profile) {
         this.result = result;
+        this.id = id;
         this.nickname = nickname;
         this.profile = profile;
     }
@@ -26,6 +30,7 @@ public class LoginCheckResponseDto {
     public static LoginCheckResponseDto success(User user) {
         return LoginCheckResponseDto.builder()
                 .result(true)
+                .id(user.getId())
                 .nickname(user.getNickname())
                 .profile(user.getProfile())
                 .build();

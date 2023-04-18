@@ -295,6 +295,7 @@ class AuthServiceTest {
             given(mockAuthToken.validate()).willReturn(true);
 
             User mockUser = User.builder()
+                    .id(1L)
                     .nickname("nickname")
                     .profile("profile")
                     .build();
@@ -305,6 +306,7 @@ class AuthServiceTest {
 
             // then
             assertThat(responseDto.isResult()).isTrue();
+            assertThat(responseDto.getId()).isEqualTo(mockUser.getId());
             assertThat(responseDto.getNickname()).isEqualTo(mockUser.getNickname());
             assertThat(responseDto.getProfile()).isEqualTo(mockUser.getProfile());
         }

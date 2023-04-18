@@ -58,7 +58,7 @@ class KakaoPlaceListTest {
             // given
             KakaoPlaceList kakaoPlaceList = KakaoPlaceList.builder()
                     .meta(KakaoPlaceList.Meta.builder()
-                            .totalCount(2)
+                            .totalCount(1)
                             .build())
                     .build();
 

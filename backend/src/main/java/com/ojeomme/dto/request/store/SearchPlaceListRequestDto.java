@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -26,14 +25,6 @@ public class SearchPlaceListRequestDto {
     @NotBlank(message = "지역을 선택하세요.")
     private String y;
     private Integer page;
-
-    public void setX(String x) {
-        this.x = !StringUtils.isBlank(x) ? x : "";
-    }
-
-    public void setY(String y) {
-        this.y = !StringUtils.isBlank(y) ? y : "";
-    }
 
     public void setPage(Integer page) {
         this.page = page != null && page > 0 ? page : 1;

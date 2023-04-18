@@ -16,6 +16,7 @@ import org.hibernate.validator.constraints.URL;
 import javax.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -38,12 +39,12 @@ public class WriteReviewRequestDto {
 
     private List<String> recommends = new ArrayList<>();
 
-    @NotNull(message = "잘못된 요청입니다.")
-    @NotBlank(message = "잘못된 요청입니다.")
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String x;
 
-    @NotNull(message = "잘못된 요청입니다.")
-    @NotBlank(message = "잘못된 요청입니다.")
+    @NotNull(message = "지역을 선택하세요.")
+    @NotBlank(message = "지역을 선택하세요.")
     private String y;
 
     @Builder
@@ -65,6 +66,7 @@ public class WriteReviewRequestDto {
                 .starScore(starScore)
                 .content(content)
                 .revisitYn(revisitYn)
+                .likeCnt(0)
                 .build();
         review.addImages(toReviewImages(review));
         review.addRecommends(toReviewRecommends(review));
@@ -72,23 +74,23 @@ public class WriteReviewRequestDto {
         return review;
     }
 
-    private List<ReviewImage> toReviewImages(Review review) {
+    private Set<ReviewImage> toReviewImages(Review review) {
         return images.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(v -> ReviewImage.builder()
                         .review(review)
                         .imageUrl(v)
                         .build())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
-    private List<ReviewRecommend> toReviewRecommends(Review review) {
+    private Set<ReviewRecommend> toReviewRecommends(Review review) {
         return recommends.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(v -> ReviewRecommend.builder()
                         .review(review)
                         .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
                         .build())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 }

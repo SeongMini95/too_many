@@ -10,12 +10,16 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
+import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ import java.util.List;
 @Service
 public class ReviewService {
 
+    private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
@@ -40,7 +45,7 @@ public class ReviewService {
     private final ImageService imageService;
 
     @Transactional
-    public Long writeReview(Long userId, Long placeId, WriteReviewRequestDto requestDto) throws IOException {
+    public WriteReviewResponseDto writeReview(Long userId, Long placeId, WriteReviewRequestDto requestDto) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
         KakaoPlaceInfo kakaoPlaceInfo = kakaoPlaceClient.getKakaoPlaceInfo(placeId);
         KakaoPlaceList kakaoPlaceList = kakaoKeywordClient.getKakaoPlaceList(SearchPlaceListRequestDto.builder()
@@ -95,8 +100,8 @@ public class ReviewService {
                 .storeName(kakaoPlaceInfo.getPlaceName())
                 .addressName(kakaoPlaceInfo.getAddress())
                 .roadAddressName(kakaoPlaceInfo.getRoadAddress())
-                .x(kakaoPlaceInfo.getX())
-                .y(kakaoPlaceInfo.getY())
+                .x(kakaoPlaceList.getX())
+                .y(kakaoPlaceList.getY())
                 .build();
         if (store != null) {
             store.updateStoreInfo(saveStore);
@@ -110,8 +115,15 @@ public class ReviewService {
             String url = imageService.copyImage(v);
             images.add(url);
         }
-        store.writeReview(requestDto.toReview(user, store, images));
 
-        return store.getId();
+        Review saveReview = reviewRepository.save(requestDto.toReview(user, store, images));
+        store.writeReview(saveReview);
+
+        return new WriteReviewResponseDto(store.getId(), saveReview);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewListResponseDto getReviewList(Long storeId, Long reviewId) {
+        return reviewRepository.getReviewList(storeId, reviewId);
     }
 }

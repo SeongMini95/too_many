@@ -1,8 +1,12 @@
 import React, { useRef, useState } from 'react';
 import imageApi from "../../api/image";
 import reviewApi from "../../api/review";
+import { useNavigate } from "react-router-dom";
+import { urlUtils } from "../../utils/urlUtils";
+import { BROWSER_PATH } from "../../constants/path";
 
-const WriteReview = ({ placeId, x, y, onClickClose }) => {
+const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) => {
+    const navigate = useNavigate();
     const [inputs, setInputs] = useState({
         starScore: 0,
         content: '',
@@ -78,8 +82,18 @@ const WriteReview = ({ placeId, x, y, onClickClose }) => {
 
     const handlerClickWriteReview = async () => {
         try {
-            const storeId = await reviewApi.writeReview(placeId, inputs);
-            console.log(storeId);
+            const { storeId, review } = await reviewApi.writeReview(placeId, inputs);
+
+            if (storeInfo) {
+                setStoreInfo({
+                    ...storeInfo,
+                    reviews: [review].concat(storeInfo.reviews)
+                });
+            } else {
+                const url = urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId });
+                navigate(url, { replace: true });
+            }
+            onClickClose();
         } catch (e) {
             alert(e.response.data);
         }
@@ -98,17 +112,17 @@ const WriteReview = ({ placeId, x, y, onClickClose }) => {
                 <Star onClick={() => handlerClickStar(4)} style={star[4] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
             </div>
             <div>
-                재방문 의사<input type="checkbox" onClick={handlerChangeRevisit} checked={inputs.revisitYn} />
+                재방문 의사<input type="checkbox" onChange={handlerChangeRevisit} checked={inputs.revisitYn} />
             </div>
             <div>
                 <textarea name="content" onChange={handlerChangeInputs} value={inputs.content}></textarea>
             </div>
             <div>
-                맛<input type="checkbox" onClick={handlerChangeRecommend} value="1" checked={inputs.recommends.includes('1')} />
-                가성비<input type="checkbox" onClick={handlerChangeRecommend} value="2" checked={inputs.recommends.includes('2')} />
-                친절<input type="checkbox" onClick={handlerChangeRecommend} value="3" checked={inputs.recommends.includes('3')} />
-                분위기<input type="checkbox" onClick={handlerChangeRecommend} value="4" checked={inputs.recommends.includes('4')} />
-                주차<input type="checkbox" onClick={handlerChangeRecommend} value="5" checked={inputs.recommends.includes('5')} />
+                맛<input type="checkbox" onChange={handlerChangeRecommend} value="1" checked={inputs.recommends.includes('1')} />
+                가성비<input type="checkbox" onChange={handlerChangeRecommend} value="2" checked={inputs.recommends.includes('2')} />
+                친절<input type="checkbox" onChange={handlerChangeRecommend} value="3" checked={inputs.recommends.includes('3')} />
+                분위기<input type="checkbox" onChange={handlerChangeRecommend} value="4" checked={inputs.recommends.includes('4')} />
+                주차<input type="checkbox" onChange={handlerChangeRecommend} value="5" checked={inputs.recommends.includes('5')} />
             </div>
             <div>
                 <input type="file" accept="image/*" ref={refImage} />

@@ -6,7 +6,8 @@ const BROWSER_PATH = {
         KAKAO_LOGIN: '/auth/kakao/login',
     },
     STORE: {
-        SEARCH_PLACE_LIST: '/store/searchPlaceList'
+        SEARCH_PLACE_LIST: '/store/searchPlaceList',
+        GET_STORE_REVIEWS: '/store/:storeId'
     }
 }
 
@@ -25,13 +26,15 @@ const API_PATH = {
         GET_REGION_CODE_LIST: '/api/region/list'
     },
     STORE: {
-        SEARCH_PLACE_LIST: '/api/store/searchPlaceList'
+        SEARCH_PLACE_LIST: '/api/store/searchPlaceList',
+        GET_STORE: '/api/store/:storeId'
     },
     IMAGE: {
         UPLOAD: '/api/image/upload'
     },
     REVIEW: {
-        WRITE_REVIEW: '/api/review/:placeId'
+        WRITE_REVIEW: '/api/review/:placeId',
+        GET_REVIEW_LIST: '/api/review/:storeId'
     }
 }
 

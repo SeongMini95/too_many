@@ -6,8 +6,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -31,5 +33,20 @@ public class ReviewImage extends BaseTimeEntity {
     public ReviewImage(Review review, String imageUrl) {
         this.review = review;
         this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        ReviewImage that = (ReviewImage) o;
+        return getId() != null && (Objects.equals(getId(), that.getId()) ||
+                (Objects.equals(getReview().getId(), that.getReview().getId()) &&
+                        Objects.equals(getImageUrl(), that.getImageUrl())));
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

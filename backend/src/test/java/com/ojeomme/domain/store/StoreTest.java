@@ -30,8 +30,8 @@ class StoreTest {
                     .storeName("스시코우지")
                     .addressName("구주소")
                     .roadAddressName("신주소")
-                    .x(123)
-                    .y(321)
+                    .x("123")
+                    .y("321")
                     .build();
 
             // when
