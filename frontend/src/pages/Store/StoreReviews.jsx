@@ -3,9 +3,12 @@ import { useParams } from "react-router-dom";
 import storeApi from "../../api/store";
 import reviewApi from "../../api/review";
 import WriteReview from "../Review/writeReview";
+import { useRecoilValue } from "recoil";
+import { userInfoState, userState } from "../../recoils/user";
 
 const StoreReviews = () => {
     const { storeId } = useParams();
+    const { id } = useRecoilValue(userInfoState);
     const [storeInfo, setStoreInfo] = useState({
         store: {
             storeId: '',
@@ -25,7 +28,10 @@ const StoreReviews = () => {
         isEnd: true,
         reviewId: ''
     });
-    const [writeReview, setWriteReview] = useState(false);
+    const [writeReview, setWriteReview] = useState({
+        writeYn: false,
+        review: null,
+    });
 
     useEffect(() => {
         const getStoreReviews = async () => {
@@ -59,8 +65,10 @@ const StoreReviews = () => {
             }
         }
 
-        getStoreReviews();
-    }, []);
+        if (id) {
+            getStoreReviews();
+        }
+    }, [id]);
 
     const handlerClickMoreReview = async () => {
         try {
@@ -91,6 +99,7 @@ const StoreReviews = () => {
 
     return (
         <div>
+            <button onClick={() => console.log(id)}>asd</button>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.previewImages.map(v => (
                     <p>{v}</p>
@@ -103,19 +112,28 @@ const StoreReviews = () => {
                 <p>{storeInfo.store.addressName}</p>
                 <p>{storeInfo.store.roadAddressName}</p>
                 <p>{storeInfo.store.likeCnt}</p>
-                <button onClick={() => setWriteReview(true)}>리뷰 작성</button>
-                {writeReview && (
+                <button onClick={() => setWriteReview({ ...writeReview, writeYn: true, review: null })}>리뷰 작성</button>
+                {writeReview.writeYn && (
                     <WriteReview placeId={storeInfo.store.placeId}
                                  x={storeInfo.store.x}
                                  y={storeInfo.store.y}
-                                 onClickClose={() => setWriteReview(false)}
+                                 onClickClose={() => setWriteReview({ ...writeReview, writeYn: false })}
                                  storeInfo={storeInfo}
-                                 setStoreInfo={setStoreInfo} />
+                                 setStoreInfo={setStoreInfo}
+                                 getReview={writeReview.review} />
                 )}
             </div>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.reviews.map(v => (
                     <div key={'review' + v.reviewId} style={{ border: '2px solid blue' }}>
+                        {v.userId === id && (
+                            <button onClick={() => setWriteReview({
+                                ...writeReview,
+                                writeYn: true,
+                                review: v
+                            })}>수정</button>
+                        )}
+                        <p>{v.userId}</p>
                         <p>{v.reviewId}</p>
                         <p>{v.nickname}</p>
                         <p>{v.starScore}</p>
