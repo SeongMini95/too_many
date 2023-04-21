@@ -1,11 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import imageApi from "../../api/image";
 import reviewApi from "../../api/review";
 import { useNavigate } from "react-router-dom";
 import { urlUtils } from "../../utils/urlUtils";
 import { BROWSER_PATH } from "../../constants/path";
 
-const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) => {
+const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo, getReview }) => {
     const navigate = useNavigate();
     const [inputs, setInputs] = useState({
         starScore: 0,
@@ -18,6 +18,40 @@ const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) =
     });
     const [star, setStar] = useState([false, false, false, false, false]);
     const refImage = useRef(null);
+
+    useEffect(() => {
+        if (getReview) {
+            const { starScore, content, revisitYn, images, recommends } = getReview;
+            setInputs({
+                ...inputs,
+                starScore,
+                content,
+                revisitYn,
+                images,
+                recommends
+            });
+
+            const star = [false, false, false, false, false];
+            for (let i = 0; i < starScore; i++) {
+                star[i] = true;
+            }
+            setStar(star);
+        } else {
+            setInputs({
+                ...inputs,
+                starScore: 0,
+                content: '',
+                revisitYn: false,
+                images: [],
+                recommends: [],
+                x: x,
+                y: y
+            });
+
+            const star = [false, false, false, false, false];
+            setStar(star);
+        }
+    }, [getReview]);
 
     const handlerChangeInputs = (e) => {
         const { name, value } = e.target;
@@ -82,17 +116,26 @@ const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) =
 
     const handlerClickWriteReview = async () => {
         try {
-            const { storeId, review } = await reviewApi.writeReview(placeId, inputs);
+            if (!getReview) {
+                const { storeId, review } = await reviewApi.writeReview(placeId, inputs);
 
-            if (storeInfo) {
+                if (storeInfo) {
+                    setStoreInfo({
+                        ...storeInfo,
+                        reviews: [review].concat(storeInfo.reviews)
+                    });
+                } else {
+                    const url = urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId });
+                    navigate(url, { replace: true });
+                }
+            } else {
+                const review = await reviewApi.modifyReview(getReview.reviewId, inputs);
                 setStoreInfo({
                     ...storeInfo,
-                    reviews: [review].concat(storeInfo.reviews)
+                    reviews: storeInfo.reviews.map(v => v.reviewId === review.reviewId ? review : v)
                 });
-            } else {
-                const url = urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId });
-                navigate(url, { replace: true });
             }
+
             onClickClose();
         } catch (e) {
             alert(e.response.data);
@@ -105,11 +148,16 @@ const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) =
                 <button onClick={onClickClose}>닫기</button>
             </div>
             <div style={{ display: 'flex' }}>
-                <Star onClick={() => handlerClickStar(0)} style={star[0] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
-                <Star onClick={() => handlerClickStar(1)} style={star[1] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
-                <Star onClick={() => handlerClickStar(2)} style={star[2] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
-                <Star onClick={() => handlerClickStar(3)} style={star[3] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
-                <Star onClick={() => handlerClickStar(4)} style={star[4] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
+                <Star onClick={() => handlerClickStar(0)}
+                      style={star[0] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
+                <Star onClick={() => handlerClickStar(1)}
+                      style={star[1] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
+                <Star onClick={() => handlerClickStar(2)}
+                      style={star[2] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
+                <Star onClick={() => handlerClickStar(3)}
+                      style={star[3] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
+                <Star onClick={() => handlerClickStar(4)}
+                      style={star[4] ? { fill: '#ffc107' } : { fill: '#eeeeee' }}></Star>
             </div>
             <div>
                 재방문 의사<input type="checkbox" onChange={handlerChangeRevisit} checked={inputs.revisitYn} />
@@ -118,18 +166,23 @@ const WriteReview = ({ placeId, x, y, onClickClose, storeInfo, setStoreInfo }) =
                 <textarea name="content" onChange={handlerChangeInputs} value={inputs.content}></textarea>
             </div>
             <div>
-                맛<input type="checkbox" onChange={handlerChangeRecommend} value="1" checked={inputs.recommends.includes('1')} />
-                가성비<input type="checkbox" onChange={handlerChangeRecommend} value="2" checked={inputs.recommends.includes('2')} />
-                친절<input type="checkbox" onChange={handlerChangeRecommend} value="3" checked={inputs.recommends.includes('3')} />
-                분위기<input type="checkbox" onChange={handlerChangeRecommend} value="4" checked={inputs.recommends.includes('4')} />
-                주차<input type="checkbox" onChange={handlerChangeRecommend} value="5" checked={inputs.recommends.includes('5')} />
+                맛<input type="checkbox" onChange={handlerChangeRecommend} value="1"
+                        checked={inputs.recommends.includes('1')} />
+                가성비<input type="checkbox" onChange={handlerChangeRecommend} value="2"
+                          checked={inputs.recommends.includes('2')} />
+                친절<input type="checkbox" onChange={handlerChangeRecommend} value="3"
+                         checked={inputs.recommends.includes('3')} />
+                분위기<input type="checkbox" onChange={handlerChangeRecommend} value="4"
+                          checked={inputs.recommends.includes('4')} />
+                주차<input type="checkbox" onChange={handlerChangeRecommend} value="5"
+                         checked={inputs.recommends.includes('5')} />
             </div>
             <div>
                 <input type="file" accept="image/*" ref={refImage} />
                 <button onClick={handlerChangeImage}>변경하기</button>
             </div>
             <div>
-                <button onClick={handlerClickWriteReview}>리뷰 작성</button>
+                <button onClick={handlerClickWriteReview}>{!getReview ? '리뷰 작성' : '리뷰 수정'}</button>
             </div>
         </div>
     );

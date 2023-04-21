@@ -17,6 +17,12 @@ const reviewApi = {
         const { data } = await authAxios.get(url);
 
         return data;
+    },
+    modifyReview: async (reviewId, param) => {
+        const url = urlUtils.setPath(API_PATH.REVIEW.MODIFY_REVIEW, { reviewId });
+        const { data } = await authAxios.put(url, param);
+
+        return data;
     }
 }
 

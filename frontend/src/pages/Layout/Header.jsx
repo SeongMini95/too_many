@@ -26,10 +26,11 @@ const Header = () => {
                     return;
                 }
 
-                const { result, nickname, profile } = await authApi.check();
+                const { result, id, nickname, profile } = await authApi.check();
                 if (result) {
                     setIsLogin(true);
                     setUserInfo({
+                        id: id,
                         nickname: nickname,
                         profile: profile
                     });
@@ -64,7 +65,8 @@ const Header = () => {
 
     const handlerMoveLoginPage = () => {
         const rtnUri = location.pathname;
-        if (rtnUri !== BROWSER_PATH.AUTH.LOGIN) {
+        const loginPaths = [BROWSER_PATH.AUTH.LOGIN, BROWSER_PATH.AUTH.NAVER_LOGIN, BROWSER_PATH.AUTH.KAKAO_LOGIN];
+        if (!loginPaths.includes(rtnUri)) {
             sessionStorage.setItem('rtnUri', rtnUri);
         }
 
