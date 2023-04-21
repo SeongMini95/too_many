@@ -9,8 +9,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -33,7 +35,7 @@ public class Review extends BaseTimeEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @Column(name = "star_score")
+    @Column(name = "star_score", nullable = false)
     private int starScore;
 
     @Column(name = "content", nullable = false, length = 2000)
@@ -52,7 +54,8 @@ public class Review extends BaseTimeEntity {
     private Set<ReviewRecommend> reviewRecommends = new LinkedHashSet<>();
 
     @Builder
-    public Review(User user, Store store, int starScore, String content, boolean revisitYn, int likeCnt) {
+    public Review(Long id, User user, Store store, int starScore, String content, boolean revisitYn, int likeCnt) {
+        this.id = id;
         this.user = user;
         this.store = store;
         this.starScore = starScore;
@@ -62,12 +65,24 @@ public class Review extends BaseTimeEntity {
     }
 
     public void addImages(Set<ReviewImage> reviewImages) {
-        this.reviewImages.clear();
         this.reviewImages.addAll(reviewImages);
     }
 
     public void addRecommends(Set<ReviewRecommend> reviewRecommends) {
-        this.reviewRecommends.clear();
         this.reviewRecommends.addAll(reviewRecommends);
+    }
+
+    public void modifyReview(Review review) {
+        this.starScore = review.getStarScore();
+        this.content = review.getContent();
+        this.revisitYn = review.isRevisitYn();
+
+        Collection<ReviewImage> minusImages = CollectionUtils.subtract(this.reviewImages, review.getReviewImages());
+        this.reviewImages.addAll(review.getReviewImages());
+        this.reviewImages.removeAll(minusImages);
+
+        Collection<ReviewRecommend> minusRecommends = CollectionUtils.subtract(this.reviewRecommends, review.getReviewRecommends());
+        this.reviewRecommends.addAll(review.getReviewRecommends());
+        this.reviewRecommends.removeAll(minusRecommends);
     }
 }

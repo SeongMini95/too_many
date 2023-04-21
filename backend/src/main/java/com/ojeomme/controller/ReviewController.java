@@ -1,8 +1,10 @@
 package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
+import com.ojeomme.dto.request.review.ModifyReviewRequestDto;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,12 @@ public class ReviewController {
     @GetMapping("/{storeId}")
     public ResponseEntity<ReviewListResponseDto> getReviewList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewId) {
         ReviewListResponseDto responseDto = reviewService.getReviewList(storeId, reviewId);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("/{reviewId}")
+    public ResponseEntity<ReviewResponseDto> modifyReview(@LoginUser Long userId, @PathVariable Long reviewId, @Valid @RequestBody ModifyReviewRequestDto requestDto) throws IOException {
+        ReviewResponseDto responseDto = reviewService.modifyReview(userId, reviewId, requestDto);
         return ResponseEntity.ok(responseDto);
     }
 }

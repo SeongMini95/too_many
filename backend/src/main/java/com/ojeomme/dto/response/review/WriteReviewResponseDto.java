@@ -1,7 +1,6 @@
 package com.ojeomme.dto.response.review;
 
 import com.ojeomme.domain.review.Review;
-import com.ojeomme.dto.response.review.ReviewListResponseDto.ReviewResponseDto;
 import lombok.Getter;
 
 @Getter

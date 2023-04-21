@@ -5,8 +5,6 @@ import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewrecommend.ReviewRecommend;
 import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
-import com.ojeomme.domain.store.Store;
-import com.ojeomme.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Getter
-public class WriteReviewRequestDto {
+public class ModifyReviewRequestDto {
 
     @NotNull(message = "리뷰를 작성하세요.")
     @NotBlank(message = "리뷰를 작성하세요.")
@@ -40,39 +38,27 @@ public class WriteReviewRequestDto {
 
     private List<String> recommends = new ArrayList<>();
 
-    @NotNull(message = "지역을 선택하세요.")
-    @NotBlank(message = "지역을 선택하세요.")
-    private String x;
-
-    @NotNull(message = "지역을 선택하세요.")
-    @NotBlank(message = "지역을 선택하세요.")
-    private String y;
-
     @Builder
-    public WriteReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<String> recommends, String x, String y) {
+    public ModifyReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<String> recommends) {
         this.content = content;
         this.starScore = starScore;
         this.revisitYn = revisitYn;
         this.images = images;
         this.recommends = recommends;
-        this.x = x;
-        this.y = y;
     }
 
-    public Review toReview(User user, Store store, List<String> images) {
+    public Review toReview(Review review, List<String> images) {
         this.images = images;
-        Review review = Review.builder()
-                .user(user)
-                .store(store)
+        Review modifyReview = Review.builder()
                 .starScore(starScore)
                 .content(content)
                 .revisitYn(revisitYn)
-                .likeCnt(0)
                 .build();
-        review.addImages(toReviewImages(review));
-        review.addRecommends(toReviewRecommends(review));
 
-        return review;
+        modifyReview.addImages(toReviewImages(review));
+        modifyReview.addRecommends(toReviewRecommends(review));
+
+        return modifyReview;
     }
 
     private Set<ReviewImage> toReviewImages(Review review) {

@@ -33,7 +33,8 @@ public class ReviewRecommend extends BaseTimeEntity {
     private RecommendType recommendType;
 
     @Builder
-    public ReviewRecommend(Review review, RecommendType recommendType) {
+    public ReviewRecommend(Long id, Review review, RecommendType recommendType) {
+        this.id = id;
         this.review = review;
         this.recommendType = recommendType;
     }
@@ -43,9 +44,14 @@ public class ReviewRecommend extends BaseTimeEntity {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         ReviewRecommend that = (ReviewRecommend) o;
-        return getId() != null && (Objects.equals(getId(), that.getId()) ||
-                (Objects.equals(getReview().getId(), that.getReview().getId()) &&
-                        Objects.equals(getRecommendType(), that.getRecommendType())));
+
+        if (getId() != null && Objects.equals(getId(), that.getId())) {
+            return true;
+        }
+
+        return Objects.equals(getReview().getId(), that.getReview().getId()) &&
+                Objects.equals(getRecommendType(), that.getRecommendType());
+
     }
 
     @Override

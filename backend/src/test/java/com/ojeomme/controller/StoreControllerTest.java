@@ -7,7 +7,7 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
-import com.ojeomme.domain.review.repository.ReviewRepository;
+import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
@@ -22,12 +22,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +46,7 @@ class StoreControllerTest extends AcceptanceTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private ReviewImageRepository reviewImageRepository;
 
     @SpyBean
     private KakaoKeywordClient kakaoKeywordClient;
@@ -67,6 +69,8 @@ class StoreControllerTest extends AcceptanceTest {
 
             JsonPath jsonPath = response.jsonPath();
 
+            List<String> previewImages = reviewImageRepository.getPreviewImageList(store.getId(), PageRequest.of(0, 5));
+
             // then
             assertThat(jsonPath.getLong("store.storeId")).isEqualTo(store.getId());
             assertThat(jsonPath.getLong("store.placeId")).isEqualTo(store.getKakaoPlaceId());
@@ -78,7 +82,7 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("store.y")).isEqualTo(store.getY());
             assertThat(jsonPath.getInt("store.likeCnt")).isEqualTo(store.getLikeCnt());
 
-            assertThat(jsonPath.getList("previewImages").size()).isEqualTo(store.getReviews().stream().map(Review::getReviewImages).count());
+            assertThat(jsonPath.getList("previewImages")).isEqualTo(previewImages);
         }
 
         @Test

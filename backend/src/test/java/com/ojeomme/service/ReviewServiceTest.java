@@ -20,10 +20,11 @@ import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.dto.request.review.ModifyReviewRequestDto;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
-import com.ojeomme.dto.response.review.ReviewListResponseDto.ReviewResponseDto;
+import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
@@ -84,6 +85,65 @@ class ReviewServiceTest {
     private ImageService imageService;
 
     @Nested
+    class modifyReview {
+
+        private final ModifyReviewRequestDto requestDto = ModifyReviewRequestDto.builder()
+                .starScore(3)
+                .content("리뷰 수정 테스트 입니다.")
+                .revisitYn(true)
+                .images(List.of(
+                        "http://localhost:4000/temp/2023/4/14/image1.png",
+                        "http://localhost:4000/temp/2023/4/14/image2.png"
+                ))
+                .recommends(List.of("1"))
+                .build();
+
+        @Test
+        void 리뷰를_수정한다() throws IOException {
+            // given
+            User user = User.builder()
+                    .id(1L)
+                    .nickname("test123")
+                    .build();
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(5)
+                    .content("리뷰")
+                    .revisitYn(false)
+                    .build();
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(review));
+
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
+            // when
+            ReviewResponseDto responseDto = reviewService.modifyReview(1L, 1L, requestDto);
+
+            // then
+            assertThat(responseDto.getReviewId()).isEqualTo(1L);
+            assertThat(responseDto.getUserId()).isEqualTo(user.getId());
+            assertThat(responseDto.getNickname()).isEqualTo(user.getNickname());
+            assertThat(responseDto.getStarScore()).isEqualTo(requestDto.getStarScore());
+            assertThat(responseDto.getContent()).isEqualTo(requestDto.getContent());
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getImages(), requestDto.getImages())).isTrue();
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getRecommends(), requestDto.getRecommends())).isTrue();
+        }
+
+        @Test
+        void 리뷰가_없으면_ReviewNotFoundException를_발생한다() {
+            // given
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.modifyReview(1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND);
+        }
+    }
+
+    @Nested
     class getReviewList {
 
         @Test
@@ -116,7 +176,7 @@ class ReviewServiceTest {
             ReviewListResponseDto responseDto = reviewService.getReviewList(1L, 1L);
 
             // then
-            assertThat(responseDto.getReviews().size()).isEqualTo(reviewListResponseDto.getReviews().size());
+            assertThat(responseDto.getReviews()).hasSameSizeAs(reviewListResponseDto.getReviews());
             for (int i = 0; i < responseDto.getReviews().size(); i++) {
                 assertThat(responseDto.getReviews().get(i).getReviewId()).isEqualTo(reviewListResponseDto.getReviews().get(i).getReviewId());
                 assertThat(responseDto.getReviews().get(i).getNickname()).isEqualTo(reviewListResponseDto.getReviews().get(i).getNickname());
@@ -220,14 +280,23 @@ class ReviewServiceTest {
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
 
-            Review review = mock(Review.class);
-            given(review.getId()).willReturn(1L);
-            given(review.getUser()).willReturn(user);
-            given(review.getStarScore()).willReturn(requestDto.getStarScore());
-            given(review.getContent()).willReturn(requestDto.getContent());
-            given(review.isRevisitYn()).willReturn(requestDto.isRevisitYn());
-            given(review.getReviewImages()).willReturn(requestDto.getImages().stream().map(v -> new ReviewImage(review, v)).collect(Collectors.toSet()));
-            given(review.getReviewRecommends()).willReturn(requestDto.getRecommends().stream().map(v -> new ReviewRecommend(review, EnumCodeConverterUtils.ofCode(v, RecommendType.class))).collect(Collectors.toSet()));
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addImages(requestDto.getImages().stream().map(v -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(v)
+                            .build())
+                    .collect(Collectors.toSet()));
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
 
             given(reviewRepository.save(any(Review.class))).willReturn(review);
 
@@ -242,7 +311,7 @@ class ReviewServiceTest {
             assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
             assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages().size()).isEqualTo(requestDto.getImages().size());
+            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
 
             then(store).should(times(1)).writeReview(any(Review.class));
@@ -304,14 +373,23 @@ class ReviewServiceTest {
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
 
-            Review review = mock(Review.class);
-            given(review.getId()).willReturn(1L);
-            given(review.getUser()).willReturn(user);
-            given(review.getStarScore()).willReturn(requestDto.getStarScore());
-            given(review.getContent()).willReturn(requestDto.getContent());
-            given(review.isRevisitYn()).willReturn(requestDto.isRevisitYn());
-            given(review.getReviewImages()).willReturn(requestDto.getImages().stream().map(v -> new ReviewImage(review, v)).collect(Collectors.toSet()));
-            given(review.getReviewRecommends()).willReturn(requestDto.getRecommends().stream().map(v -> new ReviewRecommend(review, EnumCodeConverterUtils.ofCode(v, RecommendType.class))).collect(Collectors.toSet()));
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addImages(requestDto.getImages().stream().map(v -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(v)
+                            .build())
+                    .collect(Collectors.toSet()));
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
 
             given(reviewRepository.save(any(Review.class))).willReturn(review);
 
@@ -326,7 +404,7 @@ class ReviewServiceTest {
             assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
             assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages().size()).isEqualTo(requestDto.getImages().size());
+            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
         }
 
@@ -355,14 +433,23 @@ class ReviewServiceTest {
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
 
-            Review review = mock(Review.class);
-            given(review.getId()).willReturn(1L);
-            given(review.getUser()).willReturn(user);
-            given(review.getStarScore()).willReturn(requestDto.getStarScore());
-            given(review.getContent()).willReturn(requestDto.getContent());
-            given(review.isRevisitYn()).willReturn(requestDto.isRevisitYn());
-            given(review.getReviewImages()).willReturn(requestDto.getImages().stream().map(v -> new ReviewImage(review, v)).collect(Collectors.toSet()));
-            given(review.getReviewRecommends()).willReturn(requestDto.getRecommends().stream().map(v -> new ReviewRecommend(review, EnumCodeConverterUtils.ofCode(v, RecommendType.class))).collect(Collectors.toSet()));
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addImages(requestDto.getImages().stream().map(v -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(v)
+                            .build())
+                    .collect(Collectors.toSet()));
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
 
             given(reviewRepository.save(any(Review.class))).willReturn(review);
 
@@ -377,7 +464,7 @@ class ReviewServiceTest {
             assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
             assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages().size()).isEqualTo(requestDto.getImages().size());
+            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
         }
 
@@ -425,14 +512,23 @@ class ReviewServiceTest {
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
             given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
 
-            Review review = mock(Review.class);
-            given(review.getId()).willReturn(1L);
-            given(review.getUser()).willReturn(user);
-            given(review.getStarScore()).willReturn(requestDto.getStarScore());
-            given(review.getContent()).willReturn(requestDto.getContent());
-            given(review.isRevisitYn()).willReturn(requestDto.isRevisitYn());
-            given(review.getReviewImages()).willReturn(requestDto.getImages().stream().map(v -> new ReviewImage(review, v)).collect(Collectors.toSet()));
-            given(review.getReviewRecommends()).willReturn(requestDto.getRecommends().stream().map(v -> new ReviewRecommend(review, EnumCodeConverterUtils.ofCode(v, RecommendType.class))).collect(Collectors.toSet()));
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addImages(requestDto.getImages().stream().map(v -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(v)
+                            .build())
+                    .collect(Collectors.toSet()));
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
 
             given(reviewRepository.save(any(Review.class))).willReturn(review);
 
@@ -447,11 +543,90 @@ class ReviewServiceTest {
             assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
             assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages().size()).isEqualTo(requestDto.getImages().size());
+            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
 
             then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
+        }
+
+        @Test
+        void 리뷰가_존재하지만_이번주에_작성하지_않았다() throws IOException {
+            // given
+            Review prevReview = Review.builder().build();
+            prevReview.setDateTime(LocalDateTime.now().minusDays(7), null);
+            given(reviewRepository.getWithinAWeek(anyLong(), anyLong())).willReturn(Optional.of(prevReview));
+
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+            given(user.getId()).willReturn(1L);
+            given(user.getNickname()).willReturn("test123");
+
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
+
+            given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
+            given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
+
+            given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
+            given(regionCodeRepository.findById(anyString())).willReturn(Optional.of(regionCode));
+
+            Store store = mock(Store.class);
+            given(storeRepository.save(any(Store.class))).willReturn(store);
+
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image1.png"))).willReturn("http://localhost:4000/2023/4/14/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/temp/2023/4/14/image2.png"))).willReturn("http://localhost:4000/2023/4/14/image2.png");
+
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addImages(requestDto.getImages().stream().map(v -> ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(v)
+                            .build())
+                    .collect(Collectors.toSet()));
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
+
+            given(reviewRepository.save(any(Review.class))).willReturn(review);
+
+            // when
+            WriteReviewResponseDto responseDto = reviewService.writeReview(1L, 23829251L, requestDto);
+
+            // then
+            assertThat(responseDto.getStoreId()).isNotNull();
+
+            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
+            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
+            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
+            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
+            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
+            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+
+            then(store).should(times(1)).writeReview(any(Review.class));
+        }
+
+        @Test
+        void 이미_리뷰를_작성했으면_AlreadyExistReviewException를_발생한다() {
+            // given
+            Review review = Review.builder().build();
+            review.setDateTime(LocalDateTime.now(), null);
+            given(reviewRepository.getWithinAWeek(anyLong(), anyLong())).willReturn(Optional.of(review));
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.writeReview(1L, 23829251L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.ALREADY_EXIST_REVIEW);
         }
     }
 }

@@ -5,12 +5,9 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
-import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
-import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.reviewrecommend.ReviewRecommend;
 import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
-import com.ojeomme.domain.reviewrecommend.repository.ReviewRecommendRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
@@ -27,8 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,15 +51,6 @@ public class AcceptanceTest {
 
     @Autowired
     private StoreRepository storeRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private ReviewImageRepository reviewImageRepository;
-
-    @Autowired
-    private ReviewRecommendRepository reviewRecommendRepository;
 
     protected User user;
     protected String accessToken;
@@ -111,49 +97,28 @@ public class AcceptanceTest {
                 .y("37.52186058560857")
                 .likeCnt(5)
                 .build();
-        store = storeRepository.save(store);
 
-        Review review1 = Review.builder()
+
+        Review review = Review.builder()
                 .user(user)
                 .store(store)
                 .starScore(4)
                 .content("리뷰1")
                 .revisitYn(false)
                 .build();
-        Review review2 = Review.builder()
-                .user(user)
-                .store(store)
-                .starScore(5)
-                .content("리뷰2")
-                .revisitYn(true)
-                .build();
+        Set<ReviewImage> reviewImages = Set.of(
+                ReviewImage.builder().review(review).imageUrl("http://localhost:4000/image1.png").build(),
+                ReviewImage.builder().review(review).imageUrl("http://localhost:4000/image2.png").build()
+        );
+        Set<ReviewRecommend> reviewRecommends = Set.of(
+                ReviewRecommend.builder().review(review).recommendType(RecommendType.TASTE).build()
+        );
 
-        review1 = reviewRepository.save(review1);
-        review2 = reviewRepository.save(review2);
+        review.addImages(reviewImages);
+        review.addRecommends(reviewRecommends);
 
-        Set<ReviewImage> reviewImages1 = new LinkedHashSet<>(List.of(
-                ReviewImage.builder().review(review1).imageUrl("http://localhost:4000/image1").build(),
-                ReviewImage.builder().review(review1).imageUrl("http://localhost:4000/image2").build()
-        ));
-        Set<ReviewRecommend> reviewRecommends1 = new LinkedHashSet<>(List.of(
-                ReviewRecommend.builder().review(review1).recommendType(RecommendType.TASTE).build()
-        ));
-        Set<ReviewImage> reviewImages2 = Set.of();
-        Set<ReviewRecommend> reviewRecommends2 = Set.of();
+        store.writeReview(review);
 
-        reviewImages1 = new LinkedHashSet<>(reviewImageRepository.saveAll(reviewImages1));
-        reviewImages2 = new LinkedHashSet<>(reviewImageRepository.saveAll(reviewImages2));
-        reviewRecommends1 = new LinkedHashSet<>(reviewRecommendRepository.saveAll(reviewRecommends1));
-        reviewRecommends2 = new LinkedHashSet<>(reviewRecommendRepository.saveAll(reviewRecommends2));
-
-        review1.addImages(reviewImages1);
-        review1.addRecommends(reviewRecommends1);
-        review2.addImages(reviewImages2);
-        review2.addRecommends(reviewRecommends2);
-
-        store.writeReview(review2);
-        store.writeReview(review1);
-
-        return store;
+        return storeRepository.save(store);
     }
 }
