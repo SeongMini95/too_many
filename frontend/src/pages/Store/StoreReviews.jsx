@@ -4,7 +4,7 @@ import storeApi from "../../api/store";
 import reviewApi from "../../api/review";
 import WriteReview from "../Review/writeReview";
 import { useRecoilValue } from "recoil";
-import { userInfoState, userState } from "../../recoils/user";
+import { userInfoState } from "../../recoils/user";
 
 const StoreReviews = () => {
     const { storeId } = useParams();
@@ -97,12 +97,26 @@ const StoreReviews = () => {
         }
     };
 
+    const handlerClickDeleteReview = async (reviewId) => {
+        try {
+            if (window.confirm('리뷰를 삭제하시겠습니까?')) {
+                await reviewApi.deleteReview(reviewId);
+                setStoreInfo({
+                    ...storeInfo,
+                    reviews: storeInfo.reviews.filter(v => v.reviewId !== reviewId)
+                });
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
     return (
         <div>
             <button onClick={() => console.log(id)}>asd</button>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.previewImages.map(v => (
-                    <p>{v}</p>
+                    <p key={'preview' + v}>{v}</p>
                 ))}
             </div>
             <div style={{ border: '1px solid black' }}>
@@ -127,11 +141,15 @@ const StoreReviews = () => {
                 {storeInfo.reviews.map(v => (
                     <div key={'review' + v.reviewId} style={{ border: '2px solid blue' }}>
                         {v.userId === id && (
-                            <button onClick={() => setWriteReview({
-                                ...writeReview,
-                                writeYn: true,
-                                review: v
-                            })}>수정</button>
+                            <>
+                                <button onClick={() => setWriteReview({
+                                    ...writeReview,
+                                    writeYn: true,
+                                    review: v
+                                })}>수정
+                                </button>
+                                <button onClick={() => handlerClickDeleteReview(v.reviewId)}>삭제</button>
+                            </>
                         )}
                         <p>{v.userId}</p>
                         <p>{v.reviewId}</p>

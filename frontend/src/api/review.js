@@ -23,6 +23,10 @@ const reviewApi = {
         const { data } = await authAxios.put(url, param);
 
         return data;
+    },
+    deleteReview: async (reviewId) => {
+        const url = urlUtils.setPath(API_PATH.REVIEW.DELETE_REVIEW, { reviewId });
+        await authAxios.delete(url);
     }
 }
 
