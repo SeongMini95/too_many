@@ -181,15 +181,19 @@ public class ReviewService {
                     .review(review)
                     .user(user)
                     .build());
+            review.like();
+
             return true;
         } else {
             reviewLikeLogRepository.delete(reviewLikeLog);
+            review.cancelLike();
+            
             return false;
         }
     }
 
     @Transactional(readOnly = true)
-    public List<Long> getReviewLikeLogListOfStore(Long userId, Long storeId) {
+    public List<Long> getReviewLikeLogListOfUser(Long userId, Long storeId) {
         return reviewLikeLogRepository.findByUserIdAndReviewStoreId(userId, storeId).stream()
                 .map(v -> v.getReview().getId())
                 .collect(Collectors.toList());

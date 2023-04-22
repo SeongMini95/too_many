@@ -83,4 +83,12 @@ public class Store extends BaseTimeEntity {
     public void writeReview(Review review) {
         this.reviews.add(review);
     }
+
+    public void like() {
+        this.likeCnt += 1;
+    }
+
+    public void cancelLike() {
+        this.likeCnt -= 1;
+    }
 }

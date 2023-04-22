@@ -85,4 +85,12 @@ public class Review extends BaseTimeEntity {
         this.reviewRecommends.addAll(review.getReviewRecommends());
         this.reviewRecommends.removeAll(minusRecommends);
     }
+
+    public void like() {
+        this.likeCnt += 1;
+    }
+
+    public void cancelLike() {
+        this.likeCnt -= 1;
+    }
 }

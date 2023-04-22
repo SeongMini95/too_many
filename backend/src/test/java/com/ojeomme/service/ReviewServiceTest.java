@@ -91,7 +91,7 @@ class ReviewServiceTest {
     private ReviewLikeLogRepository reviewLikeLogRepository;
 
     @Nested
-    class getReviewLikeLogListOfStore {
+    class getReviewLikeLogListOfUser {
 
         @Test
         void 유저의_해당_매장의_리뷰_좋아요_목록을_가져온다() {
@@ -104,7 +104,7 @@ class ReviewServiceTest {
             given(reviewLikeLogRepository.findByUserIdAndReviewStoreId(anyLong(), anyLong())).willReturn(reviewLikeLogs);
 
             // when
-            List<Long> reviewLikeLogList = reviewService.getReviewLikeLogListOfStore(1L, 1L);
+            List<Long> reviewLikeLogList = reviewService.getReviewLikeLogListOfUser(1L, 1L);
 
             // then
             assertThat(reviewLikeLogList).isEqualTo(reviewLikeLogs.stream().map(v -> v.getReview().getId()).collect(Collectors.toList()));
@@ -268,6 +268,7 @@ class ReviewServiceTest {
                     .starScore(4)
                     .content("리뷰1")
                     .revisitYn(false)
+                    .likeCnt(3)
                     .images(Set.of("http://localhost:4000/image1.png"))
                     .recommends(Set.of("1"))
                     .createDate(LocalDateTime.of(2023, 4, 18, 0, 0))
@@ -278,6 +279,7 @@ class ReviewServiceTest {
                     .starScore(5)
                     .content("리뷰2")
                     .revisitYn(false)
+                    .likeCnt(5)
                     .images(Set.of("http://localhost:4000/image2.png"))
                     .recommends(Set.of("2"))
                     .createDate(LocalDateTime.of(2023, 4, 17, 0, 0))
@@ -295,6 +297,8 @@ class ReviewServiceTest {
                 assertThat(responseDto.getReviews().get(i).getNickname()).isEqualTo(reviewListResponseDto.getReviews().get(i).getNickname());
                 assertThat(responseDto.getReviews().get(i).getStarScore()).isEqualTo(reviewListResponseDto.getReviews().get(i).getStarScore());
                 assertThat(responseDto.getReviews().get(i).getContent()).isEqualTo(reviewListResponseDto.getReviews().get(i).getContent());
+                assertThat(responseDto.getReviews().get(i).isRevisitYn()).isEqualTo(reviewListResponseDto.getReviews().get(i).isRevisitYn());
+                assertThat(responseDto.getReviews().get(i).getLikeCnt()).isEqualTo(reviewListResponseDto.getReviews().get(i).getLikeCnt());
                 assertThat(responseDto.getReviews().get(i).getImages()).isEqualTo(reviewListResponseDto.getReviews().get(i).getImages());
                 assertThat(responseDto.getReviews().get(i).getRecommends()).isEqualTo(reviewListResponseDto.getReviews().get(i).getRecommends());
                 assertThat(responseDto.getReviews().get(i).getCreateDate()).isEqualTo(reviewListResponseDto.getReviews().get(i).getCreateDate());
