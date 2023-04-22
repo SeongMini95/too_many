@@ -5,6 +5,7 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewrecommend.ReviewRecommend;
 import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
@@ -52,10 +53,14 @@ public class AcceptanceTest {
     @Autowired
     private StoreRepository storeRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     protected User user;
     protected String accessToken;
     protected String notExistAccessToken;
     protected Store store;
+    protected Review review;
 
     @BeforeEach
     void setUp() {
@@ -72,7 +77,7 @@ public class AcceptanceTest {
         accessToken = authTokenProvider.createAuthToken(user.getId()).getToken();
         notExistAccessToken = authTokenProvider.createAuthToken(-1L).getToken();
 
-        store = createStore();
+        createStore();
     }
 
     @AfterEach
@@ -80,7 +85,7 @@ public class AcceptanceTest {
         databaseCleaner.execute();
     }
 
-    private Store createStore() {
+    private void createStore() {
         Category category = categoryRepository.save(Category.builder()
                 .categoryName("초밥,롤")
                 .categoryDepth(1)
@@ -98,10 +103,11 @@ public class AcceptanceTest {
                 .likeCnt(5)
                 .build();
 
+        this.store = storeRepository.save(store);
 
         Review review = Review.builder()
                 .user(user)
-                .store(store)
+                .store(this.store)
                 .starScore(4)
                 .content("리뷰1")
                 .revisitYn(false)
@@ -117,8 +123,7 @@ public class AcceptanceTest {
         review.addImages(reviewImages);
         review.addRecommends(reviewRecommends);
 
-        store.writeReview(review);
-
-        return storeRepository.save(store);
+        this.review = reviewRepository.save(review);
+        store.writeReview(this.review);
     }
 }
