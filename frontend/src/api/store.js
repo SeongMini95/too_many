@@ -26,6 +26,15 @@ const storeApi = {
         const { data } = await authAxios.get(url);
 
         return data;
+    },
+    getReviewImageList: async (storeId, reviewImageId) => {
+        let url = urlUtils.setPath(API_PATH.STORE.GET_REVIEW_IMAGE_LIST, { storeId });
+        if (reviewImageId) {
+            url = urlUtils.setParam(url, { reviewImageId });
+        }
+        const { data } = await authAxios.get(url);
+
+        return data;
     }
 }
 

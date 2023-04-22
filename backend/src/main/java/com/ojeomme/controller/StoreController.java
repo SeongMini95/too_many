@@ -2,6 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.service.StoreService;
@@ -40,5 +41,11 @@ public class StoreController {
     public ResponseEntity<Boolean> getStoreLikeLogOfUser(@LoginUser Long userId, @PathVariable Long storeId) {
         boolean exist = storeService.getStoreLikeLogOfUser(userId, storeId);
         return ResponseEntity.ok(exist);
+    }
+
+    @GetMapping("/{storeId}/reviewImageList")
+    public ResponseEntity<ReviewImageListResponseDto> getReviewImageList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewImageId) {
+        ReviewImageListResponseDto responseDto = storeService.getReviewImageList(storeId, reviewImageId);
+        return ResponseEntity.ok(responseDto);
     }
 }

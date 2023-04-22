@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ReviewImageRepository extends JpaRepository<ReviewImage, Long> {
+public interface ReviewImageRepository extends JpaRepository<ReviewImage, Long>, ReviewImageCustomRepository {
 
-    @Query(value = "select ri.imageUrl from Review r inner join ReviewImage ri on r.id = ri.review.id where r.store.id = :storeId order by r.id desc, ri.id asc")
+    @Query(value = "select ri.imageUrl from Review r inner join ReviewImage ri on r.id = ri.review.id where r.store.id = :storeId order by r.id desc, ri.id desc")
     List<String> getPreviewImageList(Long storeId, Pageable pageable);
 }

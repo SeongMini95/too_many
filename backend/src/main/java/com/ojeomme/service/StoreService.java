@@ -11,6 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
@@ -69,7 +70,7 @@ public class StoreService {
         } else {
             storeLikeLogRepository.delete(storeLikeLog);
             store.cancelLike();
-            
+
             return false;
         }
     }
@@ -77,5 +78,10 @@ public class StoreService {
     @Transactional(readOnly = true)
     public boolean getStoreLikeLogOfUser(Long userId, Long storeId) {
         return storeLikeLogRepository.existsByUserIdAndStoreId(userId, storeId);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewImageListResponseDto getReviewImageList(Long storeId, Long reviewImageId) {
+        return reviewImageRepository.getReviewImageList(storeId, reviewImageId);
     }
 }
