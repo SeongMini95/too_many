@@ -22,9 +22,14 @@ const StoreReviews = () => {
             likeCnt: 0
         },
         previewImages: [],
-        reviews: []
+        reviews: [],
+        reviewImageList: []
     });
-    const [meta, setMeta] = useState({
+    const [reviewImageMeta, setReviewImageMeta] = useState({
+        isEnd: true,
+        reviewImageId: ''
+    });
+    const [reviewMeta, setReviewMeta] = useState({
         isEnd: true,
         reviewId: ''
     });
@@ -57,9 +62,13 @@ const StoreReviews = () => {
                     previewImages,
                     reviews
                 });
-                setMeta({
-                    ...meta,
-                    isEnd: reviews.length === 0 || reviews.length !== 5,
+                setReviewImageMeta({
+                    ...reviewImageMeta,
+                    isEnd: previewImages.length === 0 || previewImages.length < 5
+                });
+                setReviewMeta({
+                    ...reviewMeta,
+                    isEnd: reviews.length === 0 || reviews.length < 5,
                     reviewId: reviews[reviews.length - 1].reviewId
                 });
             } catch (e) {
@@ -94,7 +103,7 @@ const StoreReviews = () => {
 
     const handlerClickMoreReview = async () => {
         try {
-            const { isEnd, reviewId } = meta;
+            const { isEnd, reviewId } = reviewMeta;
             if (!isEnd) {
                 const { reviews } = await reviewApi.getReviewList(storeId, reviewId);
                 if (reviews.length !== 0) {
@@ -102,14 +111,14 @@ const StoreReviews = () => {
                         ...storeInfo,
                         reviews: storeInfo.reviews.concat(reviews)
                     });
-                    setMeta({
-                        ...meta,
+                    setReviewMeta({
+                        ...reviewMeta,
                         isEnd: false,
                         reviewId: reviews[reviews.length - 1].reviewId
                     });
                 } else {
-                    setMeta({
-                        ...meta,
+                    setReviewMeta({
+                        ...reviewMeta,
                         isEnd: true,
                     });
                 }
@@ -187,12 +196,49 @@ const StoreReviews = () => {
         }
     }
 
+    const handlerClickMoreReviewImage = async () => {
+        try {
+            const { isEnd, reviewImageId } = reviewImageMeta;
+            if (!isEnd) {
+                const { images, moreId } = await storeApi.getReviewImageList(storeId, reviewImageId);
+                if (images.length !== 0) {
+                    setStoreInfo({
+                        ...storeInfo,
+                        reviewImageList: storeInfo.reviewImageList.concat(images)
+                    });
+                    setReviewImageMeta({
+                        ...reviewImageMeta,
+                        isEnd: false,
+                        reviewImageId: moreId
+                    });
+                } else {
+                    setReviewImageMeta({
+                        ...reviewImageMeta,
+                        isEnd: true,
+                    });
+                }
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
     return (
         <div>
             <div style={{ border: '1px solid black' }}>
+                <p>프리뷰</p>
                 {storeInfo.previewImages.map(v => (
                     <p key={'preview' + v}>{v}</p>
                 ))}
+                {!reviewImageMeta.isEnd && (
+                    <button onClick={handlerClickMoreReviewImage}>이미지 더 보기</button>
+                )}
+                <div style={{ border: '1px solid black' }}>
+                    이미지 리스트
+                    {storeInfo.reviewImageList.map(v => (
+                        <p key={'image' + v}>{v}</p>
+                    ))}
+                </div>
             </div>
             <div style={{ border: '1px solid black' }}>
                 <p>
@@ -254,7 +300,7 @@ const StoreReviews = () => {
                         <p>{v.createDate}</p>
                     </div>
                 ))}
-                {!meta.isEnd && (
+                {!reviewMeta.isEnd && (
                     <button onClick={handlerClickMoreReview}>더보기</button>
                 )}
             </div>

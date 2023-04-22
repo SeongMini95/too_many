@@ -11,6 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
@@ -55,6 +56,28 @@ class StoreServiceTest {
 
     @Mock
     private StoreLikeLogRepository storeLikeLogRepository;
+
+    @Nested
+    class getReviewImageList {
+
+        @Test
+        void 리뷰_이미지를_가져온다() {
+            // given
+            ReviewImageListResponseDto images = new ReviewImageListResponseDto(List.of(
+                    "http://localhost:4000/1.png",
+                    "http://localhost:4000/2.png",
+                    "http://localhost:4000/3.png"
+            ), 3L);
+            given(reviewImageRepository.getReviewImageList(anyLong(), anyLong())).willReturn(images);
+
+            // when
+            ReviewImageListResponseDto responseDto = storeService.getReviewImageList(1L, 1L);
+
+            // then
+            assertThat(responseDto.getImages()).hasSameSizeAs(images.getImages());
+            assertThat(responseDto.getImages()).isEqualTo(images.getImages());
+        }
+    }
 
     @Nested
     class getStoreLikeLogOfUser {

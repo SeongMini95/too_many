@@ -25,6 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,10 +114,10 @@ public class AcceptanceTest {
                 .content("리뷰1")
                 .revisitYn(false)
                 .build();
-        Set<ReviewImage> reviewImages = Set.of(
+        Set<ReviewImage> reviewImages = new LinkedHashSet<>(List.of(
                 ReviewImage.builder().review(review).imageUrl("http://localhost:4000/image1.png").build(),
                 ReviewImage.builder().review(review).imageUrl("http://localhost:4000/image2.png").build()
-        );
+        ));
         Set<ReviewRecommend> reviewRecommends = Set.of(
                 ReviewRecommend.builder().review(review).recommendType(RecommendType.TASTE).build()
         );

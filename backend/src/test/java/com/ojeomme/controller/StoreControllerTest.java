@@ -7,6 +7,7 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
@@ -32,8 +33,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,6 +62,69 @@ class StoreControllerTest extends AcceptanceTest {
     private KakaoKeywordClient kakaoKeywordClient;
 
     private MockWebServer mockWebServer;
+
+    @Nested
+    class getReviewImageList {
+
+        @Test
+        void 리뷰_이미지를_가져온다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            List<String> reviewImages = store.getReviews().stream()
+                    .flatMap(v -> v.getReviewImages().stream()
+                            .sorted(Comparator.comparing(ReviewImage::getId).reversed())
+                            .map(ReviewImage::getImageUrl))
+                    .collect(Collectors.toList());
+            assertThat(jsonPath.getList("images")).isEqualTo(reviewImages);
+        }
+
+        @Test
+        void 다음_리뷰_이미지를_가져온다() {
+            // given
+            List<ReviewImage> images = new ArrayList<>();
+            for (int i = 3; i < 30; i++) {
+                images.add(ReviewImage.builder()
+                        .review(review)
+                        .imageUrl("http://localhost:4000/image" + i + ".png")
+                        .build());
+            }
+            reviewImageRepository.saveAll(images);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .param("reviewImageId", 10)
+                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            List<String> getImages = reviewImageRepository.findAll().subList(0, 9).stream()
+                    .sorted(Comparator.comparing(ReviewImage::getId).reversed())
+                    .map(ReviewImage::getImageUrl)
+                    .collect(Collectors.toList());
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("images")).isEqualTo(getImages);
+        }
+    }
 
     @Nested
     class getStoreLikeLogOfUser {
