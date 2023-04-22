@@ -33,8 +33,12 @@ const API_PATH = {
         UPLOAD: '/api/image/upload'
     },
     REVIEW: {
-        WRITE_REVIEW: '/api/review/:placeId',
-        GET_REVIEW_LIST: '/api/review/:storeId'
+        WRITE_REVIEW: '/api/review/place/:placeId',
+        GET_REVIEW_LIST: '/api/review/store/:storeId',
+        MODIFY_REVIEW: '/api/review/:reviewId',
+        DELETE_REVIEW: '/api/review/:reviewId',
+        LIKE_REVIEW: '/api/review/:reviewId/like',
+        GET_REVIEW_LIKE_LOG_LIST_OF_STORE: '/api/review/store/:storeId/like'
     }
 }
 

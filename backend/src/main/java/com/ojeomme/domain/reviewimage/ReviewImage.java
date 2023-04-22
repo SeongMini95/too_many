@@ -30,7 +30,8 @@ public class ReviewImage extends BaseTimeEntity {
     private String imageUrl;
 
     @Builder
-    public ReviewImage(Review review, String imageUrl) {
+    public ReviewImage(Long id, Review review, String imageUrl) {
+        this.id = id;
         this.review = review;
         this.imageUrl = imageUrl;
     }
@@ -40,9 +41,13 @@ public class ReviewImage extends BaseTimeEntity {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         ReviewImage that = (ReviewImage) o;
-        return getId() != null && (Objects.equals(getId(), that.getId()) ||
-                (Objects.equals(getReview().getId(), that.getReview().getId()) &&
-                        Objects.equals(getImageUrl(), that.getImageUrl())));
+
+        if (getId() != null && Objects.equals(getId(), that.getId())) {
+            return true;
+        }
+
+        return Objects.equals(getReview().getId(), that.getReview().getId()) &&
+                Objects.equals(getImageUrl(), that.getImageUrl());
     }
 
     @Override

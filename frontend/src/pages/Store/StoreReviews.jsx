@@ -3,9 +3,12 @@ import { useParams } from "react-router-dom";
 import storeApi from "../../api/store";
 import reviewApi from "../../api/review";
 import WriteReview from "../Review/writeReview";
+import { useRecoilValue } from "recoil";
+import { userInfoState } from "../../recoils/user";
 
 const StoreReviews = () => {
     const { storeId } = useParams();
+    const { id } = useRecoilValue(userInfoState);
     const [storeInfo, setStoreInfo] = useState({
         store: {
             storeId: '',
@@ -25,7 +28,11 @@ const StoreReviews = () => {
         isEnd: true,
         reviewId: ''
     });
-    const [writeReview, setWriteReview] = useState(false);
+    const [reviewLikeLogList, setReviewLikeLogList] = useState([]);
+    const [writeReview, setWriteReview] = useState({
+        writeYn: false,
+        review: null,
+    });
 
     useEffect(() => {
         const getStoreReviews = async () => {
@@ -59,8 +66,20 @@ const StoreReviews = () => {
             }
         }
 
-        getStoreReviews();
-    }, []);
+        const getReviewLikeLogList = async () => {
+            try {
+                const logs = await reviewApi.getReviewLikeLogListOfStore(storeId);
+                setReviewLikeLogList(logs);
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
+        if (id) {
+            getStoreReviews();
+            getReviewLikeLogList();
+        }
+    }, [id]);
 
     const handlerClickMoreReview = async () => {
         try {
@@ -89,11 +108,39 @@ const StoreReviews = () => {
         }
     };
 
+    const handlerClickDeleteReview = async (reviewId) => {
+        try {
+            if (window.confirm('리뷰를 삭제하시겠습니까?')) {
+                await reviewApi.deleteReview(reviewId);
+                setStoreInfo({
+                    ...storeInfo,
+                    reviews: storeInfo.reviews.filter(v => v.reviewId !== reviewId)
+                });
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickLikeReview = async (reviewId) => {
+        try {
+            const savedYn = await reviewApi.likeReview(reviewId);
+            if (savedYn) {
+                setReviewLikeLogList([...reviewLikeLogList, reviewId]);
+            } else {
+                setReviewLikeLogList(reviewLikeLogList.filter(v => v !== reviewId));
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
     return (
         <div>
+            <button onClick={() => console.log(id)}>asd</button>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.previewImages.map(v => (
-                    <p>{v}</p>
+                    <p key={'preview' + v}>{v}</p>
                 ))}
             </div>
             <div style={{ border: '1px solid black' }}>
@@ -103,19 +150,37 @@ const StoreReviews = () => {
                 <p>{storeInfo.store.addressName}</p>
                 <p>{storeInfo.store.roadAddressName}</p>
                 <p>{storeInfo.store.likeCnt}</p>
-                <button onClick={() => setWriteReview(true)}>리뷰 작성</button>
-                {writeReview && (
+                <button onClick={() => setWriteReview({ ...writeReview, writeYn: true, review: null })}>리뷰 작성</button>
+                {writeReview.writeYn && (
                     <WriteReview placeId={storeInfo.store.placeId}
                                  x={storeInfo.store.x}
                                  y={storeInfo.store.y}
-                                 onClickClose={() => setWriteReview(false)}
+                                 onClickClose={() => setWriteReview({ ...writeReview, writeYn: false })}
                                  storeInfo={storeInfo}
-                                 setStoreInfo={setStoreInfo} />
+                                 setStoreInfo={setStoreInfo}
+                                 getReview={writeReview.review} />
                 )}
             </div>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.reviews.map(v => (
                     <div key={'review' + v.reviewId} style={{ border: '2px solid blue' }}>
+                        {v.userId === id && (
+                            <>
+                                <button onClick={() => setWriteReview({
+                                    ...writeReview,
+                                    writeYn: true,
+                                    review: v
+                                })}>수정
+                                </button>
+                                <button onClick={() => handlerClickDeleteReview(v.reviewId)}>삭제</button>
+                            </>
+                        )}
+                        <p>
+                            <button onClick={() => handlerClickLikeReview(v.reviewId)}>
+                                {!reviewLikeLogList.includes(v.reviewId) ? '공감' : '공감 취소'}
+                            </button>
+                        </p>
+                        <p>{v.userId}</p>
                         <p>{v.reviewId}</p>
                         <p>{v.nickname}</p>
                         <p>{v.starScore}</p>

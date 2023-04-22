@@ -13,7 +13,12 @@ const PrivateRouter = () => {
 
     useEffect(() => {
         if (!isLogin && !accessToken) {
-            sessionStorage.setItem('rtnUri', location.pathname);
+            const rtnUri = location.pathname;
+            const loginPaths = [BROWSER_PATH.AUTH.LOGIN, BROWSER_PATH.AUTH.NAVER_LOGIN, BROWSER_PATH.AUTH.KAKAO_LOGIN];
+            if (!loginPaths.includes(rtnUri)) {
+                sessionStorage.setItem('rtnUri', rtnUri);
+            }
+            
             navigate(BROWSER_PATH.AUTH.LOGIN, { replace: true });
         }
     }, [isLogin, accessToken]);

@@ -1,12 +1,15 @@
 package com.ojeomme.domain.review.repository;
 
+import com.ojeomme.domain.review.Review;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.ojeomme.domain.review.QReview.review;
 import static com.ojeomme.domain.reviewimage.QReviewImage.reviewImage;
@@ -41,7 +44,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
             ltReviewId.and(review.id.lt(reviewId));
         }
 
-        List<ReviewListResponseDto.ReviewResponseDto> getReviewList = factory
+        List<ReviewResponseDto> getReviewList = factory
                 .from(review)
                 .innerJoin(review.user)
                 .leftJoin(review.reviewImages, reviewImage)
@@ -55,7 +58,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 .transform(
                         groupBy(review.id)
                                 .list(Projections.fields(
-                                        ReviewListResponseDto.ReviewResponseDto.class,
+                                        ReviewResponseDto.class,
                                         review.id.as("reviewId"),
                                         review.user.id.as("userId"),
                                         review.user.nickname,
@@ -69,5 +72,18 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                 );
 
         return new ReviewListResponseDto(getReviewList);
+    }
+
+    @Override
+    public Optional<Review> getWithinAWeek(Long userId, Long placeId) {
+        return Optional.ofNullable(factory
+                .selectFrom(review)
+                .where(
+                        review.user.id.eq(userId),
+                        review.store.kakaoPlaceId.eq(placeId)
+                )
+                .orderBy(review.id.desc())
+                .limit(1)
+                .fetchFirst());
     }
 }
