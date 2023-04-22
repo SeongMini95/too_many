@@ -54,7 +54,7 @@ public class ReviewController {
 
     @GetMapping("/store/{storeId}/like")
     public ResponseEntity<List<Long>> getReviewLikeLogListOfStore(@LoginUser Long userId, @PathVariable Long storeId) {
-        List<Long> reviewListLogList = reviewService.getReviewLikeLogListOfStore(userId, storeId);
+        List<Long> reviewListLogList = reviewService.getReviewLikeLogListOfUser(userId, storeId);
         return ResponseEntity.ok(reviewListLogList);
     }
 }

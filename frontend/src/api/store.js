@@ -14,6 +14,18 @@ const storeApi = {
         const { data } = await authAxios.get(url);
 
         return data;
+    },
+    likeStore: async (storeId) => {
+        const url = urlUtils.setPath(API_PATH.STORE.LIKE_STORE, { storeId });
+        const { data } = await authAxios.post(url);
+
+        return data;
+    },
+    getStoreLikeLogOfUser: async (storeId) => {
+        const url = urlUtils.setPath(API_PATH.STORE.GET_STORE_LIKE_LOG_OF_USER, { storeId });
+        const { data } = await authAxios.get(url);
+
+        return data;
     }
 }
 

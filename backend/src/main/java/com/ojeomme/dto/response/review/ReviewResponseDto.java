@@ -22,6 +22,7 @@ public class ReviewResponseDto {
     private int starScore;
     private String content;
     private boolean revisitYn;
+    private int likeCnt;
     private Set<String> images;
     private Set<String> recommends;
 
@@ -34,6 +35,7 @@ public class ReviewResponseDto {
         this.nickname = review.getUser().getNickname();
         this.starScore = review.getStarScore();
         this.content = review.getContent();
+        this.likeCnt = review.getLikeCnt();
         this.revisitYn = review.isRevisitYn();
         this.images = review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toCollection(LinkedHashSet::new));
         this.recommends = review.getReviewRecommends().stream().map(v -> v.getRecommendType().getCode()).collect(Collectors.toCollection(LinkedHashSet::new));
@@ -41,13 +43,14 @@ public class ReviewResponseDto {
     }
 
     @Builder
-    public ReviewResponseDto(Long reviewId, Long userId, String nickname, int starScore, String content, boolean revisitYn, Set<String> images, Set<String> recommends, LocalDateTime createDate) {
+    public ReviewResponseDto(Long reviewId, Long userId, String nickname, int starScore, String content, boolean revisitYn, int likeCnt, Set<String> images, Set<String> recommends, LocalDateTime createDate) {
         this.reviewId = reviewId;
         this.userId = userId;
         this.nickname = nickname;
         this.starScore = starScore;
         this.content = content;
         this.revisitYn = revisitYn;
+        this.likeCnt = likeCnt;
         this.images = images;
         this.recommends = recommends;
         this.createDate = createDate;

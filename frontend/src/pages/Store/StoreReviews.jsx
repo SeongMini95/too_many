@@ -28,6 +28,7 @@ const StoreReviews = () => {
         isEnd: true,
         reviewId: ''
     });
+    const [storeLikeLog, setStoreLikeLog] = useState(false);
     const [reviewLikeLogList, setReviewLikeLogList] = useState([]);
     const [writeReview, setWriteReview] = useState({
         writeYn: false,
@@ -66,6 +67,15 @@ const StoreReviews = () => {
             }
         }
 
+        const getStoreLikeLog = async () => {
+            try {
+                const savedYn = await storeApi.getStoreLikeLogOfUser(storeId);
+                setStoreLikeLog(savedYn);
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
         const getReviewLikeLogList = async () => {
             try {
                 const logs = await reviewApi.getReviewLikeLogListOfStore(storeId);
@@ -77,6 +87,7 @@ const StoreReviews = () => {
 
         if (id) {
             getStoreReviews();
+            getStoreLikeLog();
             getReviewLikeLogList();
         }
     }, [id]);
@@ -127,8 +138,49 @@ const StoreReviews = () => {
             const savedYn = await reviewApi.likeReview(reviewId);
             if (savedYn) {
                 setReviewLikeLogList([...reviewLikeLogList, reviewId]);
+                setStoreInfo({
+                    ...storeInfo,
+                    reviews: storeInfo.reviews.map(v => v.reviewId === reviewId ? {
+                        ...v,
+                        likeCnt: v.likeCnt + 1
+                    } : v)
+                });
             } else {
                 setReviewLikeLogList(reviewLikeLogList.filter(v => v !== reviewId));
+                setStoreInfo({
+                    ...storeInfo,
+                    reviews: storeInfo.reviews.map(v => v.reviewId === reviewId ? {
+                        ...v,
+                        likeCnt: v.likeCnt - 1
+                    } : v)
+                });
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickLikeStore = async () => {
+        try {
+            const savedYn = await storeApi.likeStore(storeId);
+            setStoreLikeLog(savedYn);
+
+            if (savedYn) {
+                setStoreInfo({
+                    ...storeInfo,
+                    store: {
+                        ...storeInfo.store,
+                        likeCnt: storeInfo.store.likeCnt + 1
+                    }
+                });
+            } else {
+                setStoreInfo({
+                    ...storeInfo,
+                    store: {
+                        ...storeInfo.store,
+                        likeCnt: storeInfo.store.likeCnt - 1
+                    }
+                });
             }
         } catch (e) {
             alert(e.response.data);
@@ -137,13 +189,15 @@ const StoreReviews = () => {
 
     return (
         <div>
-            <button onClick={() => console.log(id)}>asd</button>
             <div style={{ border: '1px solid black' }}>
                 {storeInfo.previewImages.map(v => (
                     <p key={'preview' + v}>{v}</p>
                 ))}
             </div>
             <div style={{ border: '1px solid black' }}>
+                <p>
+                    <button onClick={handlerClickLikeStore}>{!storeLikeLog ? '좋아요' : '좋아요 취소'}</button>
+                </p>
                 <p>{storeInfo.store.placeId}</p>
                 <p>{storeInfo.store.storeName}</p>
                 <p>{storeInfo.store.categoryName}</p>
@@ -186,6 +240,7 @@ const StoreReviews = () => {
                         <p>{v.starScore}</p>
                         <p>{v.content}</p>
                         <p>{v.revisitYn ? '함' : '안함'}</p>
+                        <p>{v.likeCnt}</p>
                         <div>
                             {v.images.map(image => (
                                 <p key={'image' + image}>{image}</p>
