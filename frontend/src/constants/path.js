@@ -35,7 +35,8 @@ const API_PATH = {
     REVIEW: {
         WRITE_REVIEW: '/api/review/:placeId',
         GET_REVIEW_LIST: '/api/review/:storeId',
-        MODIFY_REVIEW: '/api/review/:reviewId'
+        MODIFY_REVIEW: '/api/review/:reviewId',
+        DELETE_REVIEW: '/api/review/:reviewId'
     }
 }
 
