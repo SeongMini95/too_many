@@ -14,6 +14,9 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
+import com.ojeomme.domain.reviewlikelog.ReviewLikeLog;
+import com.ojeomme.domain.reviewlikelog.ReviewLikeLogId;
+import com.ojeomme.domain.reviewlikelog.repository.ReviewLikeLogRepository;
 import com.ojeomme.domain.reviewrecommend.ReviewRecommend;
 import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
 import com.ojeomme.domain.store.Store;
@@ -83,6 +86,88 @@ class ReviewServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Mock
+    private ReviewLikeLogRepository reviewLikeLogRepository;
+
+    @Nested
+    class getReviewLikeLogListOfStore {
+
+        @Test
+        void 유저의_해당_매장의_리뷰_좋아요_목록을_가져온다() {
+            // given
+            List<ReviewLikeLog> reviewLikeLogs = List.of(
+                    ReviewLikeLog.builder().review(Review.builder().id(1L).build()).user(User.builder().id(1L).build()).build(),
+                    ReviewLikeLog.builder().review(Review.builder().id(3L).build()).user(User.builder().id(1L).build()).build(),
+                    ReviewLikeLog.builder().review(Review.builder().id(5L).build()).user(User.builder().id(1L).build()).build()
+            );
+            given(reviewLikeLogRepository.findByUserIdAndReviewStoreId(anyLong(), anyLong())).willReturn(reviewLikeLogs);
+
+            // when
+            List<Long> reviewLikeLogList = reviewService.getReviewLikeLogListOfStore(1L, 1L);
+
+            // then
+            assertThat(reviewLikeLogList).isEqualTo(reviewLikeLogs.stream().map(v -> v.getReview().getId()).collect(Collectors.toList()));
+        }
+    }
+
+    @Nested
+    class likeReview {
+
+        @Test
+        void 리뷰_좋아요를_누른다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(mock(Review.class)));
+            given(reviewLikeLogRepository.findById(any(ReviewLikeLogId.class))).willReturn(Optional.empty());
+            given(reviewLikeLogRepository.save(any(ReviewLikeLog.class))).willReturn(mock(ReviewLikeLog.class));
+
+            // when
+            boolean savedYn = reviewService.likeReview(1L, 1L);
+
+            // then
+            assertThat(savedYn).isTrue();
+        }
+
+        @Test
+        void 리뷰가_이미_존재한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(mock(Review.class)));
+            given(reviewLikeLogRepository.findById(any(ReviewLikeLogId.class))).willReturn(Optional.of(mock(ReviewLikeLog.class)));
+
+            // when
+            boolean savedYn = reviewService.likeReview(1L, 1L);
+
+            // then
+            assertThat(savedYn).isFalse();
+        }
+
+        @Test
+        void 유저를_찾지못하면_UserNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.likeReview(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        void 리뷰를_찾지_못하면_ReviewNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(reviewRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.likeReview(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND);
+        }
+    }
 
     @Nested
     class deleteReview {

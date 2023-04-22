@@ -11,6 +11,8 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
+import com.ojeomme.domain.reviewlikelog.ReviewLikeLog;
+import com.ojeomme.domain.reviewlikelog.repository.ReviewLikeLogRepository;
 import com.ojeomme.domain.reviewrecommend.ReviewRecommend;
 import com.ojeomme.domain.reviewrecommend.enums.RecommendType;
 import com.ojeomme.domain.store.Store;
@@ -74,11 +76,126 @@ class ReviewControllerTest extends AcceptanceTest {
     @SpyBean
     private KakaoRegionCodeClient kakaoRegionCodeClient;
 
+    @Autowired
+    private ReviewLikeLogRepository reviewLikeLogRepository;
+
     private static final String UPLOAD_PATH = "build/resources/test";
 
     private MockWebServer placeWebServer;
     private MockWebServer mapsWebServer;
     private MockWebServer regionCodeWebServer;
+
+    @Nested
+    class getReviewLikeLogListOfStore {
+
+        @Test
+        void 유저의_해당_매장의_리뷰_좋아요_목록을_가져온다() {
+            // given
+            ReviewLikeLog reviewLikeLog = ReviewLikeLog.builder()
+                    .review(review)
+                    .user(user)
+                    .build();
+            reviewLikeLog.setDateTime(LocalDateTime.now(), LocalDateTime.now());
+            reviewLikeLogRepository.save(reviewLikeLog);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().get("/api/review/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("")).isEqualTo(List.of(review.getId().intValue()));
+        }
+    }
+
+    @Nested
+    class likeReview {
+
+        @Test
+        void 리뷰_좋아요를_누른다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/review/{reviewId}/like", review.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isTrue();
+        }
+
+        @Test
+        void 리뷰가_이미_존재한다() {
+            // given
+            ReviewLikeLog reviewLikeLog = ReviewLikeLog.builder()
+                    .review(review)
+                    .user(user)
+                    .build();
+            reviewLikeLog.setDateTime(LocalDateTime.now(), LocalDateTime.now());
+            reviewLikeLogRepository.save(reviewLikeLog);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/review/{reviewId}/like", review.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isFalse();
+        }
+
+        @Test
+        void 유저를_찾지못하면_UserNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(notExistAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/review/{reviewId}/like", review.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 리뷰를_찾지_못하면_ReviewNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/review/{reviewId}/like", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND.getMessage());
+        }
+    }
 
     @Nested
     class deleteReview {
@@ -220,7 +337,7 @@ class ReviewControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .when().get("/api/review/{storeId}", store.getId())
+                    .when().get("/api/review/store/{storeId}", store.getId())
                     .then().log().all()
                     .extract();
 
@@ -280,7 +397,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -312,7 +429,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(notExistAccessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -334,7 +451,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -365,7 +482,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -408,7 +525,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -445,7 +562,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", 23829251L)
+                    .when().post("/api/review/place/{placeId}", 23829251L)
                     .then().log().all()
                     .extract();
 
@@ -490,7 +607,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", store.getKakaoPlaceId())
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
                     .then().log().all()
                     .extract();
 
@@ -557,7 +674,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", store.getKakaoPlaceId())
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
                     .then().log().all()
                     .extract();
 
@@ -618,7 +735,7 @@ class ReviewControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/review/{placeId}", store.getKakaoPlaceId())
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
                     .then().log().all()
                     .extract();
 

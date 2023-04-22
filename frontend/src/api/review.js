@@ -27,6 +27,18 @@ const reviewApi = {
     deleteReview: async (reviewId) => {
         const url = urlUtils.setPath(API_PATH.REVIEW.DELETE_REVIEW, { reviewId });
         await authAxios.delete(url);
+    },
+    likeReview: async (reviewId) => {
+        const url = urlUtils.setPath(API_PATH.REVIEW.LIKE_REVIEW, { reviewId });
+        const { data } = await authAxios.post(url);
+
+        return data;
+    },
+    getReviewLikeLogListOfStore: async (storeId) => {
+        const url = urlUtils.setPath(API_PATH.REVIEW.GET_REVIEW_LIKE_LOG_LIST_OF_STORE, { storeId });
+        const { data } = await authAxios.get(url);
+
+        return data;
     }
 }
 
