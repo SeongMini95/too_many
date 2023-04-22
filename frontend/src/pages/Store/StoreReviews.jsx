@@ -28,6 +28,7 @@ const StoreReviews = () => {
         isEnd: true,
         reviewId: ''
     });
+    const [reviewLikeLogList, setReviewLikeLogList] = useState([]);
     const [writeReview, setWriteReview] = useState({
         writeYn: false,
         review: null,
@@ -65,8 +66,18 @@ const StoreReviews = () => {
             }
         }
 
+        const getReviewLikeLogList = async () => {
+            try {
+                const logs = await reviewApi.getReviewLikeLogListOfStore(storeId);
+                setReviewLikeLogList(logs);
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
         if (id) {
             getStoreReviews();
+            getReviewLikeLogList();
         }
     }, [id]);
 
@@ -105,6 +116,19 @@ const StoreReviews = () => {
                     ...storeInfo,
                     reviews: storeInfo.reviews.filter(v => v.reviewId !== reviewId)
                 });
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickLikeReview = async (reviewId) => {
+        try {
+            const savedYn = await reviewApi.likeReview(reviewId);
+            if (savedYn) {
+                setReviewLikeLogList([...reviewLikeLogList, reviewId]);
+            } else {
+                setReviewLikeLogList(reviewLikeLogList.filter(v => v !== reviewId));
             }
         } catch (e) {
             alert(e.response.data);
@@ -151,6 +175,11 @@ const StoreReviews = () => {
                                 <button onClick={() => handlerClickDeleteReview(v.reviewId)}>삭제</button>
                             </>
                         )}
+                        <p>
+                            <button onClick={() => handlerClickLikeReview(v.reviewId)}>
+                                {!reviewLikeLogList.includes(v.reviewId) ? '공감' : '공감 취소'}
+                            </button>
+                        </p>
                         <p>{v.userId}</p>
                         <p>{v.reviewId}</p>
                         <p>{v.nickname}</p>

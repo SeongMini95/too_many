@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,13 +22,13 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping("/{placeId}")
+    @PostMapping("/place/{placeId}")
     public ResponseEntity<WriteReviewResponseDto> writeReview(@LoginUser Long userId, @PathVariable Long placeId, @Valid @RequestBody WriteReviewRequestDto requestDto) throws IOException {
         WriteReviewResponseDto responseDto = reviewService.writeReview(userId, placeId, requestDto);
         return ResponseEntity.ok(responseDto);
     }
 
-    @GetMapping("/{storeId}")
+    @GetMapping("/store/{storeId}")
     public ResponseEntity<ReviewListResponseDto> getReviewList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewId) {
         ReviewListResponseDto responseDto = reviewService.getReviewList(storeId, reviewId);
         return ResponseEntity.ok(responseDto);
@@ -43,5 +44,17 @@ public class ReviewController {
     public ResponseEntity<Void> deleteReview(@LoginUser Long userId, @PathVariable Long reviewId) {
         reviewService.deleteReview(userId, reviewId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{reviewId}/like")
+    public ResponseEntity<Boolean> likeReview(@LoginUser Long userId, @PathVariable Long reviewId) {
+        boolean savedYn = reviewService.likeReview(userId, reviewId);
+        return ResponseEntity.ok(savedYn);
+    }
+
+    @GetMapping("/store/{storeId}/like")
+    public ResponseEntity<List<Long>> getReviewLikeLogListOfStore(@LoginUser Long userId, @PathVariable Long storeId) {
+        List<Long> reviewListLogList = reviewService.getReviewLikeLogListOfStore(userId, storeId);
+        return ResponseEntity.ok(reviewListLogList);
     }
 }

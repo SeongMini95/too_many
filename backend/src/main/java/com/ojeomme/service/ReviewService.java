@@ -12,6 +12,9 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
+import com.ojeomme.domain.reviewlikelog.ReviewLikeLog;
+import com.ojeomme.domain.reviewlikelog.ReviewLikeLogId;
+import com.ojeomme.domain.reviewlikelog.repository.ReviewLikeLogRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -46,6 +50,7 @@ public class ReviewService {
     private final KakaoKeywordClient kakaoKeywordClient;
     private final KakaoRegionCodeClient kakaoRegionCodeClient;
     private final ImageService imageService;
+    private final ReviewLikeLogRepository reviewLikeLogRepository;
 
     @Transactional
     public WriteReviewResponseDto writeReview(Long userId, Long placeId, WriteReviewRequestDto requestDto) throws IOException {
@@ -157,8 +162,36 @@ public class ReviewService {
 
     @Transactional
     public void deleteReview(Long userId, Long reviewId) {
-        reviewRepository.findByIdAndUserId(reviewId, userId).ifPresentOrElse(reviewRepository::delete, () -> {
-            throw new ApiException(ApiErrorCode.REVIEW_NOT_FOUND);
-        });
+        reviewRepository.findByIdAndUserId(reviewId, userId).ifPresentOrElse(
+                reviewRepository::delete,
+                () -> {
+                    throw new ApiException(ApiErrorCode.REVIEW_NOT_FOUND);
+                });
+    }
+
+    @Transactional
+    public boolean likeReview(Long userId, Long reviewId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ApiException(ApiErrorCode.REVIEW_NOT_FOUND));
+
+        // 있으면 취소, 없으면 저장
+        ReviewLikeLog reviewLikeLog = reviewLikeLogRepository.findById(new ReviewLikeLogId(reviewId, userId)).orElse(null);
+        if (reviewLikeLog == null) {
+            reviewLikeLogRepository.save(ReviewLikeLog.builder()
+                    .review(review)
+                    .user(user)
+                    .build());
+            return true;
+        } else {
+            reviewLikeLogRepository.delete(reviewLikeLog);
+            return false;
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getReviewLikeLogListOfStore(Long userId, Long storeId) {
+        return reviewLikeLogRepository.findByUserIdAndReviewStoreId(userId, storeId).stream()
+                .map(v -> v.getReview().getId())
+                .collect(Collectors.toList());
     }
 }
