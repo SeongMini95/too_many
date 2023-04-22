@@ -154,4 +154,11 @@ public class ReviewService {
 
         return new ReviewResponseDto(review);
     }
+
+    @Transactional
+    public void deleteReview(Long userId, Long reviewId) {
+        reviewRepository.findByIdAndUserId(reviewId, userId).ifPresentOrElse(reviewRepository::delete, () -> {
+            throw new ApiException(ApiErrorCode.REVIEW_NOT_FOUND);
+        });
+    }
 }

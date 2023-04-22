@@ -38,4 +38,10 @@ public class ReviewController {
         ReviewResponseDto responseDto = reviewService.modifyReview(userId, reviewId, requestDto);
         return ResponseEntity.ok(responseDto);
     }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@LoginUser Long userId, @PathVariable Long reviewId) {
+        reviewService.deleteReview(userId, reviewId);
+        return ResponseEntity.ok().build();
+    }
 }

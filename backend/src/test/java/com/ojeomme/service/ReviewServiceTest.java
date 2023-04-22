@@ -85,6 +85,34 @@ class ReviewServiceTest {
     private ImageService imageService;
 
     @Nested
+    class deleteReview {
+
+        @Test
+        void 리뷰를_삭제한다() {
+            // given
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(mock(Review.class)));
+
+            // when
+            reviewService.deleteReview(1L, 1L);
+
+            // then
+            then(reviewRepository).should(times(1)).delete(any(Review.class));
+        }
+
+        @Test
+        void 리뷰가_존재하지_않으면_ReviewNotFoundException를_발생한다() {
+            // given
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.deleteReview(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND);
+        }
+    }
+
+    @Nested
     class modifyReview {
 
         private final ModifyReviewRequestDto requestDto = ModifyReviewRequestDto.builder()
