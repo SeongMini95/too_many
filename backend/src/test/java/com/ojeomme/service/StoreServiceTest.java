@@ -5,7 +5,13 @@ import com.ojeomme.common.maps.entity.KakaoPlaceList;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
+import com.ojeomme.domain.storelikelog.StoreLikeLog;
+import com.ojeomme.domain.storelikelog.StoreLikeLogId;
+import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
+import com.ojeomme.domain.user.User;
+import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
@@ -28,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class StoreServiceTest {
@@ -43,6 +50,123 @@ class StoreServiceTest {
 
     @Mock
     private ReviewImageRepository reviewImageRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private StoreLikeLogRepository storeLikeLogRepository;
+
+    @Nested
+    class getReviewImageList {
+
+        @Test
+        void 리뷰_이미지를_가져온다() {
+            // given
+            ReviewImageListResponseDto images = new ReviewImageListResponseDto(List.of(
+                    "http://localhost:4000/1.png",
+                    "http://localhost:4000/2.png",
+                    "http://localhost:4000/3.png"
+            ), 3L);
+            given(reviewImageRepository.getReviewImageList(anyLong(), anyLong())).willReturn(images);
+
+            // when
+            ReviewImageListResponseDto responseDto = storeService.getReviewImageList(1L, 1L);
+
+            // then
+            assertThat(responseDto.getImages()).hasSameSizeAs(images.getImages());
+            assertThat(responseDto.getImages()).isEqualTo(images.getImages());
+        }
+    }
+
+    @Nested
+    class getStoreLikeLogOfUser {
+
+        @Test
+        void 좋아요를_누른_매장이다() {
+            // given
+            given(storeLikeLogRepository.existsByUserIdAndStoreId(anyLong(), anyLong())).willReturn(true);
+
+            // when
+            boolean exist = storeService.getStoreLikeLogOfUser(1L, 1L);
+
+            // then
+            assertThat(exist).isTrue();
+        }
+
+        @Test
+        void 안누른_매장이다() {
+            // given
+            given(storeLikeLogRepository.existsByUserIdAndStoreId(anyLong(), anyLong())).willReturn(false);
+
+            // when
+            boolean exist = storeService.getStoreLikeLogOfUser(1L, 1L);
+
+            // then
+            assertThat(exist).isFalse();
+        }
+    }
+
+    @Nested
+    class likeStore {
+
+        @Test
+        void 매장의_좋아요를_누른다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(storeRepository.findById(anyLong())).willReturn(Optional.of(mock(Store.class)));
+
+            given(storeLikeLogRepository.findById(any(StoreLikeLogId.class))).willReturn(Optional.empty());
+
+            given(storeLikeLogRepository.save(any(StoreLikeLog.class))).willReturn(mock(StoreLikeLog.class));
+
+            // when
+            boolean savedYn = storeService.likeStore(1L, 1L);
+
+            // then
+            assertThat(savedYn).isTrue();
+        }
+
+        @Test
+        void 이미_누른_매장이다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(storeRepository.findById(anyLong())).willReturn(Optional.of(mock(Store.class)));
+
+            given(storeLikeLogRepository.findById(any(StoreLikeLogId.class))).willReturn(Optional.of(mock(StoreLikeLog.class)));
+
+            // when
+            boolean savedYn = storeService.likeStore(1L, 1L);
+
+            // then
+            assertThat(savedYn).isFalse();
+        }
+
+        @Test
+        void 유저가_존재하지_않으면_UserNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> storeService.likeStore(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        void 매장이_존재하지_않으면_StoreNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(storeRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> storeService.likeStore(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.STORE_NOT_FOUND);
+        }
+    }
 
     @Nested
     class getStore {
@@ -177,7 +301,7 @@ class StoreServiceTest {
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
             assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getPlaces().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
+            assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
             for (int i = 0; i < responseDto.getPlaces().size(); i++) {
                 assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(0);
                 assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(0);

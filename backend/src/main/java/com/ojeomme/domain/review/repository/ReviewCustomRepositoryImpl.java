@@ -65,6 +65,7 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
                                         review.starScore,
                                         review.content,
                                         review.revisitYn,
+                                        review.likeCnt,
                                         set(reviewImage.imageUrl).as("images"),
                                         set(reviewRecommend.recommendType.stringValue()).as("recommends"),
                                         review.createDatetime.as("createDate")

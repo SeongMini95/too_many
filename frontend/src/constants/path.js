@@ -27,7 +27,10 @@ const API_PATH = {
     },
     STORE: {
         SEARCH_PLACE_LIST: '/api/store/searchPlaceList',
-        GET_STORE: '/api/store/:storeId'
+        GET_STORE: '/api/store/:storeId',
+        LIKE_STORE: '/api/store/:storeId/like',
+        GET_STORE_LIKE_LOG_OF_USER: '/api/store/:storeId/like',
+        GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList'
     },
     IMAGE: {
         UPLOAD: '/api/image/upload'

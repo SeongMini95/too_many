@@ -7,9 +7,12 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
+import com.ojeomme.domain.storelikelog.StoreLikeLog;
+import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
 import io.restassured.RestAssured;
@@ -29,8 +32,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,10 +55,202 @@ class StoreControllerTest extends AcceptanceTest {
     @Autowired
     private ReviewImageRepository reviewImageRepository;
 
+    @Autowired
+    private StoreLikeLogRepository storeLikeLogRepository;
+
     @SpyBean
     private KakaoKeywordClient kakaoKeywordClient;
 
     private MockWebServer mockWebServer;
+
+    @Nested
+    class getReviewImageList {
+
+        @Test
+        void 리뷰_이미지를_가져온다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            List<String> reviewImages = store.getReviews().stream()
+                    .flatMap(v -> v.getReviewImages().stream()
+                            .sorted(Comparator.comparing(ReviewImage::getId).reversed())
+                            .map(ReviewImage::getImageUrl))
+                    .collect(Collectors.toList());
+            assertThat(jsonPath.getList("images")).isEqualTo(reviewImages);
+        }
+
+        @Test
+        void 다음_리뷰_이미지를_가져온다() {
+            // given
+            List<ReviewImage> images = new ArrayList<>();
+            for (int i = 3; i < 30; i++) {
+                images.add(ReviewImage.builder()
+                        .review(review)
+                        .imageUrl("http://localhost:4000/image" + i + ".png")
+                        .build());
+            }
+            reviewImageRepository.saveAll(images);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .param("reviewImageId", 10)
+                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            List<String> getImages = reviewImageRepository.findAll().subList(0, 9).stream()
+                    .sorted(Comparator.comparing(ReviewImage::getId).reversed())
+                    .map(ReviewImage::getImageUrl)
+                    .collect(Collectors.toList());
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("images")).isEqualTo(getImages);
+        }
+    }
+
+    @Nested
+    class getStoreLikeLogOfUser {
+
+        @Test
+        void 좋아요를_누른_매장이다() {
+            // given
+            StoreLikeLog storeLikeLog = StoreLikeLog.builder()
+                    .store(store)
+                    .user(user)
+                    .build();
+            storeLikeLog.setDateTime(LocalDateTime.now(), LocalDateTime.now());
+            storeLikeLogRepository.save(storeLikeLog);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().get("/api/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isTrue();
+        }
+
+        @Test
+        void 안누른_매장이다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().get("/api/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isFalse();
+        }
+    }
+
+    @Nested
+    class likeStore {
+
+        @Test
+        void 매장의_공감을_누른다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isTrue();
+        }
+
+        @Test
+        void 이미_누른_매장이다() {
+            // given
+            StoreLikeLog storeLikeLog = StoreLikeLog.builder()
+                    .store(store)
+                    .user(user)
+                    .build();
+            storeLikeLog.setDateTime(LocalDateTime.now(), LocalDateTime.now());
+            storeLikeLogRepository.save(storeLikeLog);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(response.as(Boolean.class)).isFalse();
+        }
+
+        @Test
+        void 유저가_존재하지_않으면_UserNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(notExistAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/store/{storeId}/like", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 매장이_존재하지_않으면_StoreNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().post("/api/store/{storeId}/like", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.STORE_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.STORE_NOT_FOUND.getMessage());
+        }
+    }
 
     @Nested
     class getStoreReviews {

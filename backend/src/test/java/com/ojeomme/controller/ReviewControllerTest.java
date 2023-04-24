@@ -86,7 +86,7 @@ class ReviewControllerTest extends AcceptanceTest {
     private MockWebServer regionCodeWebServer;
 
     @Nested
-    class getReviewLikeLogListOfStore {
+    class getReviewLikeLogListOfUser {
 
         @Test
         void 유저의_해당_매장의_리뷰_좋아요_목록을_가져온다() {
@@ -353,6 +353,7 @@ class ReviewControllerTest extends AcceptanceTest {
                 assertThat(jsonPath.getInt("reviews[" + i + "].starScore")).isEqualTo(store.getReviews().get(i).getStarScore());
                 assertThat(jsonPath.getString("reviews[" + i + "].content")).isEqualTo(store.getReviews().get(i).getContent());
                 assertThat(jsonPath.getBoolean("reviews[" + i + "].revisitYn")).isEqualTo(store.getReviews().get(i).isRevisitYn());
+                assertThat(jsonPath.getInt("reviews[" + i + "].likeCnt")).isEqualTo(store.getReviews().get(i).getLikeCnt());
                 assertThat(CollectionUtils.isEqualCollection(
                         jsonPath.getList("reviews[" + i + "].images"),
                         store.getReviews().get(i).getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toSet())
