@@ -11,6 +11,7 @@ import Main from "./pages/Layout/Main";
 import PrivateRouter from "./router/PrivateRouter";
 import SearchPlaceList from "./pages/Store/SearchPlaceList";
 import StoreReviews from "./pages/Store/StoreReviews";
+import MyInfo from "./pages/User/MyInfo";
 
 function App() {
     const isLogin = useRecoilValue(loginState);
@@ -26,6 +27,10 @@ function App() {
                 <Route path={BROWSER_PATH.AUTH.NAVER_LOGIN} element={<NaverLogin />} />
 
                 <Route element={<PrivateRouter />}>
+                    {/* user */}
+                    <Route path={BROWSER_PATH.USER.GET_MY_INFO} element={<MyInfo />} />
+
+                    {/* store */}
                     <Route path={BROWSER_PATH.STORE.SEARCH_PLACE_LIST} element={<SearchPlaceList />} />
                     <Route path={BROWSER_PATH.STORE.GET_STORE_REVIEWS} element={<StoreReviews />} />
                 </Route>

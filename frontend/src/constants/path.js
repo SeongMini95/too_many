@@ -8,6 +8,9 @@ const BROWSER_PATH = {
     STORE: {
         SEARCH_PLACE_LIST: '/store/searchPlaceList',
         GET_STORE_REVIEWS: '/store/:storeId'
+    },
+    USER: {
+        GET_MY_INFO: '/user/my'
     }
 }
 
@@ -42,6 +45,11 @@ const API_PATH = {
         DELETE_REVIEW: '/api/review/:reviewId',
         LIKE_REVIEW: '/api/review/:reviewId/like',
         GET_REVIEW_LIKE_LOG_LIST_OF_STORE: '/api/review/store/:storeId/like'
+    },
+    USER: {
+        GET_MY_INFO: '/api/user/my',
+        MODIFY_NICKNAME: '/api/user/my/nickname',
+        MODIFY_PROFILE: '/api/user/my/profile'
     }
 }
 
