@@ -73,7 +73,7 @@ public class AcceptanceTest {
                 .oauthProvider(OauthProvider.NAVER)
                 .email("test123@naver.com")
                 .nickname("test123")
-                .profile("")
+                .profile("http://localhost:4000/profile.png")
                 .build());
 
         accessToken = authTokenProvider.createAuthToken(user.getId()).getToken();

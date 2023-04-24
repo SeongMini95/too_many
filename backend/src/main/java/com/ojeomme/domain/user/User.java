@@ -50,4 +50,16 @@ public class User extends BaseTimeEntity {
     public void updateEmail(String email) {
         this.email = email;
     }
+
+    public void modifyNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void modifyProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public void setDefaultProfile() {
+        this.profile = "";
+    }
 }
