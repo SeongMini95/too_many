@@ -64,9 +64,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     compileOnly 'org.projectlombok:lombok'
 
-    // dev
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
     // test
     testImplementation 'io.rest-assured:rest-assured:4.4.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
