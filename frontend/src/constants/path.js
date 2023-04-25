@@ -11,6 +11,9 @@ const BROWSER_PATH = {
     },
     USER: {
         GET_MY_INFO: '/user/my'
+    },
+    EAT_TOGETHER: {
+        WRITE: '/eatTogether/write'
     }
 }
 
@@ -50,6 +53,9 @@ const API_PATH = {
         GET_MY_INFO: '/api/user/my',
         MODIFY_NICKNAME: '/api/user/my/nickname',
         MODIFY_PROFILE: '/api/user/my/profile'
+    },
+    EAT_TOGETHER: {
+        WRITE: '/api/eatTogether'
     }
 }
 
