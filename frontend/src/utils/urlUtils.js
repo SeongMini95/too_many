@@ -7,11 +7,20 @@ export const urlUtils = {
         return url;
     },
     setParam: (url, params) => {
-        const urlSearchParams = new URLSearchParams();
+        const split = url.split('?')
+        const rtnUrl = split[0];
+
+        let urlSearchParams;
+        if (split.length === 2) {
+            urlSearchParams = new URLSearchParams(split[1]);
+        } else {
+            urlSearchParams = new URLSearchParams();
+        }
+
         for (const paramsKey in params) {
             urlSearchParams.append(paramsKey, params[paramsKey]);
         }
 
-        return `${url}?${urlSearchParams.toString()}`;
+        return `${rtnUrl}?${urlSearchParams.toString()}`;
     }
 }
