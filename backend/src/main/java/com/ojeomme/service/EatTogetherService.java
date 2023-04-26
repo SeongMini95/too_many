@@ -7,6 +7,8 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +59,15 @@ public class EatTogetherService {
         eatTogetherPost.addImages(requestDto.toTogetherBoardImages(eatTogetherPost, images));
 
         return eatTogetherPost.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public EatTogetherPostResponseDto getEatTogetherPost(Long postId) {
+        return eatTogetherPostRepository.getEatTogetherPost(postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId) {
+        return eatTogetherPostRepository.getEatTogetherPostList(regionCode, moreId);
     }
 }

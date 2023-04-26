@@ -333,7 +333,6 @@ class AuthControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()
                     .extract();
@@ -353,7 +352,6 @@ class AuthControllerTest extends AcceptanceTest {
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()
                     .extract();
@@ -375,7 +373,6 @@ class AuthControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()
                     .extract();
@@ -399,7 +396,6 @@ class AuthControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()
                     .extract();
@@ -418,7 +414,6 @@ class AuthControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(notExistAccessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/auth/check")
                     .then().log().all()
                     .extract();

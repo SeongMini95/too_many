@@ -98,7 +98,7 @@ jacocoTestReport {
                     '**/exception/GlobalControllerAdvice*',
                     '**/exception/*Exception*',
                     '**/config/**',
-                    '**/domain/**/repository/*CustomRepositoryImpl*'
+//                    '**/domain/**/repository/*CustomRepositoryImpl*'
             ] + Qdomains)
         }))
     }
@@ -137,7 +137,7 @@ jacocoTestCoverageVerification {
                     '**.exception.GlobalControllerAdvice*',
                     '**.exception.*Exception*',
                     '**.config.**',
-                    '**.domain.**.repository.*CustomRepositoryImpl*'
+//                    '**.domain.**.repository.*CustomRepositoryImpl*'
             ] + Qdomains
         }
     }

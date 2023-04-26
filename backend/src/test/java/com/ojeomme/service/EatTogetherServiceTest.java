@@ -7,6 +7,8 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +47,90 @@ class EatTogetherServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class getEatTogetherPostList {
+
+        @Test
+        void 게시글_목록을_가져온다() {
+            // given
+            List<EatTogetherPostListResponseDto.PostResponseDto> posts = List.of(
+                    EatTogetherPostListResponseDto.PostResponseDto.builder()
+                            .id(1L)
+                            .nickname("test123")
+                            .regionName("청진동")
+                            .subject("제목1")
+                            .oriCreateDatetime(LocalDateTime.now())
+                            .build(),
+                    EatTogetherPostListResponseDto.PostResponseDto.builder()
+                            .id(1L)
+                            .nickname("test123")
+                            .regionName("청진동")
+                            .subject("제목2")
+                            .oriCreateDatetime(LocalDateTime.now().minusDays(1))
+                            .build()
+            );
+            EatTogetherPostListResponseDto dto = new EatTogetherPostListResponseDto(posts);
+
+            given(eatTogetherPostRepository.getEatTogetherPostList(anyString(), anyLong())).willReturn(dto);
+
+            // when
+            EatTogetherPostListResponseDto responseDto = eatTogetherService.getEatTogetherPostList("123", 1L);
+
+            // then
+            assertThat(responseDto.getPosts()).hasSameSizeAs(dto.getPosts());
+            for (int i = 0; i < responseDto.getPosts().size(); i++) {
+                assertThat(responseDto.getPosts().get(i).getId()).isEqualTo(dto.getPosts().get(i).getId());
+                assertThat(responseDto.getPosts().get(i).getNickname()).isEqualTo(dto.getPosts().get(i).getNickname());
+                assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(dto.getPosts().get(i).getRegionName());
+                assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(dto.getPosts().get(i).getSubject());
+                assertThat(responseDto.getPosts().get(i).getCreateDatetime()).isEqualTo(dto.getPosts().get(i).getCreateDatetime());
+            }
+        }
+    }
+
+    @Nested
+    class getEatTogetherPost {
+
+        @Test
+        void 게시글을_가져온다() {
+            // given
+            EatTogetherPostResponseDto dto = EatTogetherPostResponseDto.builder()
+                    .id(1L)
+                    .userId(1L)
+                    .nickname("test123")
+                    .regionCode("12345")
+                    .regionName("청진동")
+                    .subject("제목")
+                    .content("본문 내용")
+                    .build();
+            given(eatTogetherPostRepository.getEatTogetherPost(anyLong())).willReturn(Optional.of(dto));
+
+            // when
+            EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(1L);
+
+            // then
+            assertThat(responseDto.getId()).isEqualTo(dto.getId());
+            assertThat(responseDto.getUserId()).isEqualTo(dto.getUserId());
+            assertThat(responseDto.getNickname()).isEqualTo(dto.getNickname());
+            assertThat(responseDto.getRegionCode()).isEqualTo(dto.getRegionCode());
+            assertThat(responseDto.getRegionName()).isEqualTo(dto.getRegionName());
+            assertThat(responseDto.getSubject()).isEqualTo(dto.getSubject());
+            assertThat(responseDto.getContent()).isEqualTo(dto.getContent());
+        }
+
+        @Test
+        void 게시물을_못찾으면_EatTogetherPostNotFound를_발생한다() {
+            // given
+            given(eatTogetherPostRepository.getEatTogetherPost(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.getEatTogetherPost(1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+    }
 
     @Nested
     class writeEatTogetherPost {
