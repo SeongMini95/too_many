@@ -2,11 +2,16 @@ package com.ojeomme.service;
 
 import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
+import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
+import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
+import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
+import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
@@ -28,7 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class EatTogetherServiceTest {
@@ -46,7 +53,137 @@ class EatTogetherServiceTest {
     private EatTogetherPostRepository eatTogetherPostRepository;
 
     @Mock
+    private EatTogetherReplyRepository eatTogetherReplyRepository;
+
+    @Mock
+    private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
+
+    @Mock
     private ImageService imageService;
+
+    @Nested
+    class writeEatTogetherReply {
+
+        @Test
+        void 댓글을_작성한다() throws IOException {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+
+            given(eatTogetherReplyRepository.nextval()).willReturn(1L);
+            given(eatTogetherReplyRepository.save(any(EatTogetherReply.class))).willReturn(mock(EatTogetherReply.class));
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReplyRepository).should(times(1)).save(any(EatTogetherReply.class));
+        }
+
+        @Test
+        void 이미지가_존재하는_댓글을_작성한다() throws IOException {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+
+            given(eatTogetherReplyRepository.nextval()).willReturn(1L);
+            given(eatTogetherReplyRepository.save(any(EatTogetherReply.class))).willReturn(mock(EatTogetherReply.class));
+
+            given(eatTogetherReplyImageRepository.save(any(EatTogetherReplyImage.class))).willReturn(mock(EatTogetherReplyImage.class));
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .image("image1")
+                    .build();
+
+            // when
+            eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReplyRepository).should(times(1)).save(any(EatTogetherReply.class));
+        }
+
+        @Test
+        void 대댓글을_작성한다() throws IOException {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+
+            given(eatTogetherReplyRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherReply.class)));
+
+            given(eatTogetherReplyRepository.nextval()).willReturn(2L);
+            given(eatTogetherReplyRepository.save(any(EatTogetherReply.class))).willReturn(mock(EatTogetherReply.class));
+
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .upReplyId(1L)
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReplyRepository).should(times(1)).save(any(EatTogetherReply.class));
+        }
+
+        @Test
+        void 대댓글을_작성하는데_대댓글이_존재하지_않으면_EatTogetherReplyNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+
+            given(eatTogetherReplyRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .upReplyId(1L)
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
+        }
+
+        @Test
+        void 유저가_존재하지_않으면_UserNotFoundException를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        void 게시글이_존재하지_않으면_EatTogetherPostNotFound를_발생한다() {
+            // given
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.writeEatTogetherReply(1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+    }
 
     @Nested
     class getEatTogetherPostList {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
 import eatTogetherApi from "../../api/eatTogether";
+import WriteEatTogetherReply from "./WriteEatTogetherReply";
 
 const GetEatTogetherPost = () => {
     const { postId } = useParams();
@@ -45,6 +46,9 @@ const GetEatTogetherPost = () => {
             <p>{post.regionName}</p>
             <p>{post.subject}</p>
             <p>{post.content}</p>
+            <div>
+                <WriteEatTogetherReply postId={postId} />
+            </div>
         </div>
     );
 };
