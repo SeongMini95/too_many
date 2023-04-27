@@ -3,8 +3,11 @@ package com.ojeomme.controller;
 import com.ojeomme.controller.support.AcceptanceTest;
 import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
+import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
+import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
@@ -38,6 +41,181 @@ class EatTogetherControllerTest extends AcceptanceTest {
     @Autowired
     private RegionCodeRepository regionCodeRepository;
 
+    @Autowired
+    private EatTogetherReplyRepository eatTogetherReplyRepository;
+
+    @Nested
+    class writeEatTogetherReply {
+
+        @Test
+        void 댓글을_작성한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 이미지가_존재하는_댓글을_작성한다() throws Exception {
+            // given
+            EatTogetherPost post = createPost();
+
+            createImage("image1");
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .image("http://localhost:4000/temp/2023/4/27/image1.png")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 대댓글을_작성한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            EatTogetherReply upReply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                    .id(-1L)
+                    .user(user)
+                    .eatTogetherPost(post)
+                    .upId(-1L)
+                    .content("댓글")
+                    .build());
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .upReplyId(upReply.getId())
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 대댓글을_작성하는데_대댓글이_존재하지_않으면_EatTogetherReplyNotFoundException를_발생한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .upReplyId(-1L)
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 유저가_존재하지_않으면_UserNotFoundException를_발생한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(notExistAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.USER_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 게시글이_존재하지_않으면_EatTogetherPostNotFound를_발생한다() {
+            // given
+            WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
+                    .content("테스트 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/eatTogether/post/{postId}/reply", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+
+        private void createImage(String filename) throws Exception {
+            String uploadPath = "build/resources/test";
+
+            BufferedImage bufferedImage = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+
+            File tempFile = Paths.get(uploadPath, "/temp/2023/4/27/" + filename + ".png").toFile();
+            Files.createDirectories(tempFile.getParentFile().toPath());
+
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            ImageIO.write(bufferedImage, "png", outputStream);
+            outputStream.close();
+        }
+    }
+
     @Nested
     class getEatTogetherPostList {
 
@@ -63,7 +241,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
                     .param("regionCode", "1111000000")
-                    .when().get("/api/eatTogether/list")
+                    .when().get("/api/eatTogether/post/list")
                     .then().log().all()
                     .extract();
 
@@ -104,7 +282,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .param("regionCode", "1111000000")
                     .param("moreId", 11)
-                    .when().get("/api/eatTogether/list")
+                    .when().get("/api/eatTogether/post/list")
                     .then().log().all()
                     .extract();
 
@@ -139,7 +317,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .when().get("/api/eatTogether/{postId}", eatTogetherPost.getId())
+                    .when().get("/api/eatTogether/post/{postId}", eatTogetherPost.getId())
                     .then().log().all()
                     .extract();
 
@@ -165,7 +343,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .when().get("/api/eatTogether/{postId}", -1L)
+                    .when().get("/api/eatTogether/post/{postId}", -1L)
                     .then().log().all()
                     .extract();
 
@@ -194,7 +372,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/eatTogether")
+                    .when().post("/api/eatTogether/post")
                     .then().log().all()
                     .extract();
 
@@ -211,7 +389,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .auth().oauth2(notExistAccessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/eatTogether")
+                    .when().post("/api/eatTogether/post")
                     .then().log().all()
                     .extract();
 
@@ -234,7 +412,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .auth().oauth2(accessToken)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .body(requestDto)
-                    .when().post("/api/eatTogether")
+                    .when().post("/api/eatTogether/post")
                     .then().log().all()
                     .extract();
 

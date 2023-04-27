@@ -2,6 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.service.EatTogetherService;
@@ -19,21 +20,27 @@ public class EatTogetherController {
 
     private final EatTogetherService eatTogetherService;
 
-    @PostMapping
+    @PostMapping("/post")
     public ResponseEntity<Long> writeEatTogetherPost(@LoginUser Long userId, @Valid @RequestBody WriteEatTogetherPostRequestDto requestDto) throws IOException {
         Long postId = eatTogetherService.writeEatTogetherPost(userId, requestDto);
         return ResponseEntity.ok(postId);
     }
 
-    @GetMapping("/{postId}")
+    @GetMapping("/post/{postId}")
     public ResponseEntity<EatTogetherPostResponseDto> getEatTogetherPost(@PathVariable Long postId) {
         EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(postId);
         return ResponseEntity.ok(responseDto);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/post/list")
     public ResponseEntity<EatTogetherPostListResponseDto> getEatTogetherPostList(@RequestParam String regionCode, @RequestParam(required = false) Long moreId) {
         EatTogetherPostListResponseDto responseDto = eatTogetherService.getEatTogetherPostList(regionCode, moreId);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/post/{postId}/reply")
+    public ResponseEntity<Void> writeEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody WriteEatTogetherReplyRequestDto requestDto) throws IOException {
+        eatTogetherService.writeEatTogetherReply(userId, postId, requestDto);
+        return ResponseEntity.ok().build();
     }
 }

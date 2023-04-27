@@ -4,7 +4,7 @@ import { urlUtils } from "../utils/urlUtils";
 
 const eatTogetherApi = {
     writeEatTogetherPost: async (param) => {
-        const url = API_PATH.EAT_TOGETHER.WRITE;
+        const url = API_PATH.EAT_TOGETHER.WRITE_POST;
         const { data } = await authAxios.post(url, param);
 
         return data;
@@ -24,6 +24,10 @@ const eatTogetherApi = {
         const { data } = await authAxios.get(url);
 
         return data;
+    },
+    writeEatTogetherReply: async (postId, param) => {
+        const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.WRITE_REPLY, { postId });
+        await authAxios.post(url, param);
     }
 }
 
