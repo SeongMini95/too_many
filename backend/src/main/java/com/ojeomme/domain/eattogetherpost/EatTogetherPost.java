@@ -8,8 +8,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -43,7 +45,8 @@ public class EatTogetherPost extends BaseTimeEntity {
     private Set<EatTogetherPostImage> images = new LinkedHashSet<>();
 
     @Builder
-    public EatTogetherPost(User user, RegionCode regionCode, String subject, String content) {
+    public EatTogetherPost(Long id, User user, RegionCode regionCode, String subject, String content) {
+        this.id = id;
         this.user = user;
         this.regionCode = regionCode;
         this.subject = subject;
@@ -52,5 +55,14 @@ public class EatTogetherPost extends BaseTimeEntity {
 
     public void addImages(Set<EatTogetherPostImage> images) {
         this.images.addAll(images);
+    }
+
+    public void modifyPost(EatTogetherPost eatTogetherPost) {
+        this.subject = eatTogetherPost.getSubject();
+        this.content = eatTogetherPost.getContent();
+
+        Collection<EatTogetherPostImage> minusImages = CollectionUtils.subtract(this.images, eatTogetherPost.getImages());
+        this.images.addAll(eatTogetherPost.getImages());
+        this.images.removeAll(minusImages);
     }
 }

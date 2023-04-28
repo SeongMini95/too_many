@@ -1,6 +1,7 @@
 package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
@@ -37,6 +38,12 @@ public class EatTogetherController {
     public ResponseEntity<EatTogetherPostListResponseDto> getEatTogetherPostList(@RequestParam String regionCode, @RequestParam(required = false) Long moreId) {
         EatTogetherPostListResponseDto responseDto = eatTogetherService.getEatTogetherPostList(regionCode, moreId);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("/post/{postId}")
+    public ResponseEntity<Void> modifyEatTogetherPost(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody ModifyEatTogetherPostRequestDto requestDto) throws IOException {
+        eatTogetherService.modifyEatTogetherPost(userId, postId, requestDto);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/post/{postId}/reply")

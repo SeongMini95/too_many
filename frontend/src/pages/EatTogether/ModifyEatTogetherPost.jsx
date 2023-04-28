@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
-import { useRecoilValue } from "recoil";
-import { positionState } from "../../recoils/position";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from "react-router-dom";
 import eatTogetherApi from "../../api/eatTogether";
-import { useNavigate } from "react-router-dom";
-import { BROWSER_PATH } from "../../constants/path";
 import { urlUtils } from "../../utils/urlUtils";
+import { BROWSER_PATH } from "../../constants/path";
 
-const WriteEatTogetherPost = () => {
+const ModifyEatTogetherPost = () => {
     const navigate = useNavigate();
-    const { code } = useRecoilValue(positionState);
+    const { postId } = useParams();
     const [inputs, setInputs] = useState({
         subject: '',
         content: ''
     });
+
+    useEffect(() => {
+        const getPost = async () => {
+            const { subject, content } = await eatTogetherApi.getEatTogetherPost(postId);
+            setInputs({
+                ...inputs,
+                subject,
+                content
+            });
+        }
+
+        getPost();
+    }, [postId]);
 
     const handlerChangeInputs = (e) => {
         const { name, value } = e.target;
@@ -22,13 +33,9 @@ const WriteEatTogetherPost = () => {
         });
     }
 
-    const handlerClickWrite = async () => {
+    const handlerClickModify = async () => {
         try {
-            const param = {
-                ...inputs,
-                regionCode: code
-            };
-            const postId = await eatTogetherApi.writeEatTogetherPost(param);
+            await eatTogetherApi.modifyEatTogetherPost(postId, inputs);
 
             const url = urlUtils.setPath(BROWSER_PATH.EAT_TOGETHER.GET_POST, { postId });
             navigate(url, { replace: true });
@@ -46,10 +53,10 @@ const WriteEatTogetherPost = () => {
                 <textarea name="content" onChange={handlerChangeInputs} value={inputs.content}></textarea>
             </div>
             <div>
-                <button onClick={handlerClickWrite}>작성</button>
+                <button onClick={handlerClickModify}>수정</button>
             </div>
         </div>
     );
 };
 
-export default WriteEatTogetherPost;
+export default ModifyEatTogetherPost;

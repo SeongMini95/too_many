@@ -6,8 +6,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -28,8 +30,28 @@ public class EatTogetherPostImage extends BaseTimeEntity {
     private String imageUrl;
 
     @Builder
-    public EatTogetherPostImage(EatTogetherPost eatTogetherPost, String imageUrl) {
+    public EatTogetherPostImage(Long id, EatTogetherPost eatTogetherPost, String imageUrl) {
+        this.id = id;
         this.eatTogetherPost = eatTogetherPost;
         this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        EatTogetherPostImage that = (EatTogetherPostImage) o;
+
+        if (getId() != null && Objects.equals(getId(), that.getId())) {
+            return true;
+        }
+
+        return Objects.equals(getEatTogetherPost().getId(), that.getEatTogetherPost().getId()) &&
+                Objects.equals(getImageUrl(), that.getImageUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
