@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 
@@ -15,7 +14,7 @@ import javax.persistence.*;
 @Getter
 @Entity
 @Table(name = "eat_together_reply")
-public class EatTogetherReply extends BaseTimeEntity implements Persistable<Long> {
+public class EatTogetherReply extends BaseTimeEntity {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -43,10 +42,5 @@ public class EatTogetherReply extends BaseTimeEntity implements Persistable<Long
         this.eatTogetherPost = eatTogetherPost;
         this.upId = upId;
         this.content = content;
-    }
-
-    @Override
-    public boolean isNew() {
-        return getCreateDatetime() == null;
     }
 }

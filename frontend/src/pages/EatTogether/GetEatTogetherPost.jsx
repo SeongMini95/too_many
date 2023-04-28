@@ -6,18 +6,14 @@ import WriteEatTogetherReply from "./WriteEatTogetherReply";
 const GetEatTogetherPost = () => {
     const { postId } = useParams();
     const [post, setPost] = useState({});
+    const [replyList, setReplyList] = useState([]);
+    const [upReplyId, setUpReplyId] = useState('');
 
     useEffect(() => {
         const getPost = async () => {
             try {
                 const {
-                    id,
-                    userId,
-                    nickname,
-                    regionCode,
-                    regionName,
-                    subject,
-                    content
+                    id, userId, nickname, regionCode, regionName, subject, content
                 } = await eatTogetherApi.getEatTogetherPost(postId);
                 setPost({
                     ...post,
@@ -35,7 +31,17 @@ const GetEatTogetherPost = () => {
         }
 
         getPost();
+        getReplyList();
     }, []);
+
+    const getReplyList = async () => {
+        try {
+            const { replies } = await eatTogetherApi.getEatTogetherReplyList(postId);
+            setReplyList(replies);
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
 
     return (
         <div>
@@ -46,8 +52,20 @@ const GetEatTogetherPost = () => {
             <p>{post.regionName}</p>
             <p>{post.subject}</p>
             <p>{post.content}</p>
+            <div style={{ border: '1px solid black' }}>
+                {replyList.map(v => (
+                    <div key={'reply' + v.replyId}>
+                        <p>{v.nickname}</p>
+                        <p>{v.upNickname}</p>
+                        <p>{v.content}</p>
+                        <p>{v.image}</p>
+                        <p>{v.createDatetime}</p>
+                        <button onClick={() => setUpReplyId(v.replyId)}>답글쓰기</button>
+                    </div>
+                ))}
+            </div>
             <div>
-                <WriteEatTogetherReply postId={postId} />
+                <WriteEatTogetherReply postId={postId} getReplyList={getReplyList} upReplyId={upReplyId} />
             </div>
         </div>
     );

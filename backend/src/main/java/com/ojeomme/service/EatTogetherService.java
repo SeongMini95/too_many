@@ -13,6 +13,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -96,5 +97,14 @@ public class EatTogetherService {
             image = imageService.copyImage(image);
             eatTogetherReplyImageRepository.save(requestDto.toEntity(eatTogetherReply, image));
         }
+    }
+
+    @Transactional(readOnly = true)
+    public EatTogetherReplyListResponseDto getEatTogetherReplyList(Long postId) {
+        if (eatTogetherPostRepository.findById(postId).isEmpty()) {
+            throw new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+
+        return eatTogetherReplyRepository.getReplyList(postId);
     }
 }

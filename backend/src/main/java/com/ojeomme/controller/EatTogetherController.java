@@ -5,6 +5,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
 import com.ojeomme.service.EatTogetherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,5 +43,11 @@ public class EatTogetherController {
     public ResponseEntity<Void> writeEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody WriteEatTogetherReplyRequestDto requestDto) throws IOException {
         eatTogetherService.writeEatTogetherReply(userId, postId, requestDto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/post/{postId}/reply/list")
+    public ResponseEntity<EatTogetherReplyListResponseDto> getEatTogetherReplyList(@PathVariable Long postId) {
+        EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(postId);
+        return ResponseEntity.ok(responseDto);
     }
 }

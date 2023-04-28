@@ -5,6 +5,8 @@ import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
 import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
 import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
+import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
+import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
@@ -43,6 +45,86 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
     @Autowired
     private EatTogetherReplyRepository eatTogetherReplyRepository;
+
+    @Autowired
+    private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
+
+    @Nested
+    class getEatTogetherReplyList {
+
+        @Test
+        void 댓글_리스트를_가져온다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            List<EatTogetherReply> replies = new ArrayList<>();
+            List<EatTogetherReplyImage> images = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                Long seq = eatTogetherReplyRepository.nextval();
+                EatTogetherReply reply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                        .id(seq)
+                        .user(user)
+                        .eatTogetherPost(post)
+                        .upId(seq)
+                        .content("댓글" + i)
+                        .build());
+                EatTogetherReplyImage image = eatTogetherReplyImageRepository.save(EatTogetherReplyImage.builder()
+                        .eatTogetherReply(reply)
+                        .imageUrl("image" + i)
+                        .build());
+
+                replies.add(reply);
+                images.add(image);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .when().get("/api/eatTogether/post/{postId}/reply/list", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("replies")).hasSameSizeAs(replies);
+            for (int i = 0; i < jsonPath.getList("replies").size(); i++) {
+                assertThat(jsonPath.getLong("replies[" + i + "].userId")).isEqualTo(replies.get(i).getUser().getId());
+                assertThat(jsonPath.getString("replies[" + i + "].nickname")).isEqualTo(user.getNickname());
+                assertThat(jsonPath.getString("replies[" + i + "].content")).isEqualTo(replies.get(i).getContent());
+                assertThat(jsonPath.getString("replies[" + i + "].image")).isEqualTo(images.get(i).getImageUrl());
+                assertThat(jsonPath.getString("replies[" + i + "].createDatetime")).isEqualTo(replies.get(i).getCreateDatetime().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")));
+            }
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .when().get("/api/eatTogether/post/{postId}/reply/list", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+    }
 
     @Nested
     class writeEatTogetherReply {
