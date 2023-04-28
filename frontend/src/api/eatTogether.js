@@ -46,6 +46,10 @@ const eatTogetherApi = {
     modifyEatTogetherReply: async (postId, replyId, param) => {
         const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.MODIFY_REPLY, { postId, replyId });
         await authAxios.put(url, param);
+    },
+    deleteEatTogetherReply: async (postId, replyId) => {
+        const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.DELETE_REPLY, { postId, replyId });
+        await authAxios.delete(url);
     }
 };
 

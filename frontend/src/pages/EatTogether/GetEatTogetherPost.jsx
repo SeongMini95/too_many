@@ -78,6 +78,15 @@ const GetEatTogetherPost = () => {
         }
     }
 
+    const handlerClickDeleteReply = async (replyId) => {
+        try {
+            await eatTogetherApi.deleteEatTogetherReply(postId, replyId);
+            await getReplyList();
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
     return (
         <div>
             <button onClick={() => navigate(urlUtils.setPath(BROWSER_PATH.EAT_TOGETHER.MODIFY_POST, { postId }))}>수정</button>
@@ -100,7 +109,7 @@ const GetEatTogetherPost = () => {
                         {v.userId === userInfo.id && (
                             <>
                                 <button onClick={() => setModifyReplyId(v.replyId)}>수정</button>
-                                <button>삭제</button>
+                                <button onClick={() => handlerClickDeleteReply(v.replyId)}>삭제</button>
                             </>
                         )}
                         <button onClick={() => setUpReplyId(v.replyId)}>답글쓰기</button>

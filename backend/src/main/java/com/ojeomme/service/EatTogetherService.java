@@ -108,7 +108,8 @@ public class EatTogetherService {
                 eatTogetherPostRepository::delete,
                 () -> {
                     throw new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
-                });
+                }
+        );
     }
 
     @Transactional
@@ -153,5 +154,15 @@ public class EatTogetherService {
                     () -> eatTogetherReplyImageRepository.save(requestDto.toReplyImage(eatTogetherReply, convertImage))
             );
         }
+    }
+
+    @Transactional
+    public void deleteEatTogetherReply(Long userId, Long postId, Long replyId) {
+        eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(replyId, userId, postId).ifPresentOrElse(
+                eatTogetherReplyRepository::delete,
+                () -> {
+                    throw new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
+                }
+        );
     }
 }

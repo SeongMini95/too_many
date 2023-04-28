@@ -65,7 +65,8 @@ const API_PATH = {
         DELETE_POST: '/api/eatTogether/post/:postId',
         WRITE_REPLY: '/api/eatTogether/post/:postId/reply',
         GET_REPLY_LIST: '/api/eatTogether/post/:postId/reply/list',
-        MODIFY_REPLY: '/api/eatTogether/post/:postId/reply/:replyId'
+        MODIFY_REPLY: '/api/eatTogether/post/:postId/reply/:replyId',
+        DELETE_REPLY: '/api/eatTogether/post/:postId/reply/:replyId'
     }
 }
 
