@@ -52,6 +52,62 @@ class EatTogetherControllerTest extends AcceptanceTest {
     private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Nested
+    class deleteEatTogetherReply {
+
+        @Test
+        void 댓글을_삭제한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            Long seq = eatTogetherReplyRepository.nextval();
+            EatTogetherReply reply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                    .id(seq)
+                    .user(user)
+                    .eatTogetherPost(post)
+                    .upId(seq)
+                    .content("댓글")
+                    .build());
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().delete("/api/eatTogether/post/{postId}/reply/{replyId}", post.getId(), reply.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 댓글이_없으면_EatTogetherReplyNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().delete("/api/eatTogether/post/{postId}/reply/{replyId}", -1L, -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+    }
+
+    @Nested
     class modifyEatTogetherReply {
 
         @Test

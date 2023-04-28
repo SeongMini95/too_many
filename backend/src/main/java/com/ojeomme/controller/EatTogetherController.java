@@ -70,4 +70,10 @@ public class EatTogetherController {
         eatTogetherService.modifyEatTogetherReply(userId, postId, replyId, requestDto);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/post/{postId}/reply/{replyId}")
+    public ResponseEntity<Void> deleteEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @PathVariable Long replyId) {
+        eatTogetherService.deleteEatTogetherReply(userId, postId, replyId);
+        return ResponseEntity.ok().build();
+    }
 }
