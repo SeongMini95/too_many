@@ -9,6 +9,7 @@ import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
 import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherReplyRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
@@ -49,6 +50,153 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
     @Autowired
     private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
+
+    @Nested
+    class modifyEatTogetherReply {
+
+        @Test
+        void 댓글을_수정한다() {
+            EatTogetherPost post = createPost();
+
+            Long seq = eatTogetherReplyRepository.nextval();
+            EatTogetherReply reply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                    .id(seq)
+                    .user(user)
+                    .eatTogetherPost(post)
+                    .upId(seq)
+                    .content("댓글")
+                    .build());
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}/reply/{replyId}", post.getId(), reply.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 이미지와_댓글을_수정한다_이미지_없을때() throws Exception {
+            // given
+            EatTogetherPost post = createPost();
+            createImage("image1");
+
+            Long seq = eatTogetherReplyRepository.nextval();
+            EatTogetherReply reply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                    .id(seq)
+                    .user(user)
+                    .eatTogetherPost(post)
+                    .upId(seq)
+                    .content("댓글")
+                    .build());
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .image("http://localhost:4000/temp/2023/4/28/image1.png")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}/reply/{replyId}", post.getId(), reply.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 이미지와_댓글을_수정한다_이미지_있을때() throws Exception {
+            // given
+            EatTogetherPost post = createPost();
+            createImage("image1");
+
+            Long seq = eatTogetherReplyRepository.nextval();
+            EatTogetherReply reply = eatTogetherReplyRepository.save(EatTogetherReply.builder()
+                    .id(seq)
+                    .user(user)
+                    .eatTogetherPost(post)
+                    .upId(seq)
+                    .content("댓글")
+                    .build());
+            eatTogetherReplyImageRepository.save(EatTogetherReplyImage.builder()
+                    .eatTogetherReply(reply)
+                    .imageUrl("http://localhost:4000/temp/2023/4/28/image.png")
+                    .build());
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .image("http://localhost:4000/temp/2023/4/28/image1.png")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}/reply/{replyId}", post.getId(), reply.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 댓글이_없으면_EatTogetherReplyNotFoundExcpetion를_발생한다() {
+            // given
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}/reply/{replyId}", -1L, -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+
+        private void createImage(String filename) throws Exception {
+            String uploadPath = "build/resources/test";
+
+            BufferedImage bufferedImage = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+
+            File tempFile = Paths.get(uploadPath, "/temp/2023/4/28/" + filename + ".png").toFile();
+            Files.createDirectories(tempFile.getParentFile().toPath());
+
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            ImageIO.write(bufferedImage, "png", outputStream);
+            outputStream.close();
+        }
+    }
 
     @Nested
     class deleteEatTogetherPost {

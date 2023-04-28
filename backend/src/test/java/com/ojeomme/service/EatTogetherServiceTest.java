@@ -11,6 +11,7 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherReplyRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
@@ -62,6 +63,90 @@ class EatTogetherServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class modifyEatTogetherReply {
+
+        @Test
+        void 댓글을_수정한다() throws IOException {
+            // given
+            EatTogetherReply eatTogetherReply = mock(EatTogetherReply.class);
+            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.of(eatTogetherReply));
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .build();
+
+            // when
+            eatTogetherService.modifyEatTogetherReply(1L, 1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReply).should(times(1)).modifyContent(anyString());
+        }
+
+        @Test
+        void 이미지와_댓글을_수정한다_이미지_없을때() throws IOException {
+            // given
+            EatTogetherReply eatTogetherReply = mock(EatTogetherReply.class);
+            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.of(eatTogetherReply));
+
+            given(imageService.copyImage(anyString())).willReturn("http://localhost:4000/image2.png");
+
+            given(eatTogetherReplyImageRepository.findByEatTogetherReplyId(anyLong())).willReturn(Optional.empty());
+            given(eatTogetherReplyImageRepository.save(any(EatTogetherReplyImage.class))).willReturn(mock(EatTogetherReplyImage.class));
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .image("http://localhost:4000/image1.png")
+                    .build();
+
+            // when
+            eatTogetherService.modifyEatTogetherReply(1L, 1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReply).should(times(1)).modifyContent(anyString());
+        }
+
+        @Test
+        void 이미지와_댓글을_수정한다_이미지_있을때() throws IOException {
+            // given
+            EatTogetherReply eatTogetherReply = mock(EatTogetherReply.class);
+            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.of(eatTogetherReply));
+
+            given(imageService.copyImage(anyString())).willReturn("http://localhost:4000/image2.png");
+
+            EatTogetherReplyImage eatTogetherReplyImage = mock(EatTogetherReplyImage.class);
+            given(eatTogetherReplyImageRepository.findByEatTogetherReplyId(anyLong())).willReturn(Optional.of(eatTogetherReplyImage));
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .image("http://localhost:4000/image1.png")
+                    .build();
+
+            // when
+            eatTogetherService.modifyEatTogetherReply(1L, 1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherReply).should(times(1)).modifyContent(anyString());
+            then(eatTogetherReplyImage).should(times(1)).modifyImage(anyString());
+        }
+
+        @Test
+        void 댓글이_없으면_EatTogetherReplyNotFoundExcpetion를_발생한다() {
+            // given
+            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.empty());
+
+            ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
+                    .content("수정 댓글")
+                    .build();
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.modifyEatTogetherReply(1L, 1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
+        }
+    }
 
     @Nested
     class deleteEatTogetherPost {
