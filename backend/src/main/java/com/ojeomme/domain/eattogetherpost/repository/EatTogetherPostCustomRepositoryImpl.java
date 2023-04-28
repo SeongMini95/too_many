@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.ojeomme.domain.eattogetherpost.QEatTogetherPost.eatTogetherPost;
+import static com.ojeomme.domain.user.QUser.user;
 
 @RequiredArgsConstructor
 public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCustomRepository {
@@ -76,6 +77,8 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
                         eatTogetherPost.createDatetime.as("oriCreateDatetime")
                 ))
                 .from(eatTogetherPost)
+                .innerJoin(eatTogetherPost.regionCode, QRegionCode.regionCode)
+                .innerJoin(eatTogetherPost.user, user)
                 .where(
                         ltPostId,
                         eatTogetherPost.regionCode.code.in(regionCodes)

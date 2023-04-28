@@ -62,6 +62,7 @@ const API_PATH = {
         GET_POST_LIST: '/api/eatTogether/post/list',
         GET_POST: '/api/eatTogether/post/:postId',
         MODIFY_POST: '/api/eatTogether/post/:postId',
+        DELETE_POST: '/api/eatTogether/post/:postId',
         WRITE_REPLY: '/api/eatTogether/post/:postId/reply',
         GET_REPLY_LIST: '/api/eatTogether/post/:postId/reply/list'
     }
