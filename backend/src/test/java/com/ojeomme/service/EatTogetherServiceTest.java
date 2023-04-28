@@ -10,6 +10,7 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
@@ -61,6 +62,44 @@ class EatTogetherServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class modifyEatTogetherPost {
+
+        private final ModifyEatTogetherPostRequestDto requestDto = ModifyEatTogetherPostRequestDto.builder()
+                .subject("테스트 제목")
+                .content("이미지1 <img src=\"http://localhost:4000/temp/image1.png\"> 이미지2 <img src=\"http://localhost:4000/image2.png\"> 본문 내용")
+                .build();
+
+        @Test
+        void 게시글을_수정한다() throws IOException {
+            // given
+            ReflectionTestUtils.setField(eatTogetherService, "host", "http://localhost:4000");
+
+            EatTogetherPost eatTogetherPost = mock(EatTogetherPost.class);
+            given(eatTogetherPostRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(eatTogetherPost));
+            given(imageService.copyImage(eq("http://localhost:4000/temp/image1.png"))).willReturn("http://localhost:4000/image1.png");
+            given(imageService.copyImage(eq("http://localhost:4000/image2.png"))).willReturn("http://localhost:4000/image2.png");
+
+            // when
+            eatTogetherService.modifyEatTogetherPost(1L, 1L, requestDto);
+
+            // then
+            then(eatTogetherPost).should(times(1)).modifyPost(any(EatTogetherPost.class));
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+            given(eatTogetherPostRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.modifyEatTogetherPost(1L, 1L, requestDto));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+    }
 
     @Nested
     class getReplyList {

@@ -8,6 +8,7 @@ import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository
 import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
 import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
@@ -48,6 +49,75 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
     @Autowired
     private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
+
+    @Nested
+    class modifyEatTogetherPost {
+
+        private final ModifyEatTogetherPostRequestDto requestDto = ModifyEatTogetherPostRequestDto.builder()
+                .subject("테스트 제목")
+                .content("이미지1 <img src=\"http://localhost:4000/temp/2023/4/28/image1.png\"> 이미지2 <img src=\"http://localhost:4000/image2.png\"> 본문 내용")
+                .build();
+
+        @Test
+        void 게시글을_수정한다() throws Exception {
+            // given
+            EatTogetherPost post = createPost();
+
+            createImage("image1");
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/eatTogether/post/{postId}", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+
+        private void createImage(String filename) throws Exception {
+            String uploadPath = "build/resources/test";
+
+            BufferedImage bufferedImage = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+
+            File tempFile = Paths.get(uploadPath, "/temp/2023/4/28/" + filename + ".png").toFile();
+            Files.createDirectories(tempFile.getParentFile().toPath());
+
+            FileOutputStream outputStream = new FileOutputStream(tempFile);
+            ImageIO.write(bufferedImage, "png", outputStream);
+            outputStream.close();
+        }
+    }
 
     @Nested
     class getEatTogetherReplyList {

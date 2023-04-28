@@ -25,6 +25,10 @@ const eatTogetherApi = {
 
         return data;
     },
+    modifyEatTogetherPost: async (postId, param) => {
+        const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.MODIFY_POST, { postId });
+        await authAxios.put(url, param);
+    },
     writeEatTogetherReply: async (postId, param) => {
         const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.WRITE_REPLY, { postId });
         await authAxios.post(url, param);

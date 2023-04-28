@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import eatTogetherApi from "../../api/eatTogether";
 import WriteEatTogetherReply from "./WriteEatTogetherReply";
+import { BROWSER_PATH } from "../../constants/path";
+import { urlUtils } from "../../utils/urlUtils";
 
 const GetEatTogetherPost = () => {
+    const navigate = useNavigate();
     const { postId } = useParams();
     const [post, setPost] = useState({});
     const [replyList, setReplyList] = useState([]);
@@ -45,6 +48,7 @@ const GetEatTogetherPost = () => {
 
     return (
         <div>
+            <button onClick={() => navigate(urlUtils.setPath(BROWSER_PATH.EAT_TOGETHER.MODIFY_POST, { postId }))}>수정</button>
             <p>{post.id}</p>
             <p>{post.userId}</p>
             <p>{post.nickname}</p>

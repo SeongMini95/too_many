@@ -11,6 +11,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EatTogetherPostTest {
 
     @Nested
+    class modifyPost {
+
+        @Test
+        void 게시글을_수정한다() {
+            // given
+            EatTogetherPost eatTogetherPost = EatTogetherPost.builder()
+                    .subject("제목")
+                    .content("본문")
+                    .build();
+
+            // when
+            eatTogetherPost.modifyPost(EatTogetherPost.builder()
+                    .subject("바뀐 제목")
+                    .content("바뀐 본문")
+                    .build());
+
+            // then
+            assertThat(eatTogetherPost.getSubject()).isEqualTo("바뀐 제목");
+            assertThat(eatTogetherPost.getContent()).isEqualTo("바뀐 본문");
+        }
+    }
+
+    @Nested
     class addImages {
 
         @Test

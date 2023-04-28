@@ -9,6 +9,7 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
@@ -51,8 +52,8 @@ public class EatTogetherService {
         // 임시 이미지 추출 후 변환
         List<String> images = new ArrayList<>();
         String convertContent = requestDto.getContent();
-        Pattern p = Pattern.compile("<img.*src=\"" + host + "([^\"]*).*\">");
-        Matcher m = p.matcher(requestDto.getContent());
+        Pattern p = Pattern.compile("<img[^>]+src\\s*=\\s*[\"']" + host + "([^>\"']+)[\"']?[^>]*>");
+        Matcher m = p.matcher(convertContent);
 
         while (m.find()) {
             String tempUrl = UriComponentsBuilder.fromHttpUrl(host).path(m.group(1)).toUriString();
@@ -77,6 +78,27 @@ public class EatTogetherService {
     @Transactional(readOnly = true)
     public EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId) {
         return eatTogetherPostRepository.getEatTogetherPostList(regionCode, moreId);
+    }
+
+    @Transactional
+    public void modifyEatTogetherPost(Long userId, Long postId, ModifyEatTogetherPostRequestDto requestDto) throws IOException {
+        EatTogetherPost eatTogetherPost = eatTogetherPostRepository.findByIdAndUserId(postId, userId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));
+
+        // 임시 이미지 추출 후 변환
+        List<String> images = new ArrayList<>();
+        String convertContent = requestDto.getContent();
+        Pattern p = Pattern.compile("<img[^>]+src\\s*=\\s*[\"']" + host + "([^>\"']+)[\"']?[^>]*>");
+        Matcher m = p.matcher(convertContent);
+
+        while (m.find()) {
+            String tempUrl = UriComponentsBuilder.fromHttpUrl(host).path(m.group(1)).toUriString();
+            String url = imageService.copyImage(tempUrl);
+
+            convertContent = convertContent.replaceFirst(tempUrl, url);
+            images.add(url);
+        }
+
+        eatTogetherPost.modifyPost(requestDto.toEntity(eatTogetherPost, convertContent, images));
     }
 
     @Transactional
