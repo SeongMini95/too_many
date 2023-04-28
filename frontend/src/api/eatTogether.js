@@ -29,6 +29,10 @@ const eatTogetherApi = {
         const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.MODIFY_POST, { postId });
         await authAxios.put(url, param);
     },
+    deleteEatTogetherPost: async (postId) => {
+        const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.DELETE_POST, { postId });
+        await authAxios.delete(url);
+    },
     writeEatTogetherReply: async (postId, param) => {
         const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.WRITE_REPLY, { postId });
         await authAxios.post(url, param);
@@ -39,6 +43,6 @@ const eatTogetherApi = {
 
         return data;
     }
-}
+};
 
 export default eatTogetherApi;

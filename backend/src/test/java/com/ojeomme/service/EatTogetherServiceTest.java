@@ -64,6 +64,34 @@ class EatTogetherServiceTest {
     private ImageService imageService;
 
     @Nested
+    class deleteEatTogetherPost {
+
+        @Test
+        void 게시글을_삭제한다() {
+            // given
+            given(eatTogetherPostRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+
+            // when
+            eatTogetherService.deleteEatTogetherPost(1L, 1L);
+
+            // then
+            then(eatTogetherPostRepository).should(times(1)).delete(any(EatTogetherPost.class));
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+            given(eatTogetherPostRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.deleteEatTogetherPost(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+    }
+
+    @Nested
     class modifyEatTogetherPost {
 
         private final ModifyEatTogetherPostRequestDto requestDto = ModifyEatTogetherPostRequestDto.builder()

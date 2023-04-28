@@ -102,6 +102,15 @@ public class EatTogetherService {
     }
 
     @Transactional
+    public void deleteEatTogetherPost(Long userId, Long postId) {
+        eatTogetherPostRepository.findByIdAndUserId(postId, userId).ifPresentOrElse(
+                eatTogetherPostRepository::delete,
+                () -> {
+                    throw new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+                });
+    }
+
+    @Transactional
     public void writeEatTogetherReply(Long userId, Long postId, WriteEatTogetherReplyRequestDto requestDto) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
         EatTogetherPost eatTogetherPost = eatTogetherPostRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));

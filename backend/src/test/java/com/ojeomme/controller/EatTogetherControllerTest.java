@@ -51,6 +51,53 @@ class EatTogetherControllerTest extends AcceptanceTest {
     private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Nested
+    class deleteEatTogetherPost {
+
+        @Test
+        void 게시글을_삭제한다() {
+            // given
+            EatTogetherPost post = createPost();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().delete("/api/eatTogether/post/{postId}", post.getId())
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .when().delete("/api/eatTogether/post/{postId}", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getMessage());
+        }
+
+        private EatTogetherPost createPost() {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject("테스트 제목")
+                    .content("테스트 본문")
+                    .build());
+        }
+    }
+
+    @Nested
     class modifyEatTogetherPost {
 
         private final ModifyEatTogetherPostRequestDto requestDto = ModifyEatTogetherPostRequestDto.builder()

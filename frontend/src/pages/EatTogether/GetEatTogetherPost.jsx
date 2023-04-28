@@ -46,9 +46,19 @@ const GetEatTogetherPost = () => {
         }
     }
 
+    const handlerClickDelete = async () => {
+        try {
+            await eatTogetherApi.deleteEatTogetherPost(postId);
+            navigate(BROWSER_PATH.EAT_TOGETHER.LIST_POST, { replace: true });
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
     return (
         <div>
             <button onClick={() => navigate(urlUtils.setPath(BROWSER_PATH.EAT_TOGETHER.MODIFY_POST, { postId }))}>수정</button>
+            <button onClick={handlerClickDelete}>삭제</button>
             <p>{post.id}</p>
             <p>{post.userId}</p>
             <p>{post.nickname}</p>

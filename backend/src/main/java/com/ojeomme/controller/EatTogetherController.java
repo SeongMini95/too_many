@@ -46,6 +46,12 @@ public class EatTogetherController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/post/{postId}")
+    public ResponseEntity<Void> deleteEatTogetherPost(@LoginUser Long userId, @PathVariable Long postId) {
+        eatTogetherService.deleteEatTogetherPost(userId, postId);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/post/{postId}/reply")
     public ResponseEntity<Void> writeEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody WriteEatTogetherReplyRequestDto requestDto) throws IOException {
         eatTogetherService.writeEatTogetherReply(userId, postId, requestDto);
