@@ -43,4 +43,8 @@ public class EatTogetherReply extends BaseTimeEntity {
         this.upId = upId;
         this.content = content;
     }
+
+    public void modifyContent(String content) {
+        this.content = content;
+    }
 }

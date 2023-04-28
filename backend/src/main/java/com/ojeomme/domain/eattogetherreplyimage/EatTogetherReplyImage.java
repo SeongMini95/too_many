@@ -32,4 +32,8 @@ public class EatTogetherReplyImage extends BaseTimeEntity {
         this.eatTogetherReply = eatTogetherReply;
         this.imageUrl = imageUrl;
     }
+
+    public void modifyImage(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

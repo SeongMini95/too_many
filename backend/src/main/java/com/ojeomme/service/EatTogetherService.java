@@ -10,6 +10,7 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
+import com.ojeomme.dto.request.eattogether.ModifyEatTogetherReplyRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
@@ -137,5 +138,20 @@ public class EatTogetherService {
         }
 
         return eatTogetherReplyRepository.getReplyList(postId);
+    }
+
+    @Transactional
+    public void modifyEatTogetherReply(Long userId, Long postId, Long replyId, ModifyEatTogetherReplyRequestDto requestDto) throws IOException {
+        EatTogetherReply eatTogetherReply = eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(replyId, userId, postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND));
+        eatTogetherReply.modifyContent(requestDto.getContent());
+
+        // 이미지가 있으면 수정, 없으면 저장
+        if (StringUtils.isNotBlank(requestDto.getImage())) {
+            String convertImage = imageService.copyImage(requestDto.getImage());
+            eatTogetherReplyImageRepository.findByEatTogetherReplyId(replyId).ifPresentOrElse(
+                    v -> v.modifyImage(convertImage),
+                    () -> eatTogetherReplyImageRepository.save(requestDto.toReplyImage(eatTogetherReply, convertImage))
+            );
+        }
     }
 }
