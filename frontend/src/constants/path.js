@@ -11,6 +11,12 @@ const BROWSER_PATH = {
     },
     USER: {
         GET_MY_INFO: '/user/my'
+    },
+    EAT_TOGETHER: {
+        WRITE_POST: '/eatTogether/post/write',
+        LIST_POST: '/eatTogether/post/list',
+        GET_POST: '/eatTogether/post/:postId',
+        MODIFY_POST: '/eatTogether/post/:postId/modify'
     }
 }
 
@@ -50,6 +56,17 @@ const API_PATH = {
         GET_MY_INFO: '/api/user/my',
         MODIFY_NICKNAME: '/api/user/my/nickname',
         MODIFY_PROFILE: '/api/user/my/profile'
+    },
+    EAT_TOGETHER: {
+        WRITE_POST: '/api/eatTogether/post',
+        GET_POST_LIST: '/api/eatTogether/post/list',
+        GET_POST: '/api/eatTogether/post/:postId',
+        MODIFY_POST: '/api/eatTogether/post/:postId',
+        DELETE_POST: '/api/eatTogether/post/:postId',
+        WRITE_REPLY: '/api/eatTogether/post/:postId/reply',
+        GET_REPLY_LIST: '/api/eatTogether/post/:postId/reply/list',
+        MODIFY_REPLY: '/api/eatTogether/post/:postId/reply/:replyId',
+        DELETE_REPLY: '/api/eatTogether/post/:postId/reply/:replyId'
     }
 }
 

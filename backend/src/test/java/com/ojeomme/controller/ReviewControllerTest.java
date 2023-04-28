@@ -101,7 +101,6 @@ class ReviewControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/review/store/{storeId}/like", store.getId())
                     .then().log().all()
                     .extract();
@@ -337,6 +336,43 @@ class ReviewControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
+                    .when().get("/api/review/store/{storeId}", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            LocalDate now = LocalDate.now();
+
+            // then
+            assertThat(jsonPath.getList("reviews")).hasSameSizeAs(store.getReviews());
+            for (int i = 0; i < jsonPath.getList("reviews").size(); i++) {
+                assertThat(jsonPath.getLong("reviews[" + i + "].reviewId")).isEqualTo(store.getReviews().get(i).getId());
+                assertThat(jsonPath.getString("reviews[" + i + "].nickname")).isEqualTo(store.getReviews().get(i).getUser().getNickname());
+                assertThat(jsonPath.getInt("reviews[" + i + "].starScore")).isEqualTo(store.getReviews().get(i).getStarScore());
+                assertThat(jsonPath.getString("reviews[" + i + "].content")).isEqualTo(store.getReviews().get(i).getContent());
+                assertThat(jsonPath.getBoolean("reviews[" + i + "].revisitYn")).isEqualTo(store.getReviews().get(i).isRevisitYn());
+                assertThat(jsonPath.getInt("reviews[" + i + "].likeCnt")).isEqualTo(store.getReviews().get(i).getLikeCnt());
+                assertThat(CollectionUtils.isEqualCollection(
+                        jsonPath.getList("reviews[" + i + "].images"),
+                        store.getReviews().get(i).getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toSet())
+                )).isTrue();
+                assertThat(CollectionUtils.isEqualCollection(
+                        jsonPath.getList("reviews[" + i + "].recommends"),
+                        store.getReviews().get(i).getReviewRecommends().stream().map(v -> v.getRecommendType().getCode()).collect(Collectors.toSet())
+                )).isTrue();
+                assertThat(jsonPath.getString("reviews[" + i + "].createDate")).isEqualTo(now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+            }
+        }
+
+        @Test
+        void 다음_리뷰_리스트를_가져온다() {
+            // given
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .param("reviewId", 10L)
                     .when().get("/api/review/store/{storeId}", store.getId())
                     .then().log().all()
                     .extract();

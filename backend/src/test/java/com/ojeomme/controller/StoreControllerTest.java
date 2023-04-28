@@ -73,7 +73,6 @@ class StoreControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/store/{storeId}/reviewImageList", store.getId())
                     .then().log().all()
                     .extract();
@@ -106,7 +105,6 @@ class StoreControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .param("reviewImageId", 10)
                     .when().get("/api/store/{storeId}/reviewImageList", store.getId())
                     .then().log().all()
@@ -123,6 +121,48 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
             assertThat(jsonPath.getList("images")).isEqualTo(getImages);
+        }
+
+        @Test
+        void 이미지가_없다() {
+            // given
+            Category category = categoryRepository.save(Category.builder()
+                    .categoryName("초밥,롤")
+                    .categoryDepth(1)
+                    .build());
+
+            Store store = Store.builder()
+                    .kakaoPlaceId(123L)
+                    .category(category)
+                    .regionCode(regionCodeRepository.findById("1111012200").orElseThrow())
+                    .storeName("테스트")
+                    .addressName("서울 종로구 청진동 146")
+                    .roadAddressName("서울 종로구 종로 19")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(0)
+                    .build();
+
+            store = storeRepository.save(store);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            List<String> reviewImages = store.getReviews().stream()
+                    .flatMap(v -> v.getReviewImages().stream()
+                            .sorted(Comparator.comparing(ReviewImage::getId).reversed())
+                            .map(ReviewImage::getImageUrl))
+                    .collect(Collectors.toList());
+            assertThat(jsonPath.getList("images")).isEqualTo(reviewImages);
         }
     }
 
@@ -142,7 +182,6 @@ class StoreControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/store/{storeId}/like", store.getId())
                     .then().log().all()
                     .extract();
@@ -160,7 +199,6 @@ class StoreControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/store/{storeId}/like", store.getId())
                     .then().log().all()
                     .extract();

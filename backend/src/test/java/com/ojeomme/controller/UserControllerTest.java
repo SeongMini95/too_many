@@ -40,7 +40,6 @@ class UserControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(accessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/user/my")
                     .then().log().all()
                     .extract();
@@ -63,7 +62,6 @@ class UserControllerTest extends AcceptanceTest {
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
                     .auth().oauth2(notExistAccessToken)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .when().get("/api/user/my")
                     .then().log().all()
                     .extract();

@@ -1,0 +1,1 @@
+create sequence if not exists eat_together_reply_seq;

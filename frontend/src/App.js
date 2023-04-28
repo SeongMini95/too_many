@@ -12,6 +12,10 @@ import PrivateRouter from "./router/PrivateRouter";
 import SearchPlaceList from "./pages/Store/SearchPlaceList";
 import StoreReviews from "./pages/Store/StoreReviews";
 import MyInfo from "./pages/User/MyInfo";
+import WriteEatTogetherPost from "./pages/EatTogether/WriteEatTogetherPost";
+import GetEatTogetherPostList from "./pages/EatTogether/GetEatTogetherPostList";
+import GetEatTogetherPost from "./pages/EatTogether/GetEatTogetherPost";
+import ModifyEatTogetherPost from "./pages/EatTogether/ModifyEatTogetherPost";
 
 function App() {
     const isLogin = useRecoilValue(loginState);
@@ -33,6 +37,12 @@ function App() {
                     {/* store */}
                     <Route path={BROWSER_PATH.STORE.SEARCH_PLACE_LIST} element={<SearchPlaceList />} />
                     <Route path={BROWSER_PATH.STORE.GET_STORE_REVIEWS} element={<StoreReviews />} />
+
+                    {/* eat together */}
+                    <Route path={BROWSER_PATH.EAT_TOGETHER.WRITE_POST} element={<WriteEatTogetherPost />} />
+                    <Route path={BROWSER_PATH.EAT_TOGETHER.LIST_POST} element={<GetEatTogetherPostList />} />
+                    <Route path={BROWSER_PATH.EAT_TOGETHER.GET_POST} element={<GetEatTogetherPost />} />
+                    <Route path={BROWSER_PATH.EAT_TOGETHER.MODIFY_POST} element={<ModifyEatTogetherPost />} />
                 </Route>
             </Routes>
         </BrowserRouter>

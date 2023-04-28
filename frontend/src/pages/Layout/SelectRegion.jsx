@@ -87,9 +87,10 @@ const SelectRegion = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async position => {
                 const { longitude, latitude } = position.coords;
-                const code = await regionApi.getRegionCodeOfCoord(longitude, latitude);
+                const { code, address } = await regionApi.getRegionCodeOfCoord(longitude, latitude);
                 setPosition({
                     code,
+                    address,
                     x: longitude,
                     y: latitude
                 });
