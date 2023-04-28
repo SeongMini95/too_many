@@ -14,6 +14,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
+import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -60,6 +61,60 @@ class EatTogetherServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class getReplyList {
+
+        @Test
+        void 댓글_리스트를_가져온다() {
+            // given
+            EatTogetherReplyListResponseDto dto = new EatTogetherReplyListResponseDto(List.of(
+                    EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
+                            .userId(1L)
+                            .nickname("test1")
+                            .content("댓글1")
+                            .image("image1")
+                            .createDatetime(LocalDateTime.now())
+                            .build(),
+                    EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
+                            .userId(1L)
+                            .nickname("test2")
+                            .upNickname("test1")
+                            .content("댓글2")
+                            .createDatetime(LocalDateTime.now())
+                            .build()
+            ));
+
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
+            given(eatTogetherReplyRepository.getReplyList(anyLong())).willReturn(dto);
+
+            // when
+            EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(1L);
+
+            // then
+            assertThat(responseDto.getReplies()).hasSameSizeAs(dto.getReplies());
+            for (int i = 0; i < responseDto.getReplies().size(); i++) {
+                assertThat(responseDto.getReplies().get(i).getUserId()).isEqualTo(dto.getReplies().get(i).getUserId());
+                assertThat(responseDto.getReplies().get(i).getNickname()).isEqualTo(dto.getReplies().get(i).getNickname());
+                assertThat(responseDto.getReplies().get(i).getUpNickname()).isEqualTo(dto.getReplies().get(i).getUpNickname());
+                assertThat(responseDto.getReplies().get(i).getContent()).isEqualTo(dto.getReplies().get(i).getContent());
+                assertThat(responseDto.getReplies().get(i).getImage()).isEqualTo(dto.getReplies().get(i).getImage());
+                assertThat(responseDto.getReplies().get(i).getCreateDatetime()).isEqualTo(dto.getReplies().get(i).getCreateDatetime());
+            }
+        }
+
+        @Test
+        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
+            // given
+            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.getEatTogetherReplyList(1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
+        }
+    }
 
     @Nested
     class writeEatTogetherReply {
