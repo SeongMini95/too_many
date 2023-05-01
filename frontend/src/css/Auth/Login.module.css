@@ -1,0 +1,57 @@
+.container {
+    min-height: calc(100vh - 300px);
+    display: flex;
+    align-items: center;
+}
+
+.row {
+    width: 960px;
+    margin: 0 auto;
+}
+
+.login {
+    width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.title {
+    padding: 50px 12px 25px 12px;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: solid #e0e0e0 1px;
+}
+
+.explain {
+    font-weight: bold;
+    padding: 24px 0;
+    font-size: 15px;
+}
+
+.btn {
+    border: none;
+    border-radius: 2px;
+    width: 100%;
+    cursor: pointer;
+    height: 45px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.btn.naver_login {
+    background-color: #03c75a;
+    color: white;
+}
+
+.btn.kakao_login {
+    background-color: #fae301;
+}
+
+.btn img {
+    position: absolute;
+    top: 0;
+    left: 2px;
+}

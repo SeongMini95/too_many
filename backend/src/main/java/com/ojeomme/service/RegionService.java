@@ -36,10 +36,17 @@ public class RegionService {
             regionCode = regionCode.getUpCode();
         }
 
-        // 마지막 지역 코드로 주소를 얻는다.
-        String address = getAddressOfRegionCode(regionCode);
+        // 마지막 지역 코드로 상위 코드들을 가져온다.
+        List<RegionCode> refRegionCodes = getUpRegionCode(regionCode);
 
-        return new RegionCodeOfCoordResponseDto(regionCode.getCode(), address);
+        String address = refRegionCodes.stream()
+                .map(RegionCode::getRegionName)
+                .collect(Collectors.joining(" "));
+
+        return new RegionCodeOfCoordResponseDto(
+                refRegionCodes.stream()
+                        .map(RegionCode::getCode)
+                        .collect(Collectors.toList()), address);
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +57,9 @@ public class RegionService {
         }
 
         // 마지막 지역 코드로 주소를 얻는다.
-        String address = getAddressOfRegionCode(regionCode);
+        String address = getUpRegionCode(regionCode).stream()
+                .map(RegionCode::getRegionName)
+                .collect(Collectors.joining(" "));
 
         // 주소로 좌표를 얻는다.
         KakaoAddressCoord kakaoAddressCoord = kakaoAddressClient.getKakaoAddressCoord(address);
@@ -65,7 +74,7 @@ public class RegionService {
         return new RegionCodeListResponseDto(regionCodes);
     }
 
-    private String getAddressOfRegionCode(RegionCode regionCode) {
+    private List<RegionCode> getUpRegionCode(RegionCode regionCode) {
         List<RegionCode> regionCodes = new ArrayList<>();
         regionCodes.add(regionCode);
 
@@ -76,8 +85,6 @@ public class RegionService {
             regionCodes.add(0, upRegionCode);
         }
 
-        return regionCodes.stream()
-                .map(RegionCode::getRegionName)
-                .collect(Collectors.joining(" "));
+        return regionCodes;
     }
 }
