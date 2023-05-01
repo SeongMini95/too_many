@@ -19,6 +19,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final LoginInterceptor loginInterceptor;
     private final LoginUserArgumentResolver loginUserArgumentResolver;
 
+    private static final List<String> EXCLUDE_PATH = List.of("/api/auth/**", "/api/region/list", "/api/region/coordOfRegion", "/api/region/regionOfCoord");
+
     @Value("${security.cors.host.front}")
     private String front;
 
@@ -26,7 +28,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry
                 .addInterceptor(loginInterceptor)
-                .excludePathPatterns("/api/auth/**");
+                .excludePathPatterns(EXCLUDE_PATH);
     }
 
     @Override

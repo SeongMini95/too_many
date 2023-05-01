@@ -306,7 +306,7 @@ class AuthServiceTest {
 
             // then
             assertThat(responseDto.isResult()).isTrue();
-            assertThat(responseDto.getId()).isEqualTo(mockUser.getId());
+            assertThat(responseDto.getUserId()).isEqualTo(mockUser.getId());
             assertThat(responseDto.getNickname()).isEqualTo(mockUser.getNickname());
             assertThat(responseDto.getProfile()).isEqualTo(mockUser.getProfile());
         }

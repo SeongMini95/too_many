@@ -81,7 +81,7 @@ class RegionServiceTest {
             RegionCodeOfCoordResponseDto responseDto = regionService.getRegionCodeOfCoord("127", "34");
 
             // then
-            assertThat(responseDto.getCode()).isEqualTo("2671025000");
+            assertThat(responseDto.getCodes()).isEqualTo(List.of("2600000000", "2671000000", "2671025000"));
             assertThat(responseDto.getAddress()).isEqualTo("부산 기장군 기장읍");
         }
 
@@ -115,7 +115,7 @@ class RegionServiceTest {
             RegionCodeOfCoordResponseDto responseDto = regionService.getRegionCodeOfCoord("127", "34");
 
             // then
-            assertThat(responseDto.getCode()).isEqualTo("2671025000");
+            assertThat(responseDto.getCodes()).isEqualTo(List.of("2600000000", "2671000000", "2671025000"));
             assertThat(responseDto.getAddress()).isEqualTo("부산 기장군 기장읍");
         }
 
