@@ -19,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RegionControllerTest extends AcceptanceTest {
@@ -51,7 +53,7 @@ class RegionControllerTest extends AcceptanceTest {
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(jsonPath.getString("code")).isEqualTo("2671025300");
+            assertThat(jsonPath.getList("codes")).isEqualTo(List.of("2600000000", "2671000000", "2671025300"));
             assertThat(jsonPath.getString("address")).isEqualTo("부산광역시 기장군 장안읍");
 
             closeMockWebServer();
@@ -74,7 +76,7 @@ class RegionControllerTest extends AcceptanceTest {
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(jsonPath.getString("code")).isEqualTo("2671025300");
+            assertThat(jsonPath.getList("codes")).isEqualTo(List.of("2600000000", "2671000000", "2671025300"));
             assertThat(jsonPath.getString("address")).isEqualTo("부산광역시 기장군 장안읍");
 
             closeMockWebServer();

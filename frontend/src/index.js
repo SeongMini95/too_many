@@ -3,12 +3,26 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { RecoilRoot } from "recoil";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './css/index.css';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            retry: 0
+        }
+    }
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <RecoilRoot>
-        <App />
-    </RecoilRoot>
+    <QueryClientProvider client={queryClient}>
+        <RecoilRoot>
+            <App />
+        </RecoilRoot>
+    </QueryClientProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

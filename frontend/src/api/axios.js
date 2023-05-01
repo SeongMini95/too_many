@@ -42,17 +42,22 @@ const onTokenReissued = (accessToken) => {
 
 const reissuedToken = async () => {
     try {
-        const { accessToken, refreshToken } = await authApi.reissue(tokenProvider.getRefreshToken());
+        const savedAccessToken = tokenProvider.getAccessToken();
+        if (savedAccessToken) {
+            const { accessToken, refreshToken } = await authApi.reissue(tokenProvider.getRefreshToken());
 
-        lock = false;
+            lock = false;
 
-        onTokenReissued(accessToken);
-        subscribers = [];
+            onTokenReissued(accessToken);
+            subscribers = [];
 
-        tokenProvider.setAccessToken(accessToken);
-        tokenProvider.setRefreshToken(refreshToken);
+            tokenProvider.setAccessToken(accessToken);
+            tokenProvider.setRefreshToken(refreshToken);
 
-        return accessToken;
+            return accessToken;
+        } else {
+            return '';
+        }
     } catch (e) {
         lock = false;
         subscribers = [];

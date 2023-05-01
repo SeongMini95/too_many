@@ -1,0 +1,146 @@
+.header_layout {
+    display: flex;
+    justify-content: center;
+    min-width: 1070px;
+    width: 100%;
+    background-color: white;
+    height: 74px;
+    position: fixed;
+    z-index: 400;
+}
+
+.header_content {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 74px;
+    max-height: 74px;
+    border-bottom: 1px solid rgb(234 234 234);
+}
+
+.header_wrap {
+    display: grid;
+    grid-auto-flow: column;
+    align-items: center;
+    width: 1070px;
+    height: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    box-sizing: border-box;
+}
+
+.main_logo {
+    display: flex;
+    align-items: center;
+    max-width: 168px;
+    height: 100%;
+    padding: 0 10px;
+}
+
+.logo_img {
+    height: 62px;
+}
+
+.header_link {
+    display: inline-flex;
+    justify-content: flex-end;
+    gap: 30px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 20px;
+    padding-left: 24px;
+    white-space: nowrap;
+}
+
+.link_login {
+    width: 2.415rem;
+    height: 20px;
+    line-height: 20px;
+    font-size: 0.875rem;
+    color: rgb(32, 32, 32);
+    text-decoration: transparent;
+}
+
+.user_wrap {
+    position: relative;
+    justify-self: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: fit-content;
+    min-width: 163px;
+    gap: 20px;
+}
+
+.link_write_review {
+    height: 20px;
+    line-height: 20px;
+    font-size: 0.875rem;
+    color: rgb(32, 32, 32);
+    text-decoration: transparent;
+}
+
+.user_button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    color: rgb(32, 32, 32);
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
+}
+
+.user_content {
+    display: flex;
+}
+
+.user_name {
+    position: relative;
+    font-weight: bold;
+}
+
+.user_button_ico {
+    position: relative;
+    top: 0;
+    width: 10px;
+    height: 6px;
+    transform: rotate(0.5turn);
+}
+
+.user_modal {
+    position: absolute;
+    z-index: 1002;
+    top: 30px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    justify-content: center;
+    width: 149px;
+    border: 1px solid rgba(0, 0, 0, 0);
+    border-radius: 4px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 4px 0;
+}
+
+.user_modal a {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 34px;
+    padding: 8px 0 8px 0;
+    font-size: 0.875rem;
+    letter-spacing: -0.0437rem;
+    color: rgb(80, 80, 80);
+}
+
+.user_modal a:hover {
+    background-color: rgb(245, 245, 245);
+    color: rgb(80, 80, 80);
+}
+
+.user_modal a + a {
+    border-top: 1px solid #efefef;
+}
