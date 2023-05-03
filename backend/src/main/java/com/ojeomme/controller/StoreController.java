@@ -2,6 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
@@ -46,6 +47,12 @@ public class StoreController {
     @GetMapping("/{storeId}/reviewImageList")
     public ResponseEntity<ReviewImageListResponseDto> getReviewImageList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewImageId) {
         ReviewImageListResponseDto responseDto = storeService.getReviewImageList(storeId, reviewImageId);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/todayRanking")
+    public ResponseEntity<RealTimeStoreRankingResponseDto> getTodayStoreRanking(@RequestParam String regionCode) {
+        RealTimeStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking(regionCode);
         return ResponseEntity.ok(responseDto);
     }
 }

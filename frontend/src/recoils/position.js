@@ -4,10 +4,10 @@ import { positionProvider } from "../utils/positionUtils";
 const coordState = atom({
     key: 'coordState',
     default: {
-        codes: ['1100000000'],
-        address: '서울',
-        x: '126.978652258309',
-        y: '37.566826004661'
+        codes: [],
+        address: '',
+        x: '',
+        y: ''
     }
 });
 

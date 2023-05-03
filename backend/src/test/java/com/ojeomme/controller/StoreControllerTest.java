@@ -7,6 +7,7 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
@@ -33,10 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,10 +56,98 @@ class StoreControllerTest extends AcceptanceTest {
     @Autowired
     private StoreLikeLogRepository storeLikeLogRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     @SpyBean
     private KakaoKeywordClient kakaoKeywordClient;
 
     private MockWebServer mockWebServer;
+
+    @Nested
+    class getTodayStoreRanking {
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다() {
+            // given
+            for (int i = 0; i < 10; i++) {
+                Store store = createStore();
+                createReview(store, i % 5 + 1, i, true);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .when().get("/api/store/todayRanking")
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
+        }
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다_이미지_없음() {
+            // given
+            for (int i = 0; i < 10; i++) {
+                Store store = createStore();
+                createReview(store, i % 5 + 1, i, false);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .when().get("/api/store/todayRanking")
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
+        }
+
+        private Store createStore() {
+            return storeRepository.save(Store.builder()
+                    .kakaoPlaceId(1315083198L)
+                    .category(store.getCategory())
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .storeName(UUID.randomUUID().toString())
+                    .addressName("주소")
+                    .roadAddressName("도로명 주소")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(0)
+                    .build());
+        }
+
+        private void createReview(Store store, int starScore, int likeCnt, boolean existImage) {
+            Review review = Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(starScore)
+                    .content("")
+                    .revisitYn(false)
+                    .likeCnt(likeCnt)
+                    .build();
+
+            if (existImage) {
+                review.addImages(Set.of(
+                        ReviewImage.builder()
+                                .review(review)
+                                .imageUrl(UUID.randomUUID() + ".png")
+                                .build()));
+            }
+
+            reviewRepository.save(review);
+        }
+    }
 
     @Nested
     class getReviewImageList {

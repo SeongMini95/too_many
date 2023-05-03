@@ -11,6 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
@@ -83,5 +84,10 @@ public class StoreService {
     @Transactional(readOnly = true)
     public ReviewImageListResponseDto getReviewImageList(Long storeId, Long reviewImageId) {
         return reviewImageRepository.getReviewImageList(storeId, reviewImageId);
+    }
+
+    @Transactional(readOnly = true)
+    public RealTimeStoreRankingResponseDto getTodayStoreRanking(String regionCode) {
+        return storeRepository.getRealTimeStoreRanking(regionCode);
     }
 }

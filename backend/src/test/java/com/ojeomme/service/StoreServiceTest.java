@@ -11,6 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
@@ -56,6 +57,54 @@ class StoreServiceTest {
 
     @Mock
     private StoreLikeLogRepository storeLikeLogRepository;
+
+    @Nested
+    class getTodayStoreRanking {
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다() {
+            // given
+            RealTimeStoreRankingResponseDto dto = new RealTimeStoreRankingResponseDto(List.of(
+                    RealTimeStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트1")
+                            .regionName("청담동")
+                            .build(),
+                    RealTimeStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트2")
+                            .regionName("청담동")
+                            .build(),
+                    RealTimeStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트3")
+                            .regionName("청담동")
+                            .build(),
+                    RealTimeStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트4")
+                            .regionName("청담동")
+                            .build(),
+                    RealTimeStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트5")
+                            .regionName("청담동")
+                            .build()
+            ));
+            given(storeRepository.getRealTimeStoreRanking(anyString())).willReturn(dto);
+
+            // when
+            RealTimeStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking("123");
+
+            // then
+            assertThat(responseDto.getStores()).hasSameSizeAs(dto.getStores());
+            for (int i = 0; i < responseDto.getStores().size(); i++) {
+                assertThat(responseDto.getStores().get(i).getStoreId()).isEqualTo(dto.getStores().get(i).getStoreId());
+                assertThat(responseDto.getStores().get(i).getStoreName()).isEqualTo(dto.getStores().get(i).getStoreName());
+                assertThat(responseDto.getStores().get(i).getRegionName()).isEqualTo(dto.getStores().get(i).getRegionName());
+            }
+        }
+    }
 
     @Nested
     class getReviewImageList {
@@ -210,7 +259,7 @@ class StoreServiceTest {
             assertThat(responseDto.getStore().getY()).isEqualTo(store.getY());
             assertThat(responseDto.getStore().getLikeCnt()).isEqualTo(store.getLikeCnt());
 
-            assertThat(responseDto.getPreviewImages().size()).isEqualTo(previewImages.size());
+            assertThat(responseDto.getPreviewImages()).hasSameSizeAs(previewImages);
             for (int i = 0; i < responseDto.getPreviewImages().size(); i++) {
                 assertThat(responseDto.getPreviewImages().get(i)).isEqualTo(previewImages.get(i));
             }
@@ -280,7 +329,7 @@ class StoreServiceTest {
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
             assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
 
-            assertThat(responseDto.getPlaces().size()).isEqualTo(kakaoPlaceList.getDocuments().size());
+            assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
             for (int i = 0; i < responseDto.getPlaces().size(); i++) {
                 assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
                 assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());

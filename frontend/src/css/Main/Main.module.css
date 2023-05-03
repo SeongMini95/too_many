@@ -1,0 +1,73 @@
+.main {
+    display: flex;
+    justify-content: center;
+    min-width: 1070px;
+    position: relative;
+    width: 100%;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.top_box {
+    display: flex;
+    height: 100%;
+    padding-top: 40px;
+    position: relative;
+    width: 1070px;
+}
+
+.top_box_section {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    margin: 25px;
+    padding: 10px;
+    max-width: 485px;
+    width: 100%;
+    border-radius: 13px;
+    background-color: white;
+    box-shadow: 0 0 7px 0;
+    min-height: 400px;
+}
+
+.section_title {
+    padding: 15px 0;
+    border-bottom: 1px solid #dbcfcf;
+    font-weight: bolder;
+}
+
+.section_ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    line-height: 30px;
+}
+
+.section_li {
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 15px;
+}
+
+.section_li_a {
+    display: flex;
+    color: black;
+}
+
+.section_li_a:hover {
+    font-weight: bold;
+}
+
+.region {
+    margin-right: 5px;
+}
+
+.region_ranking {
+    display: flex;
+    width: 20px;
+    margin-right: 5px;
+    justify-content: flex-end;
+}

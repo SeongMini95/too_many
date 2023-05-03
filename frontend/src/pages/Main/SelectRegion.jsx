@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import style from '../../../css/Layout/Default/SelectRegion.module.css';
-import regionApi from "../../../api/region";
+import style from '../../css/Main/SelectRegion.module.css';
+import regionApi from "../../api/region";
 import { useRecoilState } from "recoil";
-import { positionState } from "../../../recoils/position";
+import { positionState } from "../../recoils/position";
 import { useQuery } from "@tanstack/react-query";
-import { API_PATH } from "../../../constants/path";
+import { API_PATH } from "../../constants/path";
 
 const SelectRegion = ({ handlerClickClose }) => {
     const [{ codes }, setPosition] = useRecoilState(positionState);
@@ -202,7 +202,7 @@ const SelectRegion = ({ handlerClickClose }) => {
                         <button className={style.button} onClick={handlerClickConfirm}>
                             <span className={style.span}>선택 완료</span>
                         </button>
-                        <button className={[style.button, style.cancel].join(' ')}>
+                        <button className={[style.button, style.cancel].join(' ')} onClick={handlerClickClose}>
                             <span className={[style.span, style.cancel].join(' ')}>취소</span>
                         </button>
                     </div>

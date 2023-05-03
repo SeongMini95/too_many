@@ -39,7 +39,8 @@ const API_PATH = {
         GET_STORE: '/api/store/:storeId',
         LIKE_STORE: '/api/store/:storeId/like',
         GET_STORE_LIKE_LOG_OF_USER: '/api/store/:storeId/like',
-        GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList'
+        GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList',
+        GET_REAL_TIME_STORE_RANKING: '/api/store/todayRanking'
     },
     IMAGE: {
         UPLOAD: '/api/image/upload'
