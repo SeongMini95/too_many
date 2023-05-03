@@ -66,6 +66,11 @@
     color: rgb(10, 199, 206);
 }
 
+.info_box_username_white {
+    font-weight: 600;
+    color: white;
+}
+
 .info_box_first {
     min-height: 38px;
     font-size: 1.625rem;

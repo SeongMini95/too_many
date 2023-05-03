@@ -7,12 +7,16 @@ import com.ojeomme.domain.category.Category;
 import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
+import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.storelikelog.StoreLikeLog;
 import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
+import com.ojeomme.domain.storereviewstatistics.StoreReviewStatistics;
+import com.ojeomme.domain.storereviewstatistics.StoreReviewStatisticsId;
+import com.ojeomme.domain.storereviewstatistics.repository.StoreReviewStatisticsRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
 import io.restassured.RestAssured;
@@ -32,11 +36,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,10 +60,139 @@ class StoreControllerTest extends AcceptanceTest {
     @Autowired
     private StoreLikeLogRepository storeLikeLogRepository;
 
+    @Autowired
+    private StoreReviewStatisticsRepository storeReviewStatisticsRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
     @SpyBean
     private KakaoKeywordClient kakaoKeywordClient;
 
     private MockWebServer mockWebServer;
+
+    @Nested
+    class getTodayStoreRanking {
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다() {
+            // given
+            LocalDate now = LocalDate.now();
+            List<StoreReviewStatistics> list = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                Store store = createStore();
+                createReview(store);
+                StoreReviewStatistics obj = storeReviewStatisticsRepository.save(StoreReviewStatistics.builder()
+                        .id(StoreReviewStatisticsId.builder()
+                                .statisticsDate(now)
+                                .storeId(store.getId())
+                                .build())
+                        .store(store)
+                        .avgScore((float) (Math.random() * 4))
+                        .reviewCnt((int) (Math.random() * 100) + 1)
+                        .build());
+                list.add(obj);
+            }
+
+            list = list.stream()
+                    .sorted(Comparator.comparing(StoreReviewStatistics::getAvgScore, Comparator.reverseOrder())
+                            .thenComparing(StoreReviewStatistics::getReviewCnt, Comparator.reverseOrder()))
+                    .collect(Collectors.toList())
+                    .subList(0, 10);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .when().get("/api/store/todayRanking")
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
+            for (int i = 0; i < list.size(); i++) {
+                assertThat(jsonPath.getLong("stores[" + i + "].storeId")).isEqualTo(list.get(i).getStore().getId());
+            }
+        }
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다_이미지_없음() {
+            // given
+            LocalDate now = LocalDate.now();
+            List<StoreReviewStatistics> list = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                Store store = createStore();
+                StoreReviewStatistics obj = storeReviewStatisticsRepository.save(StoreReviewStatistics.builder()
+                        .id(StoreReviewStatisticsId.builder()
+                                .statisticsDate(now)
+                                .storeId(store.getId())
+                                .build())
+                        .store(store)
+                        .avgScore((float) (Math.random() * 4))
+                        .reviewCnt((int) (Math.random() * 100) + 1)
+                        .build());
+                list.add(obj);
+            }
+
+            list = list.stream()
+                    .sorted(Comparator.comparing(StoreReviewStatistics::getAvgScore, Comparator.reverseOrder())
+                            .thenComparing(StoreReviewStatistics::getReviewCnt, Comparator.reverseOrder()))
+                    .collect(Collectors.toList())
+                    .subList(0, 10);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .when().get("/api/store/todayRanking")
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
+            for (int i = 0; i < list.size(); i++) {
+                assertThat(jsonPath.getLong("stores[" + i + "].storeId")).isEqualTo(list.get(i).getStore().getId());
+            }
+        }
+
+        private Store createStore() {
+            return storeRepository.save(Store.builder()
+                    .kakaoPlaceId(1315083198L)
+                    .category(store.getCategory())
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .storeName(UUID.randomUUID().toString())
+                    .addressName("주소")
+                    .roadAddressName("도로명 주소")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(0)
+                    .build());
+        }
+
+        private void createReview(Store store) {
+            Review review = Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(5)
+                    .content("")
+                    .revisitYn(false)
+                    .likeCnt(5)
+                    .build();
+            review.addImages(Set.of(
+                    ReviewImage.builder()
+                            .review(review)
+                            .imageUrl(UUID.randomUUID() + ".png")
+                            .build()
+            ));
+            reviewRepository.save(review);
+        }
+    }
 
     @Nested
     class getReviewImageList {
