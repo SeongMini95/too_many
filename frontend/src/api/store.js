@@ -1,4 +1,4 @@
-import { authAxios } from "./axios";
+import { authAxios, defaultAxios } from "./axios";
 import { API_PATH } from "../constants/path";
 import { urlUtils } from "../utils/urlUtils";
 
@@ -33,6 +33,12 @@ const storeApi = {
             url = urlUtils.setParam(url, { reviewImageId });
         }
         const { data } = await authAxios.get(url);
+
+        return data;
+    },
+    getTodayStoreRanking: async (regionCode) => {
+        const url = urlUtils.setParam(API_PATH.STORE.GET_TODAY_STORE_RANKING, { regionCode });
+        const { data } = await defaultAxios.get(url);
 
         return data;
     }

@@ -3,9 +3,7 @@ import { BROWSER_PATH } from "./constants/path";
 import Login from "./pages/Auth/Login";
 import KakaoLogin from "./pages/Auth/KakaoLogin";
 import NaverLogin from "./pages/Auth/NaverLogin";
-import { useRecoilValue } from "recoil";
-import { loginState } from "./recoils/auth";
-import Main from "./pages/Layout/Main";
+import Main from "./pages/Main/Main";
 import PrivateRouter from "./router/PrivateRouter";
 import SearchPlaceList from "./pages/Store/SearchPlaceList";
 import StoreReviews from "./pages/Store/StoreReviews";
@@ -18,8 +16,6 @@ import DefaultLayout from "./pages/Layout/Default/DefaultLayout";
 import SimpleLayout from "./pages/Layout/Simple/SimpleLayout";
 
 function App() {
-    const isLogin = useRecoilValue(loginState);
-
     return (
         <BrowserRouter>
             <Routes>

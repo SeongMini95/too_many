@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface RegionCodeRepository extends JpaRepository<RegionCode, String> {
+public interface RegionCodeRepository extends JpaRepository<RegionCode, String>, RegionCodeCustomRepository {
 
     List<RegionCode> findAllByRegionDepthNot(int regionDepth);
 }

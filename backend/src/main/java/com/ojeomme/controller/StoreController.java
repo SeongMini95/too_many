@@ -5,6 +5,7 @@ import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
+import com.ojeomme.dto.response.storereviewstatistics.TodayStoreRankingResponseDto;
 import com.ojeomme.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,12 @@ public class StoreController {
     @GetMapping("/{storeId}/reviewImageList")
     public ResponseEntity<ReviewImageListResponseDto> getReviewImageList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewImageId) {
         ReviewImageListResponseDto responseDto = storeService.getReviewImageList(storeId, reviewImageId);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/todayRanking")
+    public ResponseEntity<TodayStoreRankingResponseDto> getTodayStoreRanking(@RequestParam String regionCode) {
+        TodayStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking(regionCode);
         return ResponseEntity.ok(responseDto);
     }
 }

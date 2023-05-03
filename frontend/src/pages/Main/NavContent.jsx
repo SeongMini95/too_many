@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
-import style from '../../../css/Layout/Default/NavContent.module.css';
+import React, { useEffect, useState } from 'react';
+import style from '../../css/Main/NavContent.module.css';
 import { Link } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { loginState } from "../../../recoils/auth";
-import { userInfoState } from "../../../recoils/user";
+import { loginState } from "../../recoils/auth";
+import { userInfoState } from "../../recoils/user";
 import SelectRegion from "./SelectRegion";
-import { positionState } from "../../../recoils/position";
-import regionApi from "../../../api/region";
+import { positionState } from "../../recoils/position";
+import regionApi from "../../api/region";
 
-const NavContent = () => {
+const NavContent = ({ storeRanking }) => {
     const isLogin = useRecoilValue(loginState);
     const { nickname } = useRecoilValue(userInfoState);
     const { address } = useRecoilValue(positionState);
     const setPosition = useSetRecoilState(positionState);
 
     const [otherRegion, setOtherRegion] = useState(false);
+    const [visualStore, setVisualStore] = useState({
+        imgUrl: '',
+        storeName: ''
+    });
 
     const handlerCurrentRegion = () => {
         if (navigator.geolocation) {
@@ -31,19 +35,66 @@ const NavContent = () => {
         }
     }
 
+    useEffect(() => {
+        let index = 1;
+        let maxIndex = storeRanking ? storeRanking.length - 1 : 1;
+
+        if (storeRanking) {
+            setVisualStore(!!storeRanking.length ? {
+                ...visualStore,
+                imgUrl: storeRanking[0].image,
+                storeName: storeRanking[0].storeName
+            } : {
+                ...visualStore,
+                imgUrl: '',
+                storeName: ''
+            });
+        } else {
+            setVisualStore({
+                ...visualStore,
+                imgUrl: '',
+                storeName: ''
+            })
+        }
+
+        const slideStoreRankingImg = setInterval(() => {
+            setVisualStore(storeRanking[index] ? {
+                ...visualStore,
+                imgUrl: storeRanking[index].image,
+                storeName: storeRanking[index].storeName
+            } : {
+                ...visualStore,
+                imgUrl: '',
+                storeName: ''
+            });
+
+            if (index === maxIndex) {
+                index = 0;
+            }
+
+            ++index;
+        }, 5000);
+
+        return () => {
+            clearInterval(slideStoreRankingImg);
+        };
+    }, [storeRanking]);
+
     return (
         <>
             <nav className={style.empty_nav} />
             <div className={style.nav_content}>
                 <div className={style.nav_visual}>
-                    <img className={style.visual_img} src="https://d12zq4w4guyljn.cloudfront.net/pre_20220913200230_photo1_5f3a51b4b5f9.jpg" alt="" />
+                    {visualStore.imgUrl && (
+                        <img className={style.visual_img} src={visualStore.imgUrl} alt="" />
+                    )}
                     <div className={style.nav_visual_wrap}>
                         <div className={style.info_box}>
                             {!isLogin ? (
                                 <p className={style.info_box_first}>당신을 위한</p>
                             ) : (
                                 <p className={style.info_box_first}>
-                                    <span className={style.info_box_username}>{nickname}</span>님을 위한
+                                    <span className={visualStore.imgUrl ? style.info_box_username : style.info_box_username_white}>{nickname}</span>님을 위한
                                 </p>
                             )}
                             <h1 className={style.info_box_second}>
@@ -62,7 +113,7 @@ const NavContent = () => {
                     <Link className={style.link_wrap} to={'asd'}>
                         <span className={style.link_content}>
                             <img className={style.link_icon} src={`${process.env.PUBLIC_URL}/assets/image/top_store_link.png`} alt="" />
-                            매장명
+                            {visualStore.storeName}
                         </span>
                     </Link>
                 </div>

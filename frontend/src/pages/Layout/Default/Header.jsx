@@ -52,11 +52,22 @@ const Header = () => {
                 const objPosition = JSON.parse(position);
                 for (const key in objPosition) {
                     if (Array.isArray(objPosition[key]) && !objPosition[key].length) {
-                        setPosition('');
+                        setPosition({
+                            codes: ['1100000000'],
+                            address: '서울',
+                            x: '126.978652258309',
+                            y: '37.566826004661'
+                        });
+
                         return;
                     } else {
                         if (!objPosition[key]) {
-                            setPosition('');
+                            setPosition({
+                                codes: ['1100000000'],
+                                address: '서울',
+                                x: '126.978652258309',
+                                y: '37.566826004661'
+                            });
                             return;
                         }
                     }
@@ -64,7 +75,12 @@ const Header = () => {
 
                 setPosition(JSON.parse(position));
             } else {
-                setPosition('');
+                setPosition({
+                    codes: ['1100000000'],
+                    address: '서울',
+                    x: '126.978652258309',
+                    y: '37.566826004661'
+                });
             }
         }
 

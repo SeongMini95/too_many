@@ -8,6 +8,7 @@ import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.storelikelog.StoreLikeLog;
 import com.ojeomme.domain.storelikelog.StoreLikeLogId;
 import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
+import com.ojeomme.domain.storereviewstatistics.repository.StoreReviewStatisticsRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
@@ -15,6 +16,7 @@ import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
+import com.ojeomme.dto.response.storereviewstatistics.TodayStoreRankingResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +58,57 @@ class StoreServiceTest {
 
     @Mock
     private StoreLikeLogRepository storeLikeLogRepository;
+
+    @Mock
+    private StoreReviewStatisticsRepository storeReviewStatisticsRepository;
+
+    @Nested
+    class getTodayStoreRanking {
+
+        @Test
+        void 지역의_오늘의_추천_매장_가져온다() {
+            // given
+            TodayStoreRankingResponseDto dto = new TodayStoreRankingResponseDto(List.of(
+                    TodayStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트1")
+                            .regionName("청담동")
+                            .build(),
+                    TodayStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트2")
+                            .regionName("청담동")
+                            .build(),
+                    TodayStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트3")
+                            .regionName("청담동")
+                            .build(),
+                    TodayStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트4")
+                            .regionName("청담동")
+                            .build(),
+                    TodayStoreRankingResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("테스트5")
+                            .regionName("청담동")
+                            .build()
+            ));
+            given(storeReviewStatisticsRepository.getTodayStoreReviewRanking(anyString())).willReturn(dto);
+
+            // when
+            TodayStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking("123");
+
+            // then
+            assertThat(responseDto.getStores()).hasSameSizeAs(dto.getStores());
+            for (int i = 0; i < responseDto.getStores().size(); i++) {
+                assertThat(responseDto.getStores().get(i).getStoreId()).isEqualTo(dto.getStores().get(i).getStoreId());
+                assertThat(responseDto.getStores().get(i).getStoreName()).isEqualTo(dto.getStores().get(i).getStoreName());
+                assertThat(responseDto.getStores().get(i).getRegionName()).isEqualTo(dto.getStores().get(i).getRegionName());
+            }
+        }
+    }
 
     @Nested
     class getReviewImageList {

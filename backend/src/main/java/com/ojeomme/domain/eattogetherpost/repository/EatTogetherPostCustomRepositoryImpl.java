@@ -1,6 +1,7 @@
 package com.ojeomme.domain.eattogetherpost.repository;
 
 import com.ojeomme.domain.regioncode.QRegionCode;
+import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.querydsl.core.BooleanBuilder;
@@ -8,7 +9,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,6 +19,7 @@ import static com.ojeomme.domain.user.QUser.user;
 public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCustomRepository {
 
     private final JPAQueryFactory factory;
+    private final RegionCodeRepository regionCodeRepository;
 
     @Override
     public Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long postId) {
@@ -42,25 +43,7 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
     @Override
     public EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId) {
         // 하위 지역 코드 가져오기
-        int depth = factory
-                .select(QRegionCode.regionCode.regionDepth)
-                .from(QRegionCode.regionCode)
-                .where(QRegionCode.regionCode.code.eq(regionCode))
-                .fetchFirst();
-
-        Set<String> regionCodes = new HashSet<>();
-        regionCodes.add(regionCode);
-
-        for (int i = depth + 1; i <= 3; i++) {
-            regionCodes.addAll(factory
-                    .select(QRegionCode.regionCode.code)
-                    .from(QRegionCode.regionCode)
-                    .where(
-                            QRegionCode.regionCode.upCode.code.in(regionCodes),
-                            QRegionCode.regionCode.regionDepth.eq(i)
-                    )
-                    .fetch());
-        }
+        Set<String> regionCodes = regionCodeRepository.getDownCode(regionCode);
 
         BooleanBuilder ltPostId = new BooleanBuilder();
         if (moreId != null) {
