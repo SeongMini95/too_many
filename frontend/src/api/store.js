@@ -36,8 +36,8 @@ const storeApi = {
 
         return data;
     },
-    getTodayStoreRanking: async (regionCode) => {
-        const url = urlUtils.setParam(API_PATH.STORE.GET_TODAY_STORE_RANKING, { regionCode });
+    getRealTimeStoreRanking: async (regionCode) => {
+        const url = urlUtils.setParam(API_PATH.STORE.GET_REAL_TIME_STORE_RANKING, { regionCode });
         const { data } = await defaultAxios.get(url);
 
         return data;

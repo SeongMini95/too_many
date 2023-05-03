@@ -40,7 +40,7 @@ const API_PATH = {
         LIKE_STORE: '/api/store/:storeId/like',
         GET_STORE_LIKE_LOG_OF_USER: '/api/store/:storeId/like',
         GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList',
-        GET_TODAY_STORE_RANKING: '/api/store/todayRanking'
+        GET_REAL_TIME_STORE_RANKING: '/api/store/todayRanking'
     },
     IMAGE: {
         UPLOAD: '/api/image/upload'

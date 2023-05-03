@@ -1,4 +1,4 @@
-package com.ojeomme.dto.response.storereviewstatistics;
+package com.ojeomme.dto.response.store;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
-public class TodayStoreRankingResponseDto {
+public class RealTimeStoreRankingResponseDto {
 
     private final List<StoreResponseDto> stores;
 
-    public TodayStoreRankingResponseDto(List<StoreResponseDto> stores) {
+    public RealTimeStoreRankingResponseDto(List<StoreResponseDto> stores) {
         this.stores = stores;
     }
 
