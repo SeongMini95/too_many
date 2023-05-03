@@ -2,10 +2,10 @@ package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
 import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
-import com.ojeomme.dto.response.storereviewstatistics.TodayStoreRankingResponseDto;
 import com.ojeomme.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,8 +51,8 @@ public class StoreController {
     }
 
     @GetMapping("/todayRanking")
-    public ResponseEntity<TodayStoreRankingResponseDto> getTodayStoreRanking(@RequestParam String regionCode) {
-        TodayStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking(regionCode);
+    public ResponseEntity<RealTimeStoreRankingResponseDto> getTodayStoreRanking(@RequestParam String regionCode) {
+        RealTimeStoreRankingResponseDto responseDto = storeService.getTodayStoreRanking(regionCode);
         return ResponseEntity.ok(responseDto);
     }
 }

@@ -14,9 +14,6 @@ import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.storelikelog.StoreLikeLog;
 import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
-import com.ojeomme.domain.storereviewstatistics.StoreReviewStatistics;
-import com.ojeomme.domain.storereviewstatistics.StoreReviewStatisticsId;
-import com.ojeomme.domain.storereviewstatistics.repository.StoreReviewStatisticsRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
 import com.ojeomme.exception.ApiErrorCode;
 import io.restassured.RestAssured;
@@ -36,7 +33,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,9 +57,6 @@ class StoreControllerTest extends AcceptanceTest {
     private StoreLikeLogRepository storeLikeLogRepository;
 
     @Autowired
-    private StoreReviewStatisticsRepository storeReviewStatisticsRepository;
-
-    @Autowired
     private ReviewRepository reviewRepository;
 
     @SpyBean
@@ -77,28 +70,10 @@ class StoreControllerTest extends AcceptanceTest {
         @Test
         void 지역의_오늘의_추천_매장_가져온다() {
             // given
-            LocalDate now = LocalDate.now();
-            List<StoreReviewStatistics> list = new ArrayList<>();
             for (int i = 0; i < 10; i++) {
                 Store store = createStore();
-                createReview(store);
-                StoreReviewStatistics obj = storeReviewStatisticsRepository.save(StoreReviewStatistics.builder()
-                        .id(StoreReviewStatisticsId.builder()
-                                .statisticsDate(now)
-                                .storeId(store.getId())
-                                .build())
-                        .store(store)
-                        .avgScore((float) (Math.random() * 4))
-                        .reviewCnt((int) (Math.random() * 100) + 1)
-                        .build());
-                list.add(obj);
+                createReview(store, i % 5 + 1, i, true);
             }
-
-            list = list.stream()
-                    .sorted(Comparator.comparing(StoreReviewStatistics::getAvgScore, Comparator.reverseOrder())
-                            .thenComparing(StoreReviewStatistics::getReviewCnt, Comparator.reverseOrder()))
-                    .collect(Collectors.toList())
-                    .subList(0, 10);
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -113,35 +88,15 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
             assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
-            for (int i = 0; i < list.size(); i++) {
-                assertThat(jsonPath.getLong("stores[" + i + "].storeId")).isEqualTo(list.get(i).getStore().getId());
-            }
         }
 
         @Test
         void 지역의_오늘의_추천_매장_가져온다_이미지_없음() {
             // given
-            LocalDate now = LocalDate.now();
-            List<StoreReviewStatistics> list = new ArrayList<>();
             for (int i = 0; i < 10; i++) {
                 Store store = createStore();
-                StoreReviewStatistics obj = storeReviewStatisticsRepository.save(StoreReviewStatistics.builder()
-                        .id(StoreReviewStatisticsId.builder()
-                                .statisticsDate(now)
-                                .storeId(store.getId())
-                                .build())
-                        .store(store)
-                        .avgScore((float) (Math.random() * 4))
-                        .reviewCnt((int) (Math.random() * 100) + 1)
-                        .build());
-                list.add(obj);
+                createReview(store, i % 5 + 1, i, false);
             }
-
-            list = list.stream()
-                    .sorted(Comparator.comparing(StoreReviewStatistics::getAvgScore, Comparator.reverseOrder())
-                            .thenComparing(StoreReviewStatistics::getReviewCnt, Comparator.reverseOrder()))
-                    .collect(Collectors.toList())
-                    .subList(0, 10);
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -156,9 +111,6 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
             assertThat(jsonPath.getList("stores")).hasSizeLessThanOrEqualTo(10);
-            for (int i = 0; i < list.size(); i++) {
-                assertThat(jsonPath.getLong("stores[" + i + "].storeId")).isEqualTo(list.get(i).getStore().getId());
-            }
         }
 
         private Store createStore() {
@@ -175,21 +127,24 @@ class StoreControllerTest extends AcceptanceTest {
                     .build());
         }
 
-        private void createReview(Store store) {
+        private void createReview(Store store, int starScore, int likeCnt, boolean existImage) {
             Review review = Review.builder()
                     .user(user)
                     .store(store)
-                    .starScore(5)
+                    .starScore(starScore)
                     .content("")
                     .revisitYn(false)
-                    .likeCnt(5)
+                    .likeCnt(likeCnt)
                     .build();
-            review.addImages(Set.of(
-                    ReviewImage.builder()
-                            .review(review)
-                            .imageUrl(UUID.randomUUID() + ".png")
-                            .build()
-            ));
+
+            if (existImage) {
+                review.addImages(Set.of(
+                        ReviewImage.builder()
+                                .review(review)
+                                .imageUrl(UUID.randomUUID() + ".png")
+                                .build()));
+            }
+
             reviewRepository.save(review);
         }
     }

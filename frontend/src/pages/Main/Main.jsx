@@ -3,17 +3,19 @@ import NavContent from "./NavContent";
 import style from '../../css/Main/Main.module.css';
 import storeApi from "../../api/store";
 import { useQuery } from "@tanstack/react-query";
-import { API_PATH } from "../../constants/path";
+import { API_PATH, BROWSER_PATH } from "../../constants/path";
 import { useRecoilValue } from "recoil";
 import { positionState } from "../../recoils/position";
+import { Link } from "react-router-dom";
+import { urlUtils } from "../../utils/urlUtils";
 
 const Main = () => {
     const { codes } = useRecoilValue(positionState);
 
     const { data, isSuccess } = useQuery(
-        [API_PATH.STORE.GET_TODAY_STORE_RANKING, { regionCode: codes[codes.length - 1] }],
+        [API_PATH.STORE.GET_REAL_TIME_STORE_RANKING, { regionCode: codes[codes.length - 1] }],
         async () => {
-            const { stores } = await storeApi.getTodayStoreRanking(codes[codes.length - 1]);
+            const { stores } = await storeApi.getRealTimeStoreRanking(codes[codes.length - 1]);
             return stores;
         }, {
             enabled: !!codes.length,
@@ -26,26 +28,19 @@ const Main = () => {
             <main className={style.main}>
                 <div className={style.top_box}>
                     <section className={style.top_box_section}>
-                        <h1 className={style.section_title}>오늘의 추천 맛집</h1>
+                        <h1 className={style.section_title}>실시간 추천 맛집</h1>
                         <ul className={style.section_ul}>
-                            {/*{isSuccess && data.map((v, i) => (
-                                <li key={'ranking' + i} className={style.section_li}>
-                                    <span className={style.region_ranking}>{i + 1}.</span> {v && (
-                                    <>
-                                        <span className={style.region}>[{v.regionName}]</span>
-                                        {v.storeName}
-                                    </>
-                                )}
-                                </li>
-                            ))}*/}
                             {isSuccess && [...Array(10).keys()].map(v => (
                                 <li key={'ranking' + v} className={style.section_li}>
-                                    <span className={style.region_ranking}>{v + 1}.</span> {data[v] && (
-                                    <>
-                                        <span className={style.region}>[{data[v].regionName}]</span>
-                                        {data[v].storeName}
-                                    </>
-                                )}
+                                    {!data[v] ? (
+                                        <span className={style.region_ranking}>{v + 1}.</span>
+                                    ) : (
+                                        <Link to={urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId: data[v].storeId })} className={style.section_li_a}>
+                                            <span className={style.region_ranking}>{v + 1}.</span>
+                                            <span className={style.region}>[{data[v].regionName}]</span>
+                                            {data[v].storeName}
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>

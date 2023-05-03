@@ -49,6 +49,16 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 15px;
+}
+
+.section_li_a {
+    display: flex;
+    color: black;
+}
+
+.section_li_a:hover {
+    font-weight: bold;
 }
 
 .region {
