@@ -52,6 +52,49 @@ class EatTogetherControllerTest extends AcceptanceTest {
     private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Nested
+    class getRecentEatTogetherPostList {
+
+        @Test
+        void 지역의_최신_게시글을_가져온다() {
+            // given
+            List<EatTogetherPost> list = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                list.add(createPost("subject" + i));
+            }
+            list = list.stream()
+                    .sorted(Comparator.comparing(EatTogetherPost::getId, Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .when().get("/api/eatTogether/post/recent")
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(jsonPath.getList("posts")).hasSameSizeAs(list);
+            for (int i = 0; i < jsonPath.getList("posts").size(); i++) {
+                assertThat(jsonPath.getLong("posts[" + i + "].postId")).isEqualTo(list.get(i).getId());
+                assertThat(jsonPath.getString("posts[" + i + "].regionName")).isEqualTo(list.get(i).getRegionCode().getRegionName());
+                assertThat(jsonPath.getString("posts[" + i + "].subject")).isEqualTo(list.get(i).getSubject());
+                assertThat(jsonPath.getString("posts[" + i + "].createDatetime")).isEqualTo(list.get(i).getCreateDatetime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            }
+        }
+
+        private EatTogetherPost createPost(String subject) {
+            return eatTogetherPostRepository.save(EatTogetherPost.builder()
+                    .user(user)
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .subject(subject)
+                    .content("테스트 본문")
+                    .build());
+        }
+    }
+
+    @Nested
     class deleteEatTogetherReply {
 
         @Test
