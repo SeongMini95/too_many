@@ -19,7 +19,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final LoginInterceptor loginInterceptor;
     private final LoginUserArgumentResolver loginUserArgumentResolver;
 
-    private static final List<String> EXCLUDE_PATH = List.of("/api/auth/**", "/api/region/list", "/api/region/coordOfRegion", "/api/region/regionOfCoord", "/api/store/todayRanking");
+    private static final List<String> EXCLUDE_PATH = List.of(
+            "/api/auth/**",
+            "/api/region/list",
+            "/api/region/coordOfRegion",
+            "/api/region/regionOfCoord",
+            "/api/store/todayRanking",
+            "/api/eatTogether/post/recent"
+    );
 
     @Value("${security.cors.host.front}")
     private String front;

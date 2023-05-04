@@ -4,11 +4,14 @@ import com.ojeomme.domain.regioncode.QRegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
+import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto;
+import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto.PostResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,5 +72,29 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
                 .orderBy(eatTogetherPost.id.desc())
                 .limit(30)
                 .fetch());
+    }
+
+    @Override
+    public RecentEatTogetherPostListResponseDto getRecentEatTogetherPostList(String regionCode) {
+        // 하위 지역 코드 가져오기
+        Set<String> regionCodes = regionCodeRepository.getDownCode(regionCode);
+
+        List<PostResponseDto> posts = factory
+                .select(Projections.fields(
+                        PostResponseDto.class,
+                        eatTogetherPost.id.as("postId"),
+                        eatTogetherPost.regionCode.regionName,
+                        eatTogetherPost.subject,
+                        eatTogetherPost.createDatetime.as("ltCreateDatetime")
+                ))
+                .from(eatTogetherPost)
+                .innerJoin(eatTogetherPost.regionCode, QRegionCode.regionCode)
+                .where(QRegionCode.regionCode.code.in(regionCodes))
+                .orderBy(eatTogetherPost.id.desc())
+                .limit(10)
+                .fetch();
+        posts.forEach(PostResponseDto::convertDatetime);
+
+        return new RecentEatTogetherPostListResponseDto(posts);
     }
 }

@@ -8,6 +8,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
+import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto;
 import com.ojeomme.service.EatTogetherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -75,5 +76,11 @@ public class EatTogetherController {
     public ResponseEntity<Void> deleteEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @PathVariable Long replyId) {
         eatTogetherService.deleteEatTogetherReply(userId, postId, replyId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/post/recent")
+    public ResponseEntity<RecentEatTogetherPostListResponseDto> getRecentEatTogetherPostList(@RequestParam String regionCode) {
+        RecentEatTogetherPostListResponseDto responseDto = eatTogetherService.getRecentEatTogetherPostList(regionCode);
+        return ResponseEntity.ok(responseDto);
     }
 }
