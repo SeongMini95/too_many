@@ -38,17 +38,11 @@
 
 .section_ul {
     list-style: none;
-    display: flex;
-    flex-direction: column;
     width: 100%;
     line-height: 30px;
 }
 
 .section_li {
-    display: flex;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     font-size: 15px;
 }
 
@@ -63,11 +57,24 @@
 
 .region {
     margin-right: 5px;
+    min-width: fit-content;
 }
 
-.region_ranking {
-    display: flex;
-    width: 20px;
+.ranking {
+    width: fit-content;
     margin-right: 5px;
     justify-content: flex-end;
+    min-width: 20px;
+    display: flex;
+}
+
+.section_content {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.section_createDatetime {
+    margin-left: 5px;
 }

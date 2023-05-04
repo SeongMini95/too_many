@@ -16,6 +16,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
+import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -164,5 +165,10 @@ public class EatTogetherService {
                     throw new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
                 }
         );
+    }
+
+    @Transactional(readOnly = true)
+    public RecentEatTogetherPostListResponseDto getRecentEatTogetherPostList(String regionCode) {
+        return eatTogetherPostRepository.getRecentEatTogetherPostList(regionCode);
     }
 }

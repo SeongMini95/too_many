@@ -1,5 +1,5 @@
 import { API_PATH } from "../constants/path";
-import { authAxios } from "./axios";
+import { authAxios, defaultAxios } from "./axios";
 import { urlUtils } from "../utils/urlUtils";
 
 const eatTogetherApi = {
@@ -50,6 +50,12 @@ const eatTogetherApi = {
     deleteEatTogetherReply: async (postId, replyId) => {
         const url = urlUtils.setPath(API_PATH.EAT_TOGETHER.DELETE_REPLY, { postId, replyId });
         await authAxios.delete(url);
+    },
+    getRecentEatTogetherPostList: async (regionCode) => {
+        const url = urlUtils.setParam(API_PATH.EAT_TOGETHER.GET_RECENT_POST_LIST, { regionCode });
+        const { data } = await defaultAxios.get(url);
+
+        return data;
     }
 };
 

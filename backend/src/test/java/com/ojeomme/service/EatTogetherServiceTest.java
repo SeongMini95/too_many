@@ -17,6 +17,7 @@ import com.ojeomme.dto.request.eattogether.WriteEatTogetherReplyRequestDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostListResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherPostResponseDto;
 import com.ojeomme.dto.response.eattogether.EatTogetherReplyListResponseDto;
+import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +65,134 @@ class EatTogetherServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Nested
+    class getRecentEatTogetherPostList {
+
+        @Test
+        void 지역의_최신_게시글을_가져온다() {
+            // given
+            List<RecentEatTogetherPostListResponseDto.PostResponseDto> posts = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                RecentEatTogetherPostListResponseDto.PostResponseDto post = RecentEatTogetherPostListResponseDto.PostResponseDto.builder()
+                        .postId((long) (i))
+                        .regionName("청운동")
+                        .subject("제목 " + i)
+                        .ltCreateDatetime(LocalDateTime.now())
+                        .build();
+                post.convertDatetime();
+                posts.add(post);
+            }
+            RecentEatTogetherPostListResponseDto dto = new RecentEatTogetherPostListResponseDto(posts);
+
+            given(eatTogetherPostRepository.getRecentEatTogetherPostList(anyString())).willReturn(dto);
+
+            // when
+            RecentEatTogetherPostListResponseDto responseDto = eatTogetherService.getRecentEatTogetherPostList("123");
+
+            // then
+            assertThat(responseDto.getPosts()).hasSameSizeAs(posts);
+            for (int i = 0; i < responseDto.getPosts().size(); i++) {
+                assertThat(responseDto.getPosts().get(i).getPostId()).isEqualTo(posts.get(i).getPostId());
+                assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(posts.get(i).getRegionName());
+                assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(posts.get(i).getSubject());
+                assertThat(responseDto.getPosts().get(i).getCreateDatetime()).isEqualTo(posts.get(i).getCreateDatetime());
+            }
+        }
+
+        @Test
+        void 지역의_최신_게시글을_가져온다_하루_전() {
+            // given
+            List<RecentEatTogetherPostListResponseDto.PostResponseDto> posts = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                RecentEatTogetherPostListResponseDto.PostResponseDto post = RecentEatTogetherPostListResponseDto.PostResponseDto.builder()
+                        .postId((long) (i))
+                        .regionName("청운동")
+                        .subject("제목 " + i)
+                        .ltCreateDatetime(LocalDateTime.now().minusDays(1))
+                        .build();
+                post.convertDatetime();
+                posts.add(post);
+            }
+            RecentEatTogetherPostListResponseDto dto = new RecentEatTogetherPostListResponseDto(posts);
+
+            given(eatTogetherPostRepository.getRecentEatTogetherPostList(anyString())).willReturn(dto);
+
+            // when
+            RecentEatTogetherPostListResponseDto responseDto = eatTogetherService.getRecentEatTogetherPostList("123");
+
+            // then
+            assertThat(responseDto.getPosts()).hasSameSizeAs(posts);
+            for (int i = 0; i < responseDto.getPosts().size(); i++) {
+                assertThat(responseDto.getPosts().get(i).getPostId()).isEqualTo(posts.get(i).getPostId());
+                assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(posts.get(i).getRegionName());
+                assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(posts.get(i).getSubject());
+                assertThat(responseDto.getPosts().get(i).getCreateDatetime()).isEqualTo(posts.get(i).getCreateDatetime());
+            }
+        }
+
+        @Test
+        void 지역의_최신_게시글을_가져온다_한달_전() {
+            // given
+            List<RecentEatTogetherPostListResponseDto.PostResponseDto> posts = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                RecentEatTogetherPostListResponseDto.PostResponseDto post = RecentEatTogetherPostListResponseDto.PostResponseDto.builder()
+                        .postId((long) (i))
+                        .regionName("청운동")
+                        .subject("제목 " + i)
+                        .ltCreateDatetime(LocalDateTime.now().minusMonths(1))
+                        .build();
+                post.convertDatetime();
+                posts.add(post);
+            }
+            RecentEatTogetherPostListResponseDto dto = new RecentEatTogetherPostListResponseDto(posts);
+
+            given(eatTogetherPostRepository.getRecentEatTogetherPostList(anyString())).willReturn(dto);
+
+            // when
+            RecentEatTogetherPostListResponseDto responseDto = eatTogetherService.getRecentEatTogetherPostList("123");
+
+            // then
+            assertThat(responseDto.getPosts()).hasSameSizeAs(posts);
+            for (int i = 0; i < responseDto.getPosts().size(); i++) {
+                assertThat(responseDto.getPosts().get(i).getPostId()).isEqualTo(posts.get(i).getPostId());
+                assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(posts.get(i).getRegionName());
+                assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(posts.get(i).getSubject());
+                assertThat(responseDto.getPosts().get(i).getCreateDatetime()).isEqualTo(posts.get(i).getCreateDatetime());
+            }
+        }
+
+        @Test
+        void 지역의_최신_게시글을_가져온다_1년_전() {
+            // given
+            List<RecentEatTogetherPostListResponseDto.PostResponseDto> posts = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                RecentEatTogetherPostListResponseDto.PostResponseDto post = RecentEatTogetherPostListResponseDto.PostResponseDto.builder()
+                        .postId((long) (i))
+                        .regionName("청운동")
+                        .subject("제목 " + i)
+                        .ltCreateDatetime(LocalDateTime.now().minusYears(1))
+                        .build();
+                post.convertDatetime();
+                posts.add(post);
+            }
+            RecentEatTogetherPostListResponseDto dto = new RecentEatTogetherPostListResponseDto(posts);
+
+            given(eatTogetherPostRepository.getRecentEatTogetherPostList(anyString())).willReturn(dto);
+
+            // when
+            RecentEatTogetherPostListResponseDto responseDto = eatTogetherService.getRecentEatTogetherPostList("123");
+
+            // then
+            assertThat(responseDto.getPosts()).hasSameSizeAs(posts);
+            for (int i = 0; i < responseDto.getPosts().size(); i++) {
+                assertThat(responseDto.getPosts().get(i).getPostId()).isEqualTo(posts.get(i).getPostId());
+                assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(posts.get(i).getRegionName());
+                assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(posts.get(i).getSubject());
+                assertThat(responseDto.getPosts().get(i).getCreateDatetime()).isEqualTo(posts.get(i).getCreateDatetime());
+            }
+        }
+    }
 
     @Nested
     class deleteEatTogetherReply {
