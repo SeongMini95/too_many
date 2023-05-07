@@ -113,6 +113,7 @@ public class AcceptanceTest {
                 .starScore(4)
                 .content("리뷰1")
                 .revisitYn(false)
+                .likeCnt(5)
                 .build();
         Set<ReviewImage> reviewImages = new LinkedHashSet<>(List.of(
                 ReviewImage.builder().review(review).imageUrl("http://localhost:4000/image1.png").build(),

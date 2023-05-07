@@ -7,6 +7,8 @@ import { userInfoState } from "../../recoils/user";
 import SelectRegion from "./SelectRegion";
 import { positionState } from "../../recoils/position";
 import regionApi from "../../api/region";
+import { urlUtils } from "../../utils/urlUtils";
+import { BROWSER_PATH } from "../../constants/path";
 
 const NavContent = ({ storeRanking }) => {
     const isLogin = useRecoilValue(loginState);
@@ -17,6 +19,7 @@ const NavContent = ({ storeRanking }) => {
     const [otherRegion, setOtherRegion] = useState(false);
     const [visualStore, setVisualStore] = useState({
         imgUrl: '',
+        storeId: '',
         storeName: ''
     });
 
@@ -26,7 +29,12 @@ const NavContent = ({ storeRanking }) => {
                 const { longitude, latitude } = position.coords;
                 const { codes, address } = await regionApi.getRegionCodeOfCoord(longitude, latitude);
                 setPosition({
-                    codes,
+                    codes: {
+                        region1: codes[0] ?? '',
+                        region2: codes[1] ?? '',
+                        region3: codes[2] ?? '',
+                    },
+                    lastCode: codes[2] ?? codes[1] ?? codes[0],
                     address,
                     x: longitude,
                     y: latitude
@@ -39,41 +47,41 @@ const NavContent = ({ storeRanking }) => {
         let index = 1;
         let maxIndex = storeRanking ? storeRanking.length - 1 : 1;
 
-        if (storeRanking) {
-            setVisualStore(!!storeRanking.length ? {
-                ...visualStore,
-                imgUrl: storeRanking[0].image,
-                storeName: storeRanking[0].storeName
-            } : {
-                ...visualStore,
-                imgUrl: '',
-                storeName: ''
-            });
-        } else {
-            setVisualStore({
-                ...visualStore,
-                imgUrl: '',
-                storeName: ''
-            })
+        setVisualStore(!!storeRanking.length ? {
+            ...visualStore,
+            imgUrl: storeRanking[0].image,
+            storeId: storeRanking[0].storeId,
+            storeName: storeRanking[0].storeName
+        } : {
+            ...visualStore,
+            imgUrl: '',
+            storeId: '',
+            storeName: ''
+        });
+
+        let slideStoreRankingImg = null;
+
+        if (!!storeRanking.length) {
+            slideStoreRankingImg = setInterval(() => {
+                setVisualStore(storeRanking[index] ? {
+                    ...visualStore,
+                    imgUrl: storeRanking[index].image,
+                    storeId: storeRanking[index].storeId,
+                    storeName: storeRanking[index].storeName
+                } : {
+                    ...visualStore,
+                    imgUrl: '',
+                    storeId: '',
+                    storeName: ''
+                });
+
+                if (index === maxIndex) {
+                    index = 0;
+                }
+
+                ++index;
+            }, 5000);
         }
-
-        const slideStoreRankingImg = setInterval(() => {
-            setVisualStore(storeRanking[index] ? {
-                ...visualStore,
-                imgUrl: storeRanking[index].image,
-                storeName: storeRanking[index].storeName
-            } : {
-                ...visualStore,
-                imgUrl: '',
-                storeName: ''
-            });
-
-            if (index === maxIndex) {
-                index = 0;
-            }
-
-            ++index;
-        }, 5000);
 
         return () => {
             clearInterval(slideStoreRankingImg);
@@ -110,7 +118,7 @@ const NavContent = ({ storeRanking }) => {
                             </button>
                         </div>
                     </div>
-                    <Link className={style.link_wrap} to={'asd'}>
+                    <Link className={style.link_wrap} to={urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId: visualStore.storeId })}>
                         <span className={style.link_content}>
                             <img className={style.link_icon} src={`${process.env.PUBLIC_URL}/assets/image/top_store_link.png`} alt="" />
                             {visualStore.storeName}

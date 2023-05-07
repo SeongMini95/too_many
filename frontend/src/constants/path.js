@@ -40,7 +40,8 @@ const API_PATH = {
         LIKE_STORE: '/api/store/:storeId/like',
         GET_STORE_LIKE_LOG_OF_USER: '/api/store/:storeId/like',
         GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList',
-        GET_REAL_TIME_STORE_RANKING: '/api/store/todayRanking'
+        GET_REAL_TIME_STORE_RANKING: '/api/store/todayRanking',
+        GET_STORE_LIST: '/api/store/list'
     },
     IMAGE: {
         UPLOAD: '/api/image/upload'
@@ -69,6 +70,9 @@ const API_PATH = {
         MODIFY_REPLY: '/api/eatTogether/post/:postId/reply/:replyId',
         DELETE_REPLY: '/api/eatTogether/post/:postId/reply/:replyId',
         GET_RECENT_POST_LIST: '/api/eatTogether/post/recent'
+    },
+    CATEGORY: {
+        GET_CATEGORY_LIST: '/api/category/list'
     }
 }
 

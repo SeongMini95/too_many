@@ -11,10 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
-import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
+import com.ojeomme.dto.response.store.*;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
@@ -36,6 +33,7 @@ public class StoreService {
     private final StoreLikeLogRepository storeLikeLogRepository;
 
     private static final int SIZE = 5;
+    private static final int GET_STORE_LIST_PAGE_SIZE = 15;
 
     @Transactional(readOnly = true)
     public SearchPlaceListResponseDto searchPlaceList(SearchPlaceListRequestDto requestDto) {
@@ -51,6 +49,11 @@ public class StoreService {
         List<String> previewImages = reviewImageRepository.getPreviewImageList(storeId, PageRequest.of(0, SIZE));
 
         return new StorePreviewImagesResponseDto(store, previewImages);
+    }
+
+    @Transactional(readOnly = true)
+    public StoreListResponseDto getStoreList(String regionCode, Long categoryId, Integer page) {
+        return storeRepository.getStoreList(regionCode, categoryId, PageRequest.of(page == null || page <= 0 ? 0 : page - 1, GET_STORE_LIST_PAGE_SIZE));
     }
 
     @Transactional

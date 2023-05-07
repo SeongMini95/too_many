@@ -36,7 +36,7 @@ public class WriteReviewRequestDto {
 
     private boolean revisitYn;
 
-    private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images = new ArrayList<>();
+    private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images;
 
     private List<String> recommends = new ArrayList<>();
 
@@ -53,7 +53,7 @@ public class WriteReviewRequestDto {
         this.content = content;
         this.starScore = starScore;
         this.revisitYn = revisitYn;
-        this.images = images;
+        this.images = images != null ? images : new ArrayList<>();
         this.recommends = recommends;
         this.x = x;
         this.y = y;

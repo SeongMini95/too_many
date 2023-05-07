@@ -4,7 +4,12 @@ import { positionProvider } from "../utils/positionUtils";
 const coordState = atom({
     key: 'coordState',
     default: {
-        codes: [],
+        codes: {
+            region1: '',
+            region2: '',
+            region3: ''
+        },
+        lastCode: '',
         address: '',
         x: '',
         y: ''

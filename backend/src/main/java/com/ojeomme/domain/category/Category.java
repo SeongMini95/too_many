@@ -35,7 +35,8 @@ public class Category extends BaseTimeEntity {
     private List<Category> categories = new ArrayList<>();
 
     @Builder
-    public Category(Category upCategory, int categoryDepth, String categoryName) {
+    public Category(Long id, Category upCategory, int categoryDepth, String categoryName) {
+        this.id = id;
         this.upCategory = upCategory;
         this.categoryDepth = categoryDepth;
         this.categoryName = categoryName;

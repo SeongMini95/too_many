@@ -53,11 +53,14 @@ public class Store extends BaseTimeEntity {
     @Column(name = "like_cnt")
     private int likeCnt;
 
+    @Column(name = "main_image_url", length = 2083)
+    private String mainImageUrl;
+
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();
 
     @Builder
-    public Store(Long id, Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, String x, String y, int likeCnt) {
+    public Store(Long id, Long kakaoPlaceId, Category category, RegionCode regionCode, String storeName, String addressName, String roadAddressName, String x, String y, int likeCnt, String mainImageUrl) {
         this.id = id;
         this.kakaoPlaceId = kakaoPlaceId;
         this.category = category;
@@ -68,6 +71,7 @@ public class Store extends BaseTimeEntity {
         this.x = x;
         this.y = y;
         this.likeCnt = likeCnt;
+        this.mainImageUrl = mainImageUrl;
     }
 
     public void updateStoreInfo(Store store) {
@@ -90,5 +94,9 @@ public class Store extends BaseTimeEntity {
 
     public void cancelLike() {
         this.likeCnt -= 1;
+    }
+
+    public void changeMainImage(String mainImageUrl) {
+        this.mainImageUrl = mainImageUrl;
     }
 }
