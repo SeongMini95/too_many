@@ -144,3 +144,13 @@
 .user_modal a + a {
     border-top: 1px solid #efefef;
 }
+
+.empty_nav {
+    align-items: center;
+    min-height: 44px;
+    padding-top: 74px;
+    display: flex;
+    justify-content: center;
+    min-width: 1070px;
+    width: 100%;
+}

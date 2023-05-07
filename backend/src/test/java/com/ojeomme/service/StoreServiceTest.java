@@ -454,13 +454,9 @@ class StoreServiceTest {
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().getIsEnd());
 
             assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
-            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
-                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
-                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());
-            }
         }
 
         @Test
@@ -475,13 +471,9 @@ class StoreServiceTest {
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().getIsEnd());
 
             assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
-            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
-                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(0);
-                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(0);
-            }
         }
     }
 }

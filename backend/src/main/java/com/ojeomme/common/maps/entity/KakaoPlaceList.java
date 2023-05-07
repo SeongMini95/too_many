@@ -41,6 +41,10 @@ public class KakaoPlaceList {
             this.pageableCount = pageableCount;
             this.isEnd = isEnd;
         }
+
+        public boolean getIsEnd() {
+            return this.isEnd;
+        }
     }
 
     @NoArgsConstructor

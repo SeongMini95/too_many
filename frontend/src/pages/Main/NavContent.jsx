@@ -90,7 +90,6 @@ const NavContent = ({ storeRanking }) => {
 
     return (
         <>
-            <nav className={style.empty_nav} />
             <div className={style.nav_content}>
                 <div className={style.nav_visual}>
                     {visualStore.imgUrl && (
