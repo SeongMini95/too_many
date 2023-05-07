@@ -46,37 +46,43 @@ const Header = () => {
             }
         }
 
+        const handlerResetPosition = () => {
+            setPosition({
+                codes: {
+                    region1: '1100000000',
+                    region2: '',
+                    region3: ''
+                },
+                lastCode: '1100000000',
+                address: '서울',
+                x: '126.978652258309',
+                y: '37.566826004661'
+            });
+        }
+
         const positionCheck = () => {
             const position = positionProvider.getPosition();
             if (position) {
                 const objPosition = JSON.parse(position);
-                for (const key in objPosition) {
-                    if (Array.isArray(objPosition[key]) && !objPosition[key].length) {
-                        setPosition({
-                            codes: ['1100000000'],
-                            address: '서울',
-                            x: '126.978652258309',
-                            y: '37.566826004661'
-                        });
+                if (!objPosition.codes.region1 && !objPosition.codes.region2 && !objPosition.codes.region3) {
+                    handlerResetPosition();
+                    return;
+                }
 
-                        return;
-                    } else {
-                        if (!objPosition[key]) {
-                            setPosition({
-                                codes: ['1100000000'],
-                                address: '서울',
-                                x: '126.978652258309',
-                                y: '37.566826004661'
-                            });
-                            return;
-                        }
-                    }
+                if (!objPosition.lastCode || !objPosition.address || !objPosition.x || !objPosition.y) {
+                    handlerResetPosition();
+                    return;
                 }
 
                 setPosition(JSON.parse(position));
             } else {
                 setPosition({
-                    codes: ['1100000000'],
+                    codes: {
+                        region1: '1100000000',
+                        region2: '',
+                        region3: ''
+                    },
+                    lastCode: '1100000000',
                     address: '서울',
                     x: '126.978652258309',
                     y: '37.566826004661'

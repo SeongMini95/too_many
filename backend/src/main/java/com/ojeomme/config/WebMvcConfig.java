@@ -25,7 +25,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
             "/api/region/coordOfRegion",
             "/api/region/regionOfCoord",
             "/api/store/todayRanking",
-            "/api/eatTogether/post/recent"
+            "/api/eatTogether/post/recent",
+            "/api/category/list",
+            "/api/store/list"
     );
 
     @Value("${security.cors.host.front}")

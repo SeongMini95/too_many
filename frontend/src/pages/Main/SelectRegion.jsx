@@ -29,19 +29,12 @@ const SelectRegion = ({ handlerClickClose }) => {
 
     useEffect(() => {
         if (data) {
-            if (!codes.length) {
-                setInputs({
-                    ...inputs,
-                    region1: data[0].code
-                });
-            } else {
-                setInputs({
-                    ...inputs,
-                    region1: codes[0] ?? '',
-                    region2: codes[1] ?? '',
-                    region3: codes[2] ?? ''
-                })
-            }
+            setInputs({
+                ...inputs,
+                region1: codes.region1 ?? '',
+                region2: codes.region2 ?? '',
+                region3: codes.region3 ?? ''
+            });
         }
     }, [data]);
 
@@ -103,17 +96,19 @@ const SelectRegion = ({ handlerClickClose }) => {
 
     const handlerClickConfirm = async () => {
         try {
-            const codes = [];
-            for (const inputsKey in inputs) {
-                const code = inputs[inputsKey];
-                if (code) {
-                    codes.push(code);
-                }
+            const { region1, region2, region3 } = inputs;
+
+            let lastCode = region1;
+            if (region3) {
+                lastCode = region3;
+            } else if (region2) {
+                lastCode = region2;
             }
 
-            const { address, x, y } = await regionApi.getCoordOfRegionCode(codes[codes.length - 1]);
+            const { address, x, y } = await regionApi.getCoordOfRegionCode(lastCode);
             setPosition({
-                codes,
+                codes: inputs,
+                lastCode: lastCode,
                 address,
                 x,
                 y

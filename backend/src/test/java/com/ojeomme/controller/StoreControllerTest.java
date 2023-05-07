@@ -65,6 +65,98 @@ class StoreControllerTest extends AcceptanceTest {
     private MockWebServer mockWebServer;
 
     @Nested
+    class getStoreList {
+
+        @Test
+        void 매장_목록을_가져온다() {
+            // given
+            for (int i = 0; i < 5; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_0() {
+            // given
+            for (int i = 0; i < 20; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .param("page", 0)
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_1_이상() {
+            // given
+            for (int i = 0; i < 29; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .param("page", "2")
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        private Store createStore() {
+            return storeRepository.save(Store.builder()
+                    .kakaoPlaceId(1315083198L)
+                    .category(store.getCategory())
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .storeName(UUID.randomUUID().toString())
+                    .addressName("주소")
+                    .roadAddressName("도로명 주소")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(0)
+                    .mainImageUrl("http://localhost:4000/image.png")
+                    .build());
+        }
+
+        private void createReview(Store store, int starScore, int likeCnt) {
+            reviewRepository.save(Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(starScore)
+                    .content("")
+                    .revisitYn(false)
+                    .likeCnt(likeCnt)
+                    .build());
+        }
+    }
+
+    @Nested
     class getTodayStoreRanking {
 
         @Test
