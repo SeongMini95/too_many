@@ -45,7 +45,7 @@ public class SearchPlaceListResponseDto {
         public MetaResponseDto(Meta meta) {
             this.totalCount = meta.getTotalCount();
             this.pageableCount = meta.getPageableCount();
-            this.isEnd = meta.isEnd();
+            this.isEnd = meta.getIsEnd();
         }
 
         public boolean getIsEnd() {
@@ -60,13 +60,12 @@ public class SearchPlaceListResponseDto {
         private final Long placeId;
         private final String placeName;
         private final String categoryName;
+        private final String image;
         private final String phone;
         private final String addressName;
         private final String roadAddressName;
         private final String x;
         private final String y;
-        private final int likeCnt;
-        private final int reviewCnt;
 
         public PlaceResponseDto(Document document, Store store) {
             String[] categoryNames = document.getCategoryName().split(" > ");
@@ -75,13 +74,12 @@ public class SearchPlaceListResponseDto {
             this.placeId = Long.parseLong(document.getId());
             this.placeName = document.getPlaceName();
             this.categoryName = categoryNames[categoryNames.length - 1];
+            this.image = store != null ? store.getMainImageUrl() : "";
             this.phone = document.getPhone();
             this.addressName = document.getAddressName();
             this.roadAddressName = document.getRoadAddressName();
             this.x = document.getX();
             this.y = document.getY();
-            this.likeCnt = store != null ? store.getLikeCnt() : 0;
-            this.reviewCnt = store != null ? store.getReviews().size() : 0;
         }
     }
 }

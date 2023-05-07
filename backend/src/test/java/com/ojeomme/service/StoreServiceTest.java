@@ -11,10 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
-import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto;
+import com.ojeomme.dto.response.store.*;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
@@ -57,6 +54,136 @@ class StoreServiceTest {
 
     @Mock
     private StoreLikeLogRepository storeLikeLogRepository;
+
+    @Nested
+    class getStoreList {
+
+        @Test
+        void 매장_목록을_가져온다() {
+            // given
+            StoreListResponseDto dto = new StoreListResponseDto(List.of(
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("매장1")
+                            .image("image1")
+                            .likeCnt(5)
+                            .regionName("지역1")
+                            .reviewCnt(10)
+                            .starScore(5.0F)
+                            .categoryName("일식")
+                            .build(),
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(2L)
+                            .storeName("매장2")
+                            .image("image2")
+                            .likeCnt(3)
+                            .regionName("지역2")
+                            .reviewCnt(3)
+                            .starScore(4.0F)
+                            .categoryName("일식")
+                            .build()
+            ), 1, true);
+            given(storeRepository.getStoreList(anyString(), anyLong(), any(Pageable.class))).willReturn(dto);
+
+            // when
+            StoreListResponseDto responseDto = storeService.getStoreList("123", 1L, null);
+
+            // then
+            assertThat(responseDto.getStores()).hasSameSizeAs(dto.getStores());
+            for (int i = 0; i < responseDto.getStores().size(); i++) {
+                assertThat(responseDto.getStores().get(i).getStoreId()).isEqualTo(dto.getStores().get(i).getStoreId());
+                assertThat(responseDto.getStores().get(i).getStoreName()).isEqualTo(dto.getStores().get(i).getStoreName());
+                assertThat(responseDto.getStores().get(i).getImage()).isEqualTo(dto.getStores().get(i).getImage());
+                assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(dto.getStores().get(i).getLikeCnt());
+                assertThat(responseDto.getStores().get(i).getRegionName()).isEqualTo(dto.getStores().get(i).getRegionName());
+                assertThat(responseDto.getStores().get(i).getCategoryName()).isEqualTo(dto.getStores().get(i).getCategoryName());
+                assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(dto.getStores().get(i).getReviewCnt());
+                assertThat(responseDto.getStores().get(i).getStarScore()).isEqualTo(dto.getStores().get(i).getStarScore());
+            }
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_0() {
+            // given
+            StoreListResponseDto dto = new StoreListResponseDto(List.of(
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("매장1")
+                            .image("image1")
+                            .likeCnt(5)
+                            .regionName("지역1")
+                            .reviewCnt(10)
+                            .starScore(5.0F)
+                            .categoryName("일식")
+                            .build(),
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(2L)
+                            .storeName("매장2")
+                            .image("image2")
+                            .likeCnt(3)
+                            .regionName("지역2")
+                            .reviewCnt(3)
+                            .starScore(4.0F)
+                            .categoryName("일식")
+                            .build()
+            ), 1, true);
+            given(storeRepository.getStoreList(anyString(), anyLong(), any(Pageable.class))).willReturn(dto);
+
+            // when
+            StoreListResponseDto responseDto = storeService.getStoreList("123", 1L, 0);
+
+            // then
+            assertThat(responseDto.getStores()).hasSameSizeAs(dto.getStores());
+            for (int i = 0; i < responseDto.getStores().size(); i++) {
+                assertThat(responseDto.getStores().get(i).getStoreId()).isEqualTo(dto.getStores().get(i).getStoreId());
+                assertThat(responseDto.getStores().get(i).getStoreName()).isEqualTo(dto.getStores().get(i).getStoreName());
+                assertThat(responseDto.getStores().get(i).getImage()).isEqualTo(dto.getStores().get(i).getImage());
+                assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(dto.getStores().get(i).getLikeCnt());
+                assertThat(responseDto.getStores().get(i).getRegionName()).isEqualTo(dto.getStores().get(i).getRegionName());
+                assertThat(responseDto.getStores().get(i).getCategoryName()).isEqualTo(dto.getStores().get(i).getCategoryName());
+                assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(dto.getStores().get(i).getReviewCnt());
+                assertThat(responseDto.getStores().get(i).getStarScore()).isEqualTo(dto.getStores().get(i).getStarScore());
+            }
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_1_이상() {
+            // given
+            StoreListResponseDto dto = new StoreListResponseDto(List.of(
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(1L)
+                            .storeName("매장1")
+                            .likeCnt(5)
+                            .regionName("지역1")
+                            .reviewCnt(10)
+                            .starScore(5.0F)
+                            .build(),
+                    StoreListResponseDto.StoreResponseDto.builder()
+                            .storeId(2L)
+                            .storeName("매장2")
+                            .likeCnt(3)
+                            .regionName("지역2")
+                            .reviewCnt(3)
+                            .starScore(4.0F)
+                            .build()
+            ), 1, true);
+            given(storeRepository.getStoreList(anyString(), anyLong(), any(Pageable.class))).willReturn(dto);
+
+            // when
+            StoreListResponseDto responseDto = storeService.getStoreList("123", 1L, 3);
+
+            // then
+            assertThat(responseDto.getStores()).hasSameSizeAs(dto.getStores());
+            for (int i = 0; i < responseDto.getStores().size(); i++) {
+                assertThat(responseDto.getStores().get(i).getStoreId()).isEqualTo(dto.getStores().get(i).getStoreId());
+                assertThat(responseDto.getStores().get(i).getStoreName()).isEqualTo(dto.getStores().get(i).getStoreName());
+                assertThat(responseDto.getStores().get(i).getLikeCnt()).isEqualTo(dto.getStores().get(i).getLikeCnt());
+                assertThat(responseDto.getStores().get(i).getRegionName()).isEqualTo(dto.getStores().get(i).getRegionName());
+                assertThat(responseDto.getStores().get(i).getReviewCnt()).isEqualTo(dto.getStores().get(i).getReviewCnt());
+                assertThat(responseDto.getStores().get(i).getStarScore()).isEqualTo(dto.getStores().get(i).getStarScore());
+            }
+        }
+    }
 
     @Nested
     class getTodayStoreRanking {
@@ -327,13 +454,9 @@ class StoreServiceTest {
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().getIsEnd());
 
             assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
-            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
-                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(stores.get(i).getLikeCnt());
-                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(stores.get(i).getReviews().size());
-            }
         }
 
         @Test
@@ -348,13 +471,9 @@ class StoreServiceTest {
             // then
             assertThat(responseDto.getMeta().getPageableCount()).isEqualTo(kakaoPlaceList.getMeta().getPageableCount());
             assertThat(responseDto.getMeta().getTotalCount()).isEqualTo(kakaoPlaceList.getMeta().getTotalCount());
-            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().isEnd());
+            assertThat(responseDto.getMeta().getIsEnd()).isEqualTo(kakaoPlaceList.getMeta().getIsEnd());
 
             assertThat(responseDto.getPlaces()).hasSameSizeAs(kakaoPlaceList.getDocuments());
-            for (int i = 0; i < responseDto.getPlaces().size(); i++) {
-                assertThat(responseDto.getPlaces().get(i).getLikeCnt()).isEqualTo(0);
-                assertThat(responseDto.getPlaces().get(i).getReviewCnt()).isEqualTo(0);
-            }
         }
     }
 }

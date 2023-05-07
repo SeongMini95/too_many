@@ -31,9 +31,5 @@ public class RealTimeStoreRankingResponseDto {
             this.regionName = regionName;
             this.image = image;
         }
-
-        public void setImage(String image) {
-            this.image = image;
-        }
     }
 }

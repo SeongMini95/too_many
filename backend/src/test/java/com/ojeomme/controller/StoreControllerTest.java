@@ -65,6 +65,118 @@ class StoreControllerTest extends AcceptanceTest {
     private MockWebServer mockWebServer;
 
     @Nested
+    class getStoreList {
+
+        @Test
+        void 매장_목록을_가져온다() {
+            // given
+            for (int i = 0; i < 5; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_0() {
+            // given
+            for (int i = 0; i < 20; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .param("page", 0)
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 매장_목록을_가져온다_page가_1_이상() {
+            // given
+            for (int i = 0; i < 29; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", store.getCategory().getId())
+                    .param("page", "2")
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        @Test
+        void 카테고리가_null이다() {
+            // given
+            for (int i = 0; i < 5; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", "")
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
+        private Store createStore() {
+            return storeRepository.save(Store.builder()
+                    .kakaoPlaceId(1315083198L)
+                    .category(store.getCategory())
+                    .regionCode(regionCodeRepository.findById("1111010100").orElseThrow())
+                    .storeName(UUID.randomUUID().toString())
+                    .addressName("주소")
+                    .roadAddressName("도로명 주소")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(0)
+                    .mainImageUrl("http://localhost:4000/image.png")
+                    .build());
+        }
+
+        private void createReview(Store store, int starScore, int likeCnt) {
+            reviewRepository.save(Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(starScore)
+                    .content("")
+                    .revisitYn(false)
+                    .likeCnt(likeCnt)
+                    .build());
+        }
+    }
+
+    @Nested
     class getTodayStoreRanking {
 
         @Test
@@ -481,7 +593,7 @@ class StoreControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getInt("meta.totalCount")).isEqualTo(1);
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
-            assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
+            assertThat(jsonPath.getBoolean("meta.isEnd")).isTrue();
 
             assertThat(jsonPath.getLong("places[0].storeId")).isEqualTo(store.getId());
             assertThat(jsonPath.getLong("places[0].placeId")).isEqualTo(23829251L);
@@ -492,8 +604,6 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
             assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
             assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(5);
-            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(1);
 
             closeMockWebServer();
         }
@@ -520,7 +630,7 @@ class StoreControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getInt("meta.totalCount")).isEqualTo(1);
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
-            assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
+            assertThat(jsonPath.getBoolean("meta.isEnd")).isTrue();
 
             assertThat(jsonPath.getString("places[0].storeId")).isNull();
             assertThat(jsonPath.getLong("places[0].placeId")).isEqualTo(23829251L);
@@ -531,8 +641,6 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
             assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
             assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(0);
-            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(0);
 
             closeMockWebServer();
         }

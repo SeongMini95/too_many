@@ -120,6 +120,21 @@ class ReviewControllerTest extends AcceptanceTest {
         @Test
         void 리뷰_좋아요를_누른다() {
             // given
+            Review review = Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(4)
+                    .content("리뷰1")
+                    .revisitYn(false)
+                    .likeCnt(10)
+                    .build();
+            review.addImages(Set.of(
+                    ReviewImage.builder()
+                            .review(review)
+                            .imageUrl("http://localhost:4000/image.png")
+                            .build()
+            ));
+            review = reviewRepository.save(review);
 
             // when
             ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -138,6 +153,14 @@ class ReviewControllerTest extends AcceptanceTest {
         @Test
         void 리뷰가_이미_존재한다() {
             // given
+            Review review = reviewRepository.save(Review.builder()
+                    .user(user)
+                    .store(store)
+                    .starScore(4)
+                    .content("리뷰1")
+                    .revisitYn(false)
+                    .likeCnt(1)
+                    .build());
             ReviewLikeLog reviewLikeLog = ReviewLikeLog.builder()
                     .review(review)
                     .user(user)
@@ -152,8 +175,6 @@ class ReviewControllerTest extends AcceptanceTest {
                     .when().post("/api/review/{reviewId}/like", review.getId())
                     .then().log().all()
                     .extract();
-
-            JsonPath jsonPath = response.jsonPath();
 
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -309,6 +330,34 @@ class ReviewControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getBoolean("revisitYn")).isEqualTo(requestDto.isRevisitYn());
             assertThat(jsonPath.getList("images")).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("recommends"), requestDto.getRecommends())).isTrue();
+        }
+
+        @Test
+        void 리뷰가_없으면_ReviewNotFoundException를_발생한다() throws Exception {
+            // given
+            ModifyReviewRequestDto requestDto = ModifyReviewRequestDto.builder()
+                    .starScore(5)
+                    .content("리뷰 테스트 123123123123")
+                    .revisitYn(true)
+                    .images(List.of(
+                            review.getReviewImages().iterator().next().getImageUrl(),
+                            "http://localhost:4000/temp/2023/4/18/" + createImage(true) + ".png"
+                    ))
+                    .recommends(List.of("1", "3"))
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().put("/api/review/{reviewId}", -1L)
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND.getHttpStatus().value());
+            assertThat(response.asString()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND.getMessage());
         }
 
         private String createImage(boolean temp) throws Exception {
@@ -779,6 +828,192 @@ class ReviewControllerTest extends AcceptanceTest {
             // then
             assertThat(response.statusCode()).isEqualTo(ApiErrorCode.ALREADY_EXIST_REVIEW.getHttpStatus().value());
             assertThat(response.asString()).isEqualTo(ApiErrorCode.ALREADY_EXIST_REVIEW.getMessage());
+
+            closeMockWebServer();
+        }
+
+        @Test
+        void 메인_이미지가_등록이_안되어있고_등록하는_이미지도_없다() throws Exception {
+            // given
+            startMockWebServer();
+
+            setPlaceWebServer();
+            setMapsWebServer(true);
+            setRegionCodeWebServer(code);
+
+            Category category = categoryRepository.save(Category.builder()
+                    .categoryDepth(1)
+                    .categoryName("일식")
+                    .build());
+            RegionCode regionCode = regionCodeRepository.findById(code).orElseThrow();
+            Store store = Store.builder()
+                    .kakaoPlaceId(23829251L)
+                    .category(category)
+                    .regionCode(regionCode)
+                    .storeName("스시코우지")
+                    .addressName("서울 강남구 논현동 92")
+                    .roadAddressName("서울 강남구 도산대로 318")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(5)
+                    .build();
+            store = storeRepository.save(store);
+
+            WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
+                    .starScore(5)
+                    .revisitYn(true)
+                    .content("리뷰 작성 리뷰 작성 리뷰 작성")
+                    .recommends(List.of("1", "2"))
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images")).hasSameSizeAs(requestDto.getImages());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+
+            closeMockWebServer();
+        }
+
+        @Test
+        void 메인_이미지가_등록이_되어있다() throws Exception {
+            // given
+            startMockWebServer();
+
+            setPlaceWebServer();
+            setMapsWebServer(true);
+            setRegionCodeWebServer(code);
+
+            Category category = categoryRepository.save(Category.builder()
+                    .categoryDepth(1)
+                    .categoryName("일식")
+                    .build());
+            RegionCode regionCode = regionCodeRepository.findById(code).orElseThrow();
+            Store store = Store.builder()
+                    .kakaoPlaceId(23829251L)
+                    .category(category)
+                    .regionCode(regionCode)
+                    .storeName("스시코우지")
+                    .addressName("서울 강남구 논현동 92")
+                    .roadAddressName("서울 강남구 도산대로 318")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(5)
+                    .mainImageUrl("http://localhost:4000/image1.png")
+                    .build();
+            store = storeRepository.save(store);
+
+            createImage();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images")).hasSameSizeAs(requestDto.getImages());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+
+            closeMockWebServer();
+        }
+
+        @Test
+        void 이미지가_등록이_안되있지만_이미지가_비어있다() throws Exception {
+            // given
+            startMockWebServer();
+
+            setPlaceWebServer();
+            setMapsWebServer(true);
+            setRegionCodeWebServer(code);
+
+            Category category = categoryRepository.save(Category.builder()
+                    .categoryDepth(1)
+                    .categoryName("일식")
+                    .build());
+            RegionCode regionCode = regionCodeRepository.findById(code).orElseThrow();
+            Store store = Store.builder()
+                    .kakaoPlaceId(23829251L)
+                    .category(category)
+                    .regionCode(regionCode)
+                    .storeName("스시코우지")
+                    .addressName("서울 강남구 논현동 92")
+                    .roadAddressName("서울 강남구 도산대로 318")
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .likeCnt(5)
+                    .build();
+            store = storeRepository.save(store);
+
+            WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
+                    .starScore(5)
+                    .revisitYn(true)
+                    .content("리뷰 작성 리뷰 작성 리뷰 작성")
+                    .recommends(List.of("1", "2"))
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .body(requestDto)
+                    .when().post("/api/review/place/{placeId}", store.getKakaoPlaceId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("review.reviewId")).isNotNull();
+            assertThat(jsonPath.getLong("review.userId")).isEqualTo(user.getId());
+            assertThat(jsonPath.getString("review.nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getInt("review.starScore")).isEqualTo(requestDto.getStarScore());
+            assertThat(jsonPath.getString("review.content")).isEqualTo(requestDto.getContent());
+            assertThat(jsonPath.getBoolean("review.revisitYn")).isEqualTo(requestDto.isRevisitYn());
+            assertThat(jsonPath.getList("review.images")).hasSameSizeAs(requestDto.getImages());
+            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("review.recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getString("review.createDate")).isEqualTo(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
 
             closeMockWebServer();
         }

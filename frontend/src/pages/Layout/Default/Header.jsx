@@ -46,37 +46,43 @@ const Header = () => {
             }
         }
 
+        const handlerResetPosition = () => {
+            setPosition({
+                codes: {
+                    region1: '1100000000',
+                    region2: '',
+                    region3: ''
+                },
+                lastCode: '1100000000',
+                address: '서울',
+                x: '126.978652258309',
+                y: '37.566826004661'
+            });
+        }
+
         const positionCheck = () => {
             const position = positionProvider.getPosition();
             if (position) {
                 const objPosition = JSON.parse(position);
-                for (const key in objPosition) {
-                    if (Array.isArray(objPosition[key]) && !objPosition[key].length) {
-                        setPosition({
-                            codes: ['1100000000'],
-                            address: '서울',
-                            x: '126.978652258309',
-                            y: '37.566826004661'
-                        });
+                if (!objPosition.codes.region1 && !objPosition.codes.region2 && !objPosition.codes.region3) {
+                    handlerResetPosition();
+                    return;
+                }
 
-                        return;
-                    } else {
-                        if (!objPosition[key]) {
-                            setPosition({
-                                codes: ['1100000000'],
-                                address: '서울',
-                                x: '126.978652258309',
-                                y: '37.566826004661'
-                            });
-                            return;
-                        }
-                    }
+                if (!objPosition.lastCode || !objPosition.address || !objPosition.x || !objPosition.y) {
+                    handlerResetPosition();
+                    return;
                 }
 
                 setPosition(JSON.parse(position));
             } else {
                 setPosition({
-                    codes: ['1100000000'],
+                    codes: {
+                        region1: '1100000000',
+                        region2: '',
+                        region3: ''
+                    },
+                    lastCode: '1100000000',
                     address: '서울',
                     x: '126.978652258309',
                     y: '37.566826004661'
@@ -129,38 +135,41 @@ const Header = () => {
     }
 
     return (
-        <header className={style.header_layout}>
-            <div className={style.header_content}>
-                <div className={style.header_wrap}>
-                    <div className={style.main_logo}>
-                        <Link to={BROWSER_PATH.BASE}>
-                            <img className={style.logo_img} src={`${process.env.PUBLIC_URL}/assets/logo/logo_transparent.png`} alt="" />
-                        </Link>
-                    </div>
-                    {!isLogin ? (
-                        <div className={style.header_link}>
-                            <a href={'#none'} className={style.link_login} onClick={handlerClickLogin}>로그인</a>
+        <>
+            <header className={style.header_layout}>
+                <div className={style.header_content}>
+                    <div className={style.header_wrap}>
+                        <div className={style.main_logo}>
+                            <Link to={BROWSER_PATH.BASE}>
+                                <img className={style.logo_img} src={`${process.env.PUBLIC_URL}/assets/logo/logo_transparent.png`} alt="" />
+                            </Link>
                         </div>
-                    ) : (
-                        <div className={style.user_wrap}>
-                            <button className={style.user_button} ref={refUserModal} onClick={() => setUserModal(!userModal)}>
+                        {!isLogin ? (
+                            <div className={style.header_link}>
+                                <a href={'#none'} className={style.link_login} onClick={handlerClickLogin}>로그인</a>
+                            </div>
+                        ) : (
+                            <div className={style.user_wrap}>
+                                <button className={style.user_button} ref={refUserModal} onClick={() => setUserModal(!userModal)}>
                             <span className={style.user_content}>
                                 <span className={style.user_name}>{nickname}</span>님
                             </span>
-                                <img className={style.user_button_ico} src={`${process.env.PUBLIC_URL}/assets/image/arrow.png`} alt="" />
-                                {userModal && (
-                                    <div className={style.user_modal}>
-                                        <a href={'#none'}>나의 정보</a>
-                                        <a href={'#none'} onClick={handlerClickLogout}>로그아웃</a>
-                                    </div>
-                                )}
-                            </button>
-                            <Link className={style.link_write_review} to={BROWSER_PATH.AUTH.LOGIN}>리뷰 작성</Link>
-                        </div>
-                    )}
+                                    <img className={style.user_button_ico} src={`${process.env.PUBLIC_URL}/assets/image/arrow.png`} alt="" />
+                                    {userModal && (
+                                        <div className={style.user_modal}>
+                                            <a href={'#none'}>나의 정보</a>
+                                            <a href={'#none'} onClick={handlerClickLogout}>로그아웃</a>
+                                        </div>
+                                    )}
+                                </button>
+                                <Link className={style.link_write_review} to={BROWSER_PATH.STORE.SEARCH_PLACE_LIST}>리뷰 작성</Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+            <nav className={style.empty_nav} />
+        </>
     );
 };
 

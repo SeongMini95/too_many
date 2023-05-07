@@ -41,6 +41,15 @@ const storeApi = {
         const { data } = await defaultAxios.get(url);
 
         return data;
+    },
+    getStoreList: async (regionCode, category, page) => {
+        let url = urlUtils.setParam(API_PATH.STORE.GET_STORE_LIST, { regionCode, category });
+        if (page) {
+            url = urlUtils.setParam(url, { page });
+        }
+        const { data } = await defaultAxios.get(url);
+
+        return data;
     }
 }
 

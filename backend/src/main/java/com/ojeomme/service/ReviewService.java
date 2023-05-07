@@ -12,6 +12,7 @@ import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
+import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.reviewlikelog.ReviewLikeLog;
 import com.ojeomme.domain.reviewlikelog.ReviewLikeLogId;
 import com.ojeomme.domain.reviewlikelog.repository.ReviewLikeLogRepository;
@@ -28,6 +29,7 @@ import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,7 @@ public class ReviewService {
     private final KakaoRegionCodeClient kakaoRegionCodeClient;
     private final ImageService imageService;
     private final ReviewLikeLogRepository reviewLikeLogRepository;
+    private final ReviewImageRepository reviewImageRepository;
 
     @Transactional
     public WriteReviewResponseDto writeReview(Long userId, Long placeId, WriteReviewRequestDto requestDto) throws IOException {
@@ -138,6 +141,11 @@ public class ReviewService {
         Review saveReview = reviewRepository.save(requestDto.toReview(user, store, images));
         store.writeReview(saveReview);
 
+        // 메인 이미지가 등록이 안되어있으면
+        if (StringUtils.isBlank(store.getMainImageUrl()) && !images.isEmpty()) {
+            store.changeMainImage(images.get(0));
+        }
+
         return new WriteReviewResponseDto(store.getId(), saveReview);
     }
 
@@ -175,6 +183,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ApiException(ApiErrorCode.REVIEW_NOT_FOUND));
 
         // 있으면 취소, 없으면 저장
+        boolean isLike;
         ReviewLikeLog reviewLikeLog = reviewLikeLogRepository.findById(new ReviewLikeLogId(reviewId, userId)).orElse(null);
         if (reviewLikeLog == null) {
             reviewLikeLogRepository.save(ReviewLikeLog.builder()
@@ -182,14 +191,21 @@ public class ReviewService {
                     .user(user)
                     .build());
             review.like();
-
-            return true;
+            isLike = true;
         } else {
             reviewLikeLogRepository.delete(reviewLikeLog);
             review.cancelLike();
-            
-            return false;
+            isLike = false;
         }
+
+        // 좋아요 수가 제일 많으면 이미지가 존재하면 메인 이미지 변경
+        int likeCnt = review.getLikeCnt();
+        boolean changeMainImage = !reviewRepository.existsByStoreIdAndLikeCntGreaterThan(review.getStore().getId(), likeCnt);
+        if (changeMainImage) {
+            reviewImageRepository.findTopByReviewId(reviewId).ifPresent(v -> review.getStore().changeMainImage(v.getImageUrl()));
+        }
+
+        return isLike;
     }
 
     @Transactional(readOnly = true)

@@ -1,22 +1,23 @@
 package com.ojeomme.domain.store.repository;
 
+import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
+import com.ojeomme.dto.response.store.StoreListResponseDto;
 import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
-import com.querydsl.core.Tuple;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import static com.ojeomme.domain.category.QCategory.category;
 import static com.ojeomme.domain.regioncode.QRegionCode.regionCode;
 import static com.ojeomme.domain.review.QReview.review;
-import static com.ojeomme.domain.reviewimage.QReviewImage.reviewImage;
 import static com.ojeomme.domain.store.QStore.store;
 
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
 
     private final JPAQueryFactory factory;
     private final RegionCodeRepository regionCodeRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public Optional<StoreResponseDto> getStore(Long storeId) {
@@ -51,12 +53,13 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
     public RealTimeStoreRankingResponseDto getRealTimeStoreRanking(String code) {
         Set<String> regionCodes = regionCodeRepository.getDownCode(code);
 
-        List<RealTimeStoreRankingResponseDto.StoreResponseDto> stores = factory
+        return new RealTimeStoreRankingResponseDto(factory
                 .select(Projections.fields(
                         RealTimeStoreRankingResponseDto.StoreResponseDto.class,
                         store.id.as("storeId"),
                         store.storeName,
-                        regionCode.regionName
+                        regionCode.regionName,
+                        store.mainImageUrl.as("image")
                 ))
                 .from(store)
                 .innerJoin(store.reviews, review)
@@ -68,43 +71,54 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                         review.count().desc()
                 )
                 .limit(10)
-                .fetch();
+                .fetch());
+    }
 
-        // 좋아요 많이 받은 리뷰 가져오기
-        List<Tuple> maxLikeReviews = factory
-                .select(
-                        review.likeCnt.max(),
-                        review.store.id
+    @Override
+    public StoreListResponseDto getStoreList(String code, Long categoryId, Pageable pageable) {
+        Set<String> regionCodes = regionCodeRepository.getDownCode(code);
+
+        BooleanBuilder inCategories = new BooleanBuilder();
+        if (categoryId != null) {
+            Set<Long> categories = categoryRepository.getDownCategory(categoryId);
+            inCategories.and(category.id.in(categories));
+        }
+
+        Long totalCnt = factory
+                .select(store.count())
+                .from(store)
+                .where(
+                        store.regionCode.code.in(regionCodes),
+                        inCategories
                 )
-                .from(review)
-                .innerJoin(review.reviewImages, reviewImage)
-                .where(review.store.id.in(stores.stream().map(RealTimeStoreRankingResponseDto.StoreResponseDto::getStoreId).collect(Collectors.toList())))
-                .groupBy(review.store.id)
-                .fetch();
+                .fetchOne();
 
-        // 이미지 설정
-        stores.forEach(v -> {
-            Tuple tuple = maxLikeReviews.stream()
-                    .filter(v2 -> Objects.equals(v2.get(1, Long.class), v.getStoreId()))
-                    .findFirst()
-                    .orElse(null);
+        boolean isEnd = totalCnt - ((long) pageable.getPageSize() * (pageable.getPageNumber() + 1)) <= 0;
 
-            if (tuple != null) {
-                String image = factory
-                        .select(reviewImage.imageUrl)
-                        .from(review)
-                        .innerJoin(review.reviewImages, reviewImage)
-                        .where(
-                                review.store.id.eq(tuple.get(1, Long.class)),
-                                review.likeCnt.eq(tuple.get(0, Integer.class))
-                        )
-                        .orderBy(reviewImage.id.desc())
-                        .fetchFirst();
-
-                v.setImage(image);
-            }
-        });
-
-        return new RealTimeStoreRankingResponseDto(stores);
+        return new StoreListResponseDto(factory
+                .select(Projections.fields(
+                        StoreListResponseDto.StoreResponseDto.class,
+                        store.id.as("storeId"),
+                        store.storeName,
+                        store.mainImageUrl.as("image"),
+                        MathExpressions.round(review.starScore.avg(), 2).as("starScore"),
+                        regionCode.regionName,
+                        category.categoryName,
+                        store.likeCnt,
+                        review.id.count().as("reviewCnt")
+                ))
+                .from(store)
+                .innerJoin(store.reviews, review)
+                .innerJoin(store.regionCode, regionCode)
+                .innerJoin(store.category, category)
+                .where(
+                        regionCode.code.in(regionCodes),
+                        inCategories
+                )
+                .groupBy(store.id)
+                .orderBy(review.starScore.avg().desc(), review.id.count().desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch(), pageable.getPageNumber() + 1, isEnd);
     }
 }

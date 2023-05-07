@@ -14,6 +14,7 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
+import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.reviewlikelog.ReviewLikeLog;
 import com.ojeomme.domain.reviewlikelog.ReviewLikeLogId;
 import com.ojeomme.domain.reviewlikelog.repository.ReviewLikeLogRepository;
@@ -90,6 +91,9 @@ class ReviewServiceTest {
     @Mock
     private ReviewLikeLogRepository reviewLikeLogRepository;
 
+    @Mock
+    private ReviewImageRepository reviewImageRepository;
+
     @Nested
     class getReviewLikeLogListOfUser {
 
@@ -118,9 +122,14 @@ class ReviewServiceTest {
         void 리뷰_좋아요를_누른다() {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
-            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(mock(Review.class)));
+
+            Review review = mock(Review.class);
+            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(review));
+            given(review.getStore()).willReturn(mock(Store.class));
+
             given(reviewLikeLogRepository.findById(any(ReviewLikeLogId.class))).willReturn(Optional.empty());
             given(reviewLikeLogRepository.save(any(ReviewLikeLog.class))).willReturn(mock(ReviewLikeLog.class));
+            given(reviewRepository.existsByStoreIdAndLikeCntGreaterThan(anyLong(), anyInt())).willReturn(true);
 
             // when
             boolean savedYn = reviewService.likeReview(1L, 1L);
@@ -133,8 +142,15 @@ class ReviewServiceTest {
         void 리뷰가_이미_존재한다() {
             // given
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
-            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(mock(Review.class)));
+
+            Review review = mock(Review.class);
+            given(reviewRepository.findById(anyLong())).willReturn(Optional.of(review));
+            given(review.getStore()).willReturn(mock(Store.class));
+
             given(reviewLikeLogRepository.findById(any(ReviewLikeLogId.class))).willReturn(Optional.of(mock(ReviewLikeLog.class)));
+            given(reviewRepository.existsByStoreIdAndLikeCntGreaterThan(anyLong(), anyInt())).willReturn(false);
+
+            given(reviewImageRepository.findTopByReviewId(anyLong())).willReturn(Optional.of(mock(ReviewImage.class)));
 
             // when
             boolean savedYn = reviewService.likeReview(1L, 1L);
@@ -729,6 +745,186 @@ class ReviewServiceTest {
             assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
 
+            then(store).should(times(1)).writeReview(any(Review.class));
+        }
+
+        @Test
+        void 메인_이미지가_등록이_안되어있고_등록하는_이미지도_없다() throws IOException {
+            // given
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+            given(user.getId()).willReturn(1L);
+            given(user.getNickname()).willReturn("test123");
+
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
+
+            given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
+            given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
+
+            given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
+            given(regionCodeRepository.findById(anyString())).willReturn(Optional.of(regionCode));
+
+            Store store = mock(Store.class);
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.of(store));
+            given(store.getMainImageUrl()).willReturn(null);
+
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
+
+            given(reviewRepository.save(any(Review.class))).willReturn(review);
+
+            WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
+                    .revisitYn(true)
+                    .starScore(5)
+                    .content("리뷰")
+                    .recommends(List.of("1", "2"))
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .build();
+
+            // when
+            WriteReviewResponseDto responseDto = reviewService.writeReview(1L, 23829251L, requestDto);
+
+            // then
+            assertThat(responseDto.getStoreId()).isNotNull();
+
+            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
+            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
+            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
+            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
+            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+
+            then(store).should(times(1)).updateStoreInfo(any(Store.class));
+            then(store).should(times(1)).writeReview(any(Review.class));
+        }
+
+        @Test
+        void 메인_이미지가_등록이_되어있다() throws IOException {
+            // given
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+            given(user.getId()).willReturn(1L);
+            given(user.getNickname()).willReturn("test123");
+
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
+
+            given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
+            given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
+
+            given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
+            given(regionCodeRepository.findById(anyString())).willReturn(Optional.of(regionCode));
+
+            Store store = mock(Store.class);
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.of(store));
+            given(store.getMainImageUrl()).willReturn("image1");
+
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
+
+            given(reviewRepository.save(any(Review.class))).willReturn(review);
+
+            // when
+            WriteReviewResponseDto responseDto = reviewService.writeReview(1L, 23829251L, requestDto);
+
+            // then
+            assertThat(responseDto.getStoreId()).isNotNull();
+
+            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
+            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
+            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
+            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
+            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+
+            then(store).should(times(1)).updateStoreInfo(any(Store.class));
+            then(store).should(times(1)).writeReview(any(Review.class));
+        }
+
+        @Test
+        void 이미지가_등록이_안되있지만_이미지가_비어있다() throws IOException {
+            // given
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+            given(user.getId()).willReturn(1L);
+            given(user.getNickname()).willReturn("test123");
+
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
+            given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
+            given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
+
+            given(categoryRepository.findByCategoryDepthAndCategoryName(anyInt(), anyString())).willReturn(Optional.empty());
+            given(categoryRepository.save(any(Category.class))).willReturn(mock(Category.class));
+
+            given(kakaoRegionCodeClient.getRegionCode(anyString(), anyString())).willReturn(kakaoRegionCode);
+            given(regionCodeRepository.findById(anyString())).willReturn(Optional.of(regionCode));
+
+            Store store = mock(Store.class);
+            given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.of(store));
+            given(store.getMainImageUrl()).willReturn(null);
+
+            Review review = Review.builder()
+                    .id(1L)
+                    .user(user)
+                    .starScore(requestDto.getStarScore())
+                    .content(requestDto.getContent())
+                    .revisitYn(requestDto.isRevisitYn())
+                    .build();
+            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
+                            .review(review)
+                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .build())
+                    .collect(Collectors.toSet()));
+
+            given(reviewRepository.save(any(Review.class))).willReturn(review);
+
+            WriteReviewRequestDto requestDto = WriteReviewRequestDto.builder()
+                    .revisitYn(true)
+                    .starScore(5)
+                    .content("리뷰")
+                    .recommends(List.of("1", "2"))
+                    .x("127.03662909986537")
+                    .y("37.52186058560857")
+                    .build();
+
+            // when
+            WriteReviewResponseDto responseDto = reviewService.writeReview(1L, 23829251L, requestDto);
+
+            // then
+            assertThat(responseDto.getStoreId()).isNotNull();
+
+            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
+            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
+            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
+            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
+            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
+            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+
+            then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
         }
 

@@ -18,13 +18,15 @@ const PrivateRouter = () => {
             if (!loginPaths.includes(rtnUri)) {
                 sessionStorage.setItem('rtnUri', rtnUri);
             }
-            
+
             navigate(BROWSER_PATH.AUTH.LOGIN, { replace: true });
         }
     }, [isLogin, accessToken]);
 
     return (
-        <Outlet />
+        <>
+            {isLogin && <Outlet />}
+        </>
     );
 };
 
