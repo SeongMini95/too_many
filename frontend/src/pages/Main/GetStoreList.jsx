@@ -128,11 +128,11 @@ const GetStoreList = () => {
                     <li key={'store' + v.storeId}>
                         <div>
                             <Link to={urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId: v.storeId })}>
-                                        <span className={style.img}>
-                                            {v.image && (
-                                                <img src={v.image} alt="" />
-                                            )}
-                                        </span>
+                                <span className={style.img}>
+                                    {v.image && (
+                                        <img src={v.image} alt="" />
+                                    )}
+                                </span>
                                 <div className={style.cnt}>
                                     <em className={style.score}>★ {parseFloat(v.starScore).toFixed(1)}</em>
                                     <div className={style.box_tit}>

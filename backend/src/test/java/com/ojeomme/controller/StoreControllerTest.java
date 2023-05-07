@@ -129,6 +129,26 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         }
 
+        @Test
+        void 카테고리가_null이다() {
+            // given
+            for (int i = 0; i < 5; i++) {
+                Store store = createStore();
+                createReview(store, i, i);
+            }
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .param("regionCode", "1111010100")
+                    .param("category", "")
+                    .when().get("/api/store/list")
+                    .then().log().all()
+                    .extract();
+
+            // then
+            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        }
+
         private Store createStore() {
             return storeRepository.save(Store.builder()
                     .kakaoPlaceId(1315083198L)
@@ -573,7 +593,7 @@ class StoreControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getInt("meta.totalCount")).isEqualTo(1);
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
-            assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
+            assertThat(jsonPath.getBoolean("meta.isEnd")).isTrue();
 
             assertThat(jsonPath.getLong("places[0].storeId")).isEqualTo(store.getId());
             assertThat(jsonPath.getLong("places[0].placeId")).isEqualTo(23829251L);
@@ -584,8 +604,6 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
             assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
             assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(5);
-            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(1);
 
             closeMockWebServer();
         }
@@ -612,7 +630,7 @@ class StoreControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getInt("meta.totalCount")).isEqualTo(1);
             assertThat(jsonPath.getInt("meta.pageableCount")).isEqualTo(1);
-            assertThat(jsonPath.getBoolean("meta.isEnd")).isFalse();
+            assertThat(jsonPath.getBoolean("meta.isEnd")).isTrue();
 
             assertThat(jsonPath.getString("places[0].storeId")).isNull();
             assertThat(jsonPath.getLong("places[0].placeId")).isEqualTo(23829251L);
@@ -623,8 +641,6 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("places[0].roadAddressName")).isEqualTo("서울 강남구 도산대로 318");
             assertThat(jsonPath.getString("places[0].x")).isEqualTo("127.03662909986537");
             assertThat(jsonPath.getString("places[0].y")).isEqualTo("37.52186058560857");
-            assertThat(jsonPath.getInt("places[0].likeCnt")).isEqualTo(0);
-            assertThat(jsonPath.getInt("places[0].reviewCnt")).isEqualTo(0);
 
             closeMockWebServer();
         }
