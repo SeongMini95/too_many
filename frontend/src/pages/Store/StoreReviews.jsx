@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
 import storeApi from "../../api/store";
 import reviewApi from "../../api/review";
-import WriteReview from "../Review/writeReview";
+import WriteReview from "../Review/WriteReview";
 import { useRecoilValue } from "recoil";
 import { userInfoState } from "../../recoils/user";
 

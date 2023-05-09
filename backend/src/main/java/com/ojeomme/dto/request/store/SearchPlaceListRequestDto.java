@@ -24,6 +24,7 @@ public class SearchPlaceListRequestDto {
     @NotNull(message = "지역을 선택하세요.")
     @NotBlank(message = "지역을 선택하세요.")
     private String y;
+
     private Integer page;
 
     public void setPage(Integer page) {
