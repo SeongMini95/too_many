@@ -1,0 +1,276 @@
+.review_modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.review_modal_wrap {
+    background-color: white;
+}
+
+.inner_layer {
+    width: 640px;
+    background-color: #fff;
+}
+
+.layer_head {
+    height: 64px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tit_layer {
+    display: block;
+    overflow: hidden;
+    padding: 0 90px;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 70px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.layer_body {
+    padding: 0 40px 38px;
+}
+
+.group_rate {
+    padding: 30px 0 17px;
+    text-align: center;
+}
+
+.grade_rate {
+    display: block;
+    width: 204px;
+    margin: 0 auto;
+    cursor: pointer;
+}
+
+.ico_star {
+    display: block;
+    background: url('/public/assets/image/ico_review_star.png') no-repeat;
+}
+
+.star_rate {
+    width: 204px;
+    height: 36px;
+    background-position: 0 -100px;
+}
+
+.inner_star {
+    height: 100%;
+    background-position: 0 -140px;
+}
+
+.info_rate {
+    display: block;
+    padding-top: 5px;
+    color: #959595;
+}
+
+.num_rate {
+    padding-right: 2px;
+    color: #000;
+}
+
+.num_limit {
+    padding-left: 2px;
+}
+
+.group_like {
+    padding: 17px 0 30px;
+    border-top: 1px solid #f2f2f2;
+    text-align: center;
+}
+
+.tit_group {
+    font-weight: 400;
+    font-size: 17px;
+}
+
+.txt_guide {
+    display: inline-block;
+    padding: 5px 0 0 4px;
+    font-size: 13px;
+    vertical-align: top;
+    color: #959595;
+}
+
+.box_like {
+    padding-top: 11px;
+    font-size: 0;
+}
+
+.btn_like {
+    position: relative;
+    margin: 4px 2px 0;
+    padding: 0 19px;
+    height: 36px;
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-radius: 36px;
+    font-size: 0;
+}
+
+.btn_like.btn_on {
+    font-weight: 700;
+    color: #1787ff;
+}
+
+.btn_like.btn_on::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+    border: 2px solid #3396ff;
+    border-radius: 19px;
+}
+
+.txt_like {
+    display: inline-block;
+    font-size: 15px;
+    line-height: 34px;
+    vertical-align: top;
+}
+
+.box_evaluation {
+    border: 1px solid #ddd;
+}
+
+.group_revisit {
+    height: 55px;
+    padding: 0 23px 0 21px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.desc_revisit {
+    float: left;
+    padding-top: 15px;
+}
+
+.group_revisit .btn_like {
+    float: right;
+    margin-top: 10px;
+}
+
+.tf_review {
+    width: 100%;
+    height: 90px;
+    padding: 24px 21px 0;
+    border: 0 none;
+    line-height: 22px;
+    color: #444;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.tf_review:focus {
+    height: 118px;
+    padding-top: 16px;
+}
+
+.group_upload {
+    overflow: hidden;
+    margin: 0 -4px 0 -5px;
+    padding: 10px 20px 24px;
+}
+
+.thumb_upload {
+    position: relative;
+    float: left;
+    width: 78px;
+    height: 78px;
+    margin: 9px 5px 0 4px;
+}
+
+.lab_upload {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    font-size: 1px;
+    line-height: 0;
+    text-indent: -9999px;
+    background: #fff url('/public/assets/image/bg_upload.png') no-repeat;
+    cursor: pointer;
+}
+
+.inp_upload {
+    display: block;
+    width: 78px;
+    height: 78px;
+    font-size: 1px;
+    line-height: 0;
+    text-indent: -9999px;
+}
+
+.group_etc {
+    overflow: hidden;
+    padding: 13px 18px 11px 20px;
+    border-top: 1px solid #ddd;
+    font-size: 13px;
+}
+
+.num_letter {
+    float: right;
+}
+
+.num_total {
+    color: #888;
+}
+
+.btn_reset {
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.btn_submit {
+    width: 100px;
+    flex-shrink: 0;
+    color: #007dff;
+}
+
+.img_thumb {
+    height: auto;
+    vertical-align: top;
+    width: 100%;
+}
+
+.frame_g {
+    border-color: rgba(0, 0, 0, .05);
+    box-sizing: border-box;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.btn_del {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.ico_del {
+    display: block;
+    font-size: 1px;
+    line-height: 0;
+    overflow: hidden;
+    text-indent: -9999px;
+    background: url('/public/assets/image/review_close.png') no-repeat 0 0;
+    height: 18px;
+    width: 18px;
+}

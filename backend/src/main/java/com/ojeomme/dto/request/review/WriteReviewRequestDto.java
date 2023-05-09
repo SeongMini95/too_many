@@ -38,7 +38,7 @@ public class WriteReviewRequestDto {
 
     private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images;
 
-    private List<String> recommends = new ArrayList<>();
+    private List<String> recommends;
 
     @NotNull(message = "지역을 선택하세요.")
     @NotBlank(message = "지역을 선택하세요.")
@@ -54,7 +54,7 @@ public class WriteReviewRequestDto {
         this.starScore = starScore;
         this.revisitYn = revisitYn;
         this.images = images != null ? images : new ArrayList<>();
-        this.recommends = recommends;
+        this.recommends = recommends != null ? recommends : new ArrayList<>();
         this.x = x;
         this.y = y;
     }
