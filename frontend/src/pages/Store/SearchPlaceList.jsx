@@ -3,7 +3,7 @@ import { useRecoilValue } from "recoil";
 import { positionState } from "../../recoils/position";
 import { useInView } from "react-intersection-observer";
 import style from '../../css/Store/SearchPlaceList.module.css';
-import { Button, Form, Row } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import storeApi from "../../api/store";
 import WriteReview from "../Review/WriteReview";
 
@@ -53,6 +53,7 @@ const SearchPlaceList = () => {
                 isEnd: meta.isEnd
             });
         } catch (e) {
+            console.log(e);
             alert(e.response.data);
         }
     }
@@ -68,7 +69,7 @@ const SearchPlaceList = () => {
         });
     }
 
-    const handlerClickCloseRevie = () => {
+    const handlerClickCloseReview = () => {
         if (window.confirm('리뷰 작성을 취소하시겠습니까?')) {
             setIsWriteReview(false);
         }
@@ -79,10 +80,10 @@ const SearchPlaceList = () => {
             <main className={style.main}>
                 <div className={style.place}>
                     <h1 className={style.place_title1}>매장 검색</h1>
-                    <Row className="mb-3" style={{ gap: '10px' }}>
+                    <div className={style.place_search}>
                         <Form.Control style={{ width: '350px' }} onChange={(e) => setQuery(e.target.value)} value={query} />
                         <Button variant="primary" style={{ width: '100px' }} onClick={() => handlerSearchPlace(1)}>검색</Button>
-                    </Row>
+                    </div>
                     <ul>
                         {placeList.map(v => (
                             <li key={'place' + v.placeId}>
@@ -107,14 +108,14 @@ const SearchPlaceList = () => {
                         ))}
                     </ul>
                     {!meta.isEnd && (
-                        <a href={'#none'} className={style.more_btn} ref={ref} onClick={() => handlerSearchPlace(meta.page + 1)}>
+                        <a href={'#none'} className={style.more_btn} ref={ref} onClick={(e) => handlerSearchPlace(e, meta.page + 1)}>
                             <span>더보기</span>
                         </a>
                     )}
                 </div>
             </main>
             {isWriteReview && (
-                <WriteReview onClickClose={handlerClickCloseRevie}
+                <WriteReview onClickClose={handlerClickCloseReview}
                              placeInfo={placeInfo}
                 />
             )}

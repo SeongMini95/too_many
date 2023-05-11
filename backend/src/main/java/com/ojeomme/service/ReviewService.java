@@ -146,12 +146,12 @@ public class ReviewService {
             store.changeMainImage(images.get(0));
         }
 
-        return new WriteReviewResponseDto(store.getId(), saveReview);
+        return new WriteReviewResponseDto(store.getId(), saveReview.getId());
     }
 
     @Transactional(readOnly = true)
-    public ReviewListResponseDto getReviewList(Long storeId, Long reviewId) {
-        return reviewRepository.getReviewList(storeId, reviewId);
+    public ReviewListResponseDto getReviewList(Long userId, Long storeId, Long moreId) {
+        return reviewRepository.getReviewList(userId, storeId, moreId);
     }
 
     @Transactional

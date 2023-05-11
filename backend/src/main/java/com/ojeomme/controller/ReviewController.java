@@ -29,8 +29,8 @@ public class ReviewController {
     }
 
     @GetMapping("/store/{storeId}")
-    public ResponseEntity<ReviewListResponseDto> getReviewList(@PathVariable Long storeId, @RequestParam(required = false) Long reviewId) {
-        ReviewListResponseDto responseDto = reviewService.getReviewList(storeId, reviewId);
+    public ResponseEntity<ReviewListResponseDto> getReviewList(@LoginUser Long userId, @PathVariable Long storeId, @RequestParam(required = false) Long moreId) {
+        ReviewListResponseDto responseDto = reviewService.getReviewList(userId, storeId, moreId);
         return ResponseEntity.ok(responseDto);
     }
 
