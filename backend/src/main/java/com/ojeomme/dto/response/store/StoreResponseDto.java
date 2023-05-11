@@ -18,9 +18,11 @@ public class StoreResponseDto {
     private String x;
     private String y;
     private int likeCnt;
+    private long reviewCnt;
+    private double avgStarScore;
 
     @Builder
-    public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String regionName, String addressName, String roadAddressName, String x, String y, int likeCnt) {
+    public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String regionName, String addressName, String roadAddressName, String x, String y, int likeCnt, long reviewCnt, double avgStarScore) {
         this.storeId = storeId;
         this.placeId = placeId;
         this.storeName = storeName;
@@ -31,5 +33,7 @@ public class StoreResponseDto {
         this.x = x;
         this.y = y;
         this.likeCnt = likeCnt;
+        this.reviewCnt = reviewCnt;
+        this.avgStarScore = avgStarScore;
     }
 }

@@ -320,10 +320,13 @@ class StoreControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Boolean.class)).isTrue();
+            assertThat(jsonPath.getBoolean("result")).isTrue();
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
         }
 
         @Test
@@ -344,10 +347,13 @@ class StoreControllerTest extends AcceptanceTest {
                     .then().log().all()
                     .extract();
 
+            JsonPath jsonPath = response.jsonPath();
+
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(response.as(Boolean.class)).isFalse();
+            assertThat(jsonPath.getBoolean("result")).isFalse();
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
         }
 
         @Test

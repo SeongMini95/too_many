@@ -11,10 +11,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
-import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StoreListResponseDto;
-import com.ojeomme.dto.response.store.StoreResponseDto;
+import com.ojeomme.dto.response.store.*;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -277,10 +274,10 @@ class StoreServiceTest {
             given(storeLikeLogRepository.save(any(StoreLikeLog.class))).willReturn(mock(StoreLikeLog.class));
 
             // when
-            boolean savedYn = storeService.likeStore(1L, 1L);
+            LikeStoreResponseDto responseDto = storeService.likeStore(1L, 1L);
 
             // then
-            assertThat(savedYn).isTrue();
+            assertThat(responseDto.isResult()).isTrue();
         }
 
         @Test
@@ -292,10 +289,10 @@ class StoreServiceTest {
             given(storeLikeLogRepository.findById(any(StoreLikeLogId.class))).willReturn(Optional.of(mock(StoreLikeLog.class)));
 
             // when
-            boolean savedYn = storeService.likeStore(1L, 1L);
+            LikeStoreResponseDto responseDto = storeService.likeStore(1L, 1L);
 
             // then
-            assertThat(savedYn).isFalse();
+            assertThat(responseDto.isResult()).isFalse();
         }
 
         @Test

@@ -2,10 +2,7 @@ package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
-import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StoreListResponseDto;
-import com.ojeomme.dto.response.store.StoreResponseDto;
+import com.ojeomme.dto.response.store.*;
 import com.ojeomme.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +30,9 @@ public class StoreController {
     }
 
     @PostMapping("/{storeId}/like")
-    public ResponseEntity<Boolean> likeStore(@LoginUser Long userId, @PathVariable Long storeId) {
-        boolean savedYn = storeService.likeStore(userId, storeId);
-        return ResponseEntity.ok(savedYn);
+    public ResponseEntity<LikeStoreResponseDto> likeStore(@LoginUser Long userId, @PathVariable Long storeId) {
+        LikeStoreResponseDto responseDto = storeService.likeStore(userId, storeId);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/{storeId}/like")

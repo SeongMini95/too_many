@@ -444,6 +444,12 @@
     vertical-align: top;
 }
 
+.review_like_btn.active {
+    background: #2483ff;
+    color: #fff;
+    border: 1px solid #2483ff;
+}
+
 .more_btn {
     display: block;
     text-align: center;
