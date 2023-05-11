@@ -2,7 +2,6 @@ package com.ojeomme.service;
 
 import com.ojeomme.common.maps.client.KakaoKeywordClient;
 import com.ojeomme.common.maps.entity.KakaoPlaceList;
-import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.storelikelog.StoreLikeLog;
@@ -11,8 +10,10 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.*;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
+import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
+import com.ojeomme.dto.response.store.StoreListResponseDto;
+import com.ojeomme.dto.response.store.StoreResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +29,9 @@ public class StoreService {
 
     private final KakaoKeywordClient kakaoKeywordClient;
     private final StoreRepository storeRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final UserRepository userRepository;
     private final StoreLikeLogRepository storeLikeLogRepository;
 
-    private static final int SIZE = 5;
     private static final int GET_STORE_LIST_PAGE_SIZE = 15;
 
     @Transactional(readOnly = true)
@@ -44,11 +43,8 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public StorePreviewImagesResponseDto getStore(Long storeId) {
-        StoreResponseDto store = storeRepository.getStore(storeId).orElseThrow(() -> new ApiException(ApiErrorCode.STORE_NOT_FOUND));
-        List<String> previewImages = reviewImageRepository.getPreviewImageList(storeId, PageRequest.of(0, SIZE));
-
-        return new StorePreviewImagesResponseDto(store, previewImages);
+    public StoreResponseDto getStore(Long storeId) {
+        return storeRepository.getStore(storeId).orElseThrow(() -> new ApiException(ApiErrorCode.STORE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -82,11 +78,6 @@ public class StoreService {
     @Transactional(readOnly = true)
     public boolean getStoreLikeLogOfUser(Long userId, Long storeId) {
         return storeLikeLogRepository.existsByUserIdAndStoreId(userId, storeId);
-    }
-
-    @Transactional(readOnly = true)
-    public ReviewImageListResponseDto getReviewImageList(Long storeId, Long reviewImageId) {
-        return reviewImageRepository.getReviewImageList(storeId, reviewImageId);
     }
 
     @Transactional(readOnly = true)

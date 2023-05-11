@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface ReviewCustomRepository {
 
-    ReviewListResponseDto getReviewList(Long storeId, Long reviewId);
+    ReviewListResponseDto getReviewList(Long userId, Long storeId, Long moreId);
 
     Optional<Review> getWithinAWeek(Long userId, Long placeId);
 }

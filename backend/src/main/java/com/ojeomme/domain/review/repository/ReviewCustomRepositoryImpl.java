@@ -4,18 +4,21 @@ import com.ojeomme.domain.review.Review;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
 import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.ojeomme.domain.review.QReview.review;
 import static com.ojeomme.domain.reviewimage.QReviewImage.reviewImage;
 import static com.ojeomme.domain.reviewrecommend.QReviewRecommend.reviewRecommend;
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.set;
+import static com.ojeomme.domain.user.QUser.user;
 
 @RequiredArgsConstructor
 public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
@@ -23,56 +26,73 @@ public class ReviewCustomRepositoryImpl implements ReviewCustomRepository {
     private final JPAQueryFactory factory;
 
     @Override
-    public ReviewListResponseDto getReviewList(Long storeId, Long reviewId) {
-        long imageCnt = factory
-                .select(review.count())
-                .from(review)
-                .leftJoin(review.reviewImages)
-                .where(review.store.id.eq(storeId))
-                .fetchFirst();
-
-        long recommendCnt = factory
-                .select(review.count())
-                .from(review)
-                .leftJoin(review.reviewRecommends)
-                .where(review.store.id.eq(storeId))
-                .fetchFirst();
-
-        // 페이징
+    public ReviewListResponseDto getReviewList(Long userId, Long storeId, Long moreId) {
+        // noOffset 페이징
         BooleanBuilder ltReviewId = new BooleanBuilder();
-        if (reviewId != null) {
-            ltReviewId.and(review.id.lt(reviewId));
+        if (moreId != null) {
+            ltReviewId.and(review.id.lt(moreId));
         }
 
-        List<ReviewResponseDto> getReviewList = factory
+        List<ReviewResponseDto> reviews = factory
+                .select(Projections.fields(
+                        ReviewResponseDto.class,
+                        review.id.as("reviewId"),
+                        Expressions.booleanPath(String.valueOf(review.user.id.equals(userId))).as("isWriteMe"),
+                        review.user.nickname,
+                        review.starScore,
+                        review.content,
+                        review.revisitYn,
+                        review.likeCnt,
+                        review.createDatetime.as("createDate")
+                ))
                 .from(review)
-                .innerJoin(review.user)
-                .leftJoin(review.reviewImages, reviewImage)
-                .leftJoin(review.reviewRecommends, reviewRecommend)
+                .innerJoin(review.user, user)
                 .where(
                         review.store.id.eq(storeId),
                         ltReviewId
                 )
-                .orderBy(review.id.desc(), reviewImage.id.asc())
-                .limit(5 * imageCnt * recommendCnt) // 5개씩 가져오기
-                .transform(
-                        groupBy(review.id)
-                                .list(Projections.fields(
-                                        ReviewResponseDto.class,
-                                        review.id.as("reviewId"),
-                                        review.user.id.as("userId"),
-                                        review.user.nickname,
-                                        review.starScore,
-                                        review.content,
-                                        review.revisitYn,
-                                        review.likeCnt,
-                                        set(reviewImage.imageUrl).as("images"),
-                                        set(reviewRecommend.recommendType.stringValue()).as("recommends"),
-                                        review.createDatetime.as("createDate")
-                                ))
-                );
+                .orderBy(review.id.desc())
+                .limit(5)
+                .fetch();
+        List<Long> reviewIds = reviews.stream()
+                .map(ReviewResponseDto::getReviewId)
+                .collect(Collectors.toList());
 
-        return new ReviewListResponseDto(getReviewList);
+        List<Tuple> reviewImages = factory
+                .select(
+                        reviewImage.review.id,
+                        reviewImage.imageUrl
+                )
+                .from(reviewImage)
+                .where(reviewImage.review.id.in(reviewIds))
+                .orderBy(reviewImage.review.id.desc(), reviewImage.id.asc())
+                .fetch();
+        List<Tuple> reviewRecommends = factory
+                .select(
+                        reviewRecommend.review.id,
+                        reviewRecommend.recommendType
+                )
+                .from(reviewRecommend)
+                .where(reviewRecommend.review.id.in(reviewIds))
+                .orderBy(reviewRecommend.review.id.desc())
+                .fetch();
+
+        // 이미지, 추천 포인트 설정
+        reviews.forEach(v -> {
+            List<String> images = reviewImages.stream()
+                    .filter(v2 -> Objects.equals(v2.get(reviewImage.review.id), v.getReviewId()))
+                    .map(v2 -> v2.get(reviewImage.imageUrl))
+                    .collect(Collectors.toList());
+            List<Integer> recommends = reviewRecommends.stream()
+                    .filter(v2 -> Objects.equals(v2.get(reviewRecommend.review.id), v.getReviewId()))
+                    .map(v2 -> Integer.parseInt(v2.get(reviewRecommend.recommendType).getCode()))
+                    .collect(Collectors.toList());
+
+            v.setImages(images);
+            v.setRecommends(recommends);
+        });
+
+        return new ReviewListResponseDto(reviews);
     }
 
     @Override

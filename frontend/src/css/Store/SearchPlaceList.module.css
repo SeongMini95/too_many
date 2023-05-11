@@ -1,7 +1,7 @@
 .main {
     display: flex;
     min-width: 1070px;
-    position: relative;
+    position: absolute;
     width: 100%;
     background-color: #f0f0f0;
     flex-flow: column;
@@ -21,6 +21,13 @@
     font-weight: bold;
     padding: 21px 0;
     letter-spacing: -1.25px;
+}
+
+.place_search {
+    margin-bottom: 20px;
+    gap: 10px;
+    display: flex;
+    flex-direction: row;
 }
 
 .place ul {

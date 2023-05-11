@@ -1,0 +1,463 @@
+#container_wrap {
+    background: #f0f0f3;
+}
+
+.div_cont {
+    max-width: 700px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.content {
+    min-height: auto;
+    padding: 20px 0 50px 0;
+    overflow: hidden;
+}
+
+.sub_content {
+    width: 700px;
+}
+
+.pic_grade {
+    padding: 20px;
+    background: #fff;
+    box-shadow: 1px 1px 3px #d8d8d8;
+}
+
+.cont_photo .list_photo {
+    overflow: hidden;
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.cont_photo .list_photo li {
+    float: left;
+    height: 320px;
+    margin: 1px 0;
+    width: 660px
+}
+
+.cont_photo .link_photo {
+    background-position: 50% 50%;
+    background-size: cover;
+    display: block;
+    height: 100%;
+    position: relative;
+    width: 100%
+}
+
+.cont_photo .list_photo .frame_g {
+    border: 1px solid rgba(0, 0, 0, .05)
+}
+
+.cont_photo .list_photo .size_l {
+    height: 320px;
+    margin: 1px 1px 1px 0;
+    width: 329px
+}
+
+.cont_photo .photo_type2 li {
+    height: 320px;
+    margin: 1px 0 1px 1px;
+    width: 329px
+}
+
+.cont_photo .photo_type3 li {
+    height: 159px;
+    margin: 1px 0 1px 1px;
+    width: 329px
+}
+
+.cont_photo .photo_type4 .size_l {
+    margin: 1px 0 0;
+    width: 328px
+}
+
+.cont_photo .photo_type4 .size_m {
+    height: 159px;
+    width: 330px
+}
+
+.cont_photo .photo_type4 li {
+    height: 159px;
+    margin: 1px 0 1px 2px;
+    width: 164px
+}
+
+.cont_photo .photo_type5 .size_l {
+    margin: 1px 0 0;
+    width: 328px
+}
+
+.cont_photo .photo_type5 li {
+    height: 159px;
+    margin: 1px 0 1px 2px;
+    width: 164px
+}
+
+.cont_photo .link_photo .more_photo {
+    background: url('/public/assets/image/bg_opacity.png');
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%
+}
+
+.cont_photo .link_photo .num_photo {
+    color: #fff;
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    letter-spacing: 0;
+    margin-top: 67px;
+    text-align: center
+}
+
+.title_point {
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 35px;
+    color: #222228;
+    line-height: 44px;
+    font-weight: 600;
+    float: left;
+    letter-spacing: -0.095px;
+}
+
+.btxt {
+    font-size: 16px;
+    color: #66666e;
+    line-height: 100%;
+    margin-bottom: 20px;
+}
+
+.sns_grade {
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.point {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 13px;
+    color: #66666e;
+    margin-right: 5px;
+}
+
+.lbl_review_point {
+    color: #222228;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.ico_star {
+    background: url('/public/assets/image/ico_review_star.png') no-repeat;
+    display: inline-block;
+}
+
+.star_rate {
+    background-position: 0 0;
+    height: 27px;
+    width: 151px;
+    position: relative;
+    top: 6px;
+    left: 6px;
+}
+
+.inner_star {
+    background-position: 0 -30px;
+    height: 100%;
+}
+
+.favor_pic {
+    overflow: hidden;
+    padding-top: 20px;
+    border-top: 1px solid #e6e6eb;
+    font-size: 0;
+}
+
+.favor_pic .favor {
+    display: inline-block;
+    line-height: 32px;
+    padding: 2px 18px 0 18px;
+    border: 1px solid #222228;
+    border-radius: 20px;
+    margin-right: 10px;
+    float: left;
+    color: #222228;
+}
+
+.favor_pic .favor span {
+    font-size: 13px;
+    padding: 2px 0 3px 25px;
+    background: url(https://s3-ap-northeast-1.amazonaws.com/dcicons/new/images/web/common/like-off@2x.png) no-repeat left;
+    background-size: 20px;
+}
+
+.favor_pic .favor:hover {
+    border: 1px solid #ee4949;
+}
+
+.favor_pic .favor:hover span {
+    background: url(https://s3-ap-northeast-1.amazonaws.com/dcicons/new/images/web/common/like-on@2x.png) no-repeat left;
+    background-size: 20px;
+}
+
+.favor_pic .favor_on {
+    border: 1px solid #ee4949;
+}
+
+.favor_pic .favor_on span {
+    background: url(https://s3-ap-northeast-1.amazonaws.com/dcicons/new/images/web/common/like-on@2x.png) no-repeat left;
+    background-size: 20px;
+}
+
+.favor_pic .appra {
+    display: inline-block;
+    line-height: 32px;
+    padding: 2px 18px 0px 18px;
+    border: 1px solid #222228;
+    border-radius: 20px;
+    margin-right: 10px;
+    float: right;
+    cursor: pointer;
+    height: 40px;
+}
+
+.favor_pic .appra span {
+    font-size: 13px;
+    padding: 2px 0 3px 25px;
+    background: url(https://s3-ap-northeast-1.amazonaws.com/dcicons/new/images/web/profile/review@2x.png) no-repeat left;
+    background-size: 20px;
+}
+
+.favor_pic .appra:hover {
+    border: 1px solid #2483ff;
+}
+
+.favor_pic .appra:hover span {
+    background: url(https://s3-ap-northeast-1.amazonaws.com/dcicons/new/images/web/profile/review-w@2x.png) no-repeat left;
+    background-size: 20px;
+}
+
+.basic_info ul {
+    list-style: none;
+}
+
+.basic_info ul li {
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: #222228;
+}
+
+.basic_info ul .location {
+    position: relative;
+    background-size: 20px;
+    margin-bottom: 0;
+}
+
+.basic_info ul .old_location {
+    color: gray;
+}
+
+.review_list {
+    margin-top: 20px;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 1px 1px 3px #d8d8d8;
+}
+
+.review_list .review_title {
+    font-size: 24px;
+    color: #222228;
+    line-height: 120%;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.review_list .grade_info {
+    position: relative;
+    border-top: 1px solid #e6e6eb;
+    border-bottom: 1px solid #e6e6eb;
+    padding: 20px 0 20px 0;
+    min-height: 140px;
+}
+
+.review_list .review_list_point {
+    color: #222228;
+    font-weight: 600;
+    font-size: 20px;
+    margin-right: 5px;
+    position: relative;
+    top: 1px;
+}
+
+.view_like_point {
+    margin: 0 -2px;
+    max-height: 80px;
+    overflow: hidden;
+    padding-top: 13px;
+}
+
+.chip_like_point {
+    border-radius: 30px;
+    color: #fff;
+    float: left;
+    height: 36px;
+    line-height: 36px;
+    margin: 4px 2px 0;
+    padding: 0 19px 0 20px;
+}
+
+.chip_like_point_type1 {
+    background-color: #3b9aff;
+}
+
+.chip_like_point_type2 {
+    background-color: #32b2c4;
+}
+
+.chip_like_point_type3 {
+    background-color: #8cc966;
+}
+
+.chip_like_point_type4 {
+    background-color: #47abe8;
+}
+
+.chip_like_point_type5 {
+    background-color: #69cccc;
+}
+
+.review_graph {
+    padding: 20px;
+    border: 1px solid #e6e6eb;
+    margin-bottom: 10px;
+}
+
+.person_grade {
+    position: relative;
+    padding-left: 80px;
+    margin-bottom: 10px;
+    min-height: 70px;
+}
+
+.person_btxt {
+    font-size: 13px;
+    color: #222228;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.person_btxt strong {
+    font-size: 16px;
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.star_date {
+    display: block;
+}
+
+.review_star_rate {
+    background-position: 0 -60px;
+    float: left;
+    height: 16px;
+    width: 88px;
+}
+
+.review_inner_star {
+    background-position: 0 -80px;
+    height: 100%;
+}
+
+.date {
+    display: inline-block;
+    font-size: 13px;
+    color: #66666e;
+    position: relative;
+    top: -6px;
+    left: 8px;
+}
+
+.content_btxt {
+    font-size: 15px;
+    color: #222228;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.review_image_wrap {
+    margin: 10px 0;
+}
+
+.review_image_photo_list {
+    font-size: 0;
+}
+
+.review_image_photo_list li {
+    border-top: 0;
+    display: inline-block;
+    padding: 0;
+    position: relative;
+    min-height: 52px;
+    margin-right: 2px;
+}
+
+.box_photo {
+    display: block;
+    height: 151px;
+    position: relative;
+    width: 152px;
+}
+
+.box_photo:after {
+    border: 1px solid rgba(0, 0, 0, .06);
+    bottom: 0;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 10;
+}
+
+.img_thumb {
+    vertical-align: top;
+    width: 100%;
+    height: 100%;
+}
+
+.review_like_btn {
+    cursor: pointer;
+    line-height: 28px;
+    border: 1px solid #222228;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #222228;
+    display: inline-block;
+    border-radius: 2px;
+    vertical-align: top;
+}
+
+.more_btn {
+    display: block;
+    text-align: center;
+    height: 68px;
+    line-height: 68px;
+    color: #777;
+    font-size: 15px;
+    letter-spacing: -1px;
+    background: #f9f9fa;
+    box-shadow: 1px 1px 3px #d8d8d8;
+}
+
+.more_btn span {
+    padding-right: 30px;
+    display: inline-block;
+    background: url('/public/assets/image/arrow2.png') no-repeat right center;
+}

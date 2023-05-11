@@ -1,6 +1,7 @@
 package com.ojeomme.dto.response.review;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.reviewimage.ReviewImage;
 import lombok.Builder;
@@ -8,8 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -17,35 +17,25 @@ import java.util.stream.Collectors;
 public class ReviewResponseDto {
 
     private Long reviewId;
-    private Long userId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private boolean isWriteMe;
+
     private String nickname;
     private int starScore;
     private String content;
     private boolean revisitYn;
     private int likeCnt;
-    private Set<String> images;
-    private Set<String> recommends;
+    private List<String> images;
+    private List<Integer> recommends;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy년 MM월 dd일")
     private LocalDateTime createDate;
 
-    public ReviewResponseDto(Review review) {
-        this.reviewId = review.getId();
-        this.userId = review.getUser().getId();
-        this.nickname = review.getUser().getNickname();
-        this.starScore = review.getStarScore();
-        this.content = review.getContent();
-        this.likeCnt = review.getLikeCnt();
-        this.revisitYn = review.isRevisitYn();
-        this.images = review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toCollection(LinkedHashSet::new));
-        this.recommends = review.getReviewRecommends().stream().map(v -> v.getRecommendType().getCode()).collect(Collectors.toCollection(LinkedHashSet::new));
-        this.createDate = review.getCreateDatetime();
-    }
-
     @Builder
-    public ReviewResponseDto(Long reviewId, Long userId, String nickname, int starScore, String content, boolean revisitYn, int likeCnt, Set<String> images, Set<String> recommends, LocalDateTime createDate) {
+    public ReviewResponseDto(Long reviewId, boolean isWriteMe, String nickname, int starScore, String content, boolean revisitYn, int likeCnt, List<String> images, List<Integer> recommends, LocalDateTime createDate) {
         this.reviewId = reviewId;
-        this.userId = userId;
+        this.isWriteMe = isWriteMe;
         this.nickname = nickname;
         this.starScore = starScore;
         this.content = content;
@@ -54,5 +44,29 @@ public class ReviewResponseDto {
         this.images = images;
         this.recommends = recommends;
         this.createDate = createDate;
+    }
+
+    public ReviewResponseDto(Review review) {
+        this.reviewId = review.getId();
+        this.nickname = review.getUser().getNickname();
+        this.starScore = review.getStarScore();
+        this.content = review.getContent();
+        this.likeCnt = review.getLikeCnt();
+        this.revisitYn = review.isRevisitYn();
+        this.images = review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toList());
+        this.recommends = review.getReviewRecommends().stream().map(v -> Integer.parseInt(v.getRecommendType().getCode())).collect(Collectors.toList());
+        this.createDate = review.getCreateDatetime();
+    }
+
+    public boolean getIsWriteMe() {
+        return this.isWriteMe;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public void setRecommends(List<Integer> recommends) {
+        this.recommends = recommends;
     }
 }

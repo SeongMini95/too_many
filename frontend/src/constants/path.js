@@ -73,6 +73,9 @@ const API_PATH = {
     },
     CATEGORY: {
         GET_CATEGORY_LIST: '/api/category/list'
+    },
+    REVIEW_IMAGE: {
+        GET_PREVIEW_IMAGE_LIST: '/api/reviewImage/store/:storeId/preview'
     }
 }
 

@@ -4,7 +4,7 @@ import com.ojeomme.domain.category.repository.CategoryRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.StoreListResponseDto;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
+import com.ojeomme.dto.response.store.StoreResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.MathExpressions;
@@ -37,6 +37,7 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                                 store.kakaoPlaceId.as("placeId"),
                                 store.storeName,
                                 store.category.categoryName,
+                                store.regionCode.regionName,
                                 store.addressName,
                                 store.roadAddressName,
                                 store.x,
@@ -44,6 +45,7 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                                 store.likeCnt
                         ))
                         .from(store)
+                        .innerJoin(store.regionCode, regionCode)
                         .where(store.id.eq(storeId))
                         .fetchOne()
         );
@@ -84,14 +86,17 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
             inCategories.and(category.id.in(categories));
         }
 
-        Long totalCnt = factory
-                .select(store.count())
+        long totalCnt = factory
+                .select(store.countDistinct())
                 .from(store)
+                .innerJoin(store.reviews, review)
+                .innerJoin(store.regionCode, regionCode)
+                .innerJoin(store.category, category)
                 .where(
-                        store.regionCode.code.in(regionCodes),
+                        regionCode.code.in(regionCodes),
                         inCategories
                 )
-                .fetchOne();
+                .fetchFirst();
 
         boolean isEnd = totalCnt - ((long) pageable.getPageSize() * (pageable.getPageNumber() + 1)) <= 0;
 

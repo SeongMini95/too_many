@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -224,7 +223,7 @@ class ReviewServiceTest {
                         "http://localhost:4000/temp/2023/4/14/image1.png",
                         "http://localhost:4000/temp/2023/4/14/image2.png"
                 ))
-                .recommends(List.of("1"))
+                .recommends(List.of(1))
                 .build();
 
         @Test
@@ -251,7 +250,6 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getReviewId()).isEqualTo(1L);
-            assertThat(responseDto.getUserId()).isEqualTo(user.getId());
             assertThat(responseDto.getNickname()).isEqualTo(user.getNickname());
             assertThat(responseDto.getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getContent()).isEqualTo(requestDto.getContent());
@@ -285,8 +283,8 @@ class ReviewServiceTest {
                     .content("리뷰1")
                     .revisitYn(false)
                     .likeCnt(3)
-                    .images(Set.of("http://localhost:4000/image1.png"))
-                    .recommends(Set.of("1"))
+                    .images(List.of("http://localhost:4000/image1.png"))
+                    .recommends(List.of(1))
                     .createDate(LocalDateTime.of(2023, 4, 18, 0, 0))
                     .build();
             ReviewResponseDto reviewResponseDto2 = ReviewResponseDto.builder()
@@ -296,15 +294,15 @@ class ReviewServiceTest {
                     .content("리뷰2")
                     .revisitYn(false)
                     .likeCnt(5)
-                    .images(Set.of("http://localhost:4000/image2.png"))
-                    .recommends(Set.of("2"))
+                    .images(List.of("http://localhost:4000/image2.png"))
+                    .recommends(List.of(2))
                     .createDate(LocalDateTime.of(2023, 4, 17, 0, 0))
                     .build();
             ReviewListResponseDto reviewListResponseDto = new ReviewListResponseDto(List.of(reviewResponseDto1, reviewResponseDto2));
-            given(reviewRepository.getReviewList(anyLong(), anyLong())).willReturn(reviewListResponseDto);
+            given(reviewRepository.getReviewList(anyLong(), anyLong(), anyLong())).willReturn(reviewListResponseDto);
 
             // when
-            ReviewListResponseDto responseDto = reviewService.getReviewList(1L, 1L);
+            ReviewListResponseDto responseDto = reviewService.getReviewList(1L, 1L, 1L);
 
             // then
             assertThat(responseDto.getReviews()).hasSameSizeAs(reviewListResponseDto.getReviews());
@@ -384,7 +382,7 @@ class ReviewServiceTest {
                 .starScore(5)
                 .content("리뷰")
                 .images(List.of("http://localhost:4000/temp/2023/4/14/image1.png", "http://localhost:4000/temp/2023/4/14/image2.png"))
-                .recommends(List.of("1", "2"))
+                .recommends(List.of(1, 2))
                 .x("127.03662909986537")
                 .y("37.52186058560857")
                 .build();
@@ -394,8 +392,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -427,7 +423,7 @@ class ReviewServiceTest {
                     .collect(Collectors.toSet()));
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -438,14 +434,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).writeReview(any(Review.class));
         }
@@ -487,8 +476,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -520,7 +507,7 @@ class ReviewServiceTest {
                     .collect(Collectors.toSet()));
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -531,14 +518,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
         }
 
         @Test
@@ -546,8 +526,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -580,7 +558,7 @@ class ReviewServiceTest {
                     .collect(Collectors.toSet()));
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -591,14 +569,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
         }
 
         @Test
@@ -626,8 +597,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -659,7 +628,7 @@ class ReviewServiceTest {
                     .collect(Collectors.toSet()));
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -670,14 +639,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
@@ -692,8 +654,6 @@ class ReviewServiceTest {
 
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -725,7 +685,7 @@ class ReviewServiceTest {
                     .collect(Collectors.toSet()));
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -736,14 +696,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(responseDto.getReview().getImages()).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).writeReview(any(Review.class));
         }
@@ -753,8 +706,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -779,7 +730,7 @@ class ReviewServiceTest {
                     .build();
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -789,7 +740,7 @@ class ReviewServiceTest {
                     .revisitYn(true)
                     .starScore(5)
                     .content("리뷰")
-                    .recommends(List.of("1", "2"))
+                    .recommends(List.of(1, 2))
                     .x("127.03662909986537")
                     .y("37.52186058560857")
                     .build();
@@ -799,13 +750,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
@@ -816,8 +761,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -842,7 +785,7 @@ class ReviewServiceTest {
                     .build();
             review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
                             .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                            .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                             .build())
                     .collect(Collectors.toSet()));
 
@@ -853,13 +796,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
@@ -870,8 +807,6 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
-            given(user.getId()).willReturn(1L);
-            given(user.getNickname()).willReturn("test123");
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -894,11 +829,6 @@ class ReviewServiceTest {
                     .content(requestDto.getContent())
                     .revisitYn(requestDto.isRevisitYn())
                     .build();
-            review.addRecommends(requestDto.getRecommends().stream().map(v -> ReviewRecommend.builder()
-                            .review(review)
-                            .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
-                            .build())
-                    .collect(Collectors.toSet()));
 
             given(reviewRepository.save(any(Review.class))).willReturn(review);
 
@@ -906,7 +836,6 @@ class ReviewServiceTest {
                     .revisitYn(true)
                     .starScore(5)
                     .content("리뷰")
-                    .recommends(List.of("1", "2"))
                     .x("127.03662909986537")
                     .y("37.52186058560857")
                     .build();
@@ -916,13 +845,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getStoreId()).isNotNull();
-
-            assertThat(responseDto.getReview().getUserId()).isEqualTo(1L);
-            assertThat(responseDto.getReview().getNickname()).isEqualTo("test123");
-            assertThat(responseDto.getReview().getContent()).isEqualTo(requestDto.getContent());
-            assertThat(responseDto.getReview().getStarScore()).isEqualTo(requestDto.getStarScore());
-            assertThat(responseDto.getReview().isRevisitYn()).isEqualTo(requestDto.isRevisitYn());
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getReview().getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getReviewId()).isNotNull();
 
             then(store).should(times(1)).updateStoreInfo(any(Store.class));
             then(store).should(times(1)).writeReview(any(Review.class));
