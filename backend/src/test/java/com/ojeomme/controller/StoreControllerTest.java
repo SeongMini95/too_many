@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,8 +33,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -262,109 +262,6 @@ class StoreControllerTest extends AcceptanceTest {
     }
 
     @Nested
-    class getReviewImageList {
-
-        @Test
-        void 리뷰_이미지를_가져온다() {
-            // given
-
-            // when
-            ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
-                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
-                    .then().log().all()
-                    .extract();
-
-            JsonPath jsonPath = response.jsonPath();
-
-            // then
-            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-            List<String> reviewImages = store.getReviews().stream()
-                    .flatMap(v -> v.getReviewImages().stream()
-                            .sorted(Comparator.comparing(ReviewImage::getId).reversed())
-                            .map(ReviewImage::getImageUrl))
-                    .collect(Collectors.toList());
-            assertThat(jsonPath.getList("images")).isEqualTo(reviewImages);
-        }
-
-        @Test
-        void 다음_리뷰_이미지를_가져온다() {
-            // given
-            List<ReviewImage> images = new ArrayList<>();
-            for (int i = 3; i < 30; i++) {
-                images.add(ReviewImage.builder()
-                        .review(review)
-                        .imageUrl("http://localhost:4000/image" + i + ".png")
-                        .build());
-            }
-            reviewImageRepository.saveAll(images);
-
-            // when
-            ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
-                    .param("reviewImageId", 10)
-                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
-                    .then().log().all()
-                    .extract();
-
-            JsonPath jsonPath = response.jsonPath();
-
-            List<String> getImages = reviewImageRepository.findAll().subList(0, 9).stream()
-                    .sorted(Comparator.comparing(ReviewImage::getId).reversed())
-                    .map(ReviewImage::getImageUrl)
-                    .collect(Collectors.toList());
-
-            // then
-            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-            assertThat(jsonPath.getList("images")).isEqualTo(getImages);
-        }
-
-        @Test
-        void 이미지가_없다() {
-            // given
-            Category category = categoryRepository.save(Category.builder()
-                    .categoryName("초밥,롤")
-                    .categoryDepth(1)
-                    .build());
-
-            Store store = Store.builder()
-                    .kakaoPlaceId(123L)
-                    .category(category)
-                    .regionCode(regionCodeRepository.findById("1111012200").orElseThrow())
-                    .storeName("테스트")
-                    .addressName("서울 종로구 청진동 146")
-                    .roadAddressName("서울 종로구 종로 19")
-                    .x("127.03662909986537")
-                    .y("37.52186058560857")
-                    .likeCnt(0)
-                    .build();
-
-            store = storeRepository.save(store);
-
-            // when
-            ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
-                    .when().get("/api/store/{storeId}/reviewImageList", store.getId())
-                    .then().log().all()
-                    .extract();
-
-            JsonPath jsonPath = response.jsonPath();
-
-            // then
-            assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-            List<String> reviewImages = store.getReviews().stream()
-                    .flatMap(v -> v.getReviewImages().stream()
-                            .sorted(Comparator.comparing(ReviewImage::getId).reversed())
-                            .map(ReviewImage::getImageUrl))
-                    .collect(Collectors.toList());
-            assertThat(jsonPath.getList("images")).isEqualTo(reviewImages);
-        }
-    }
-
-    @Nested
     class getStoreLikeLogOfUser {
 
         @Test
@@ -489,10 +386,10 @@ class StoreControllerTest extends AcceptanceTest {
     }
 
     @Nested
-    class getStoreReviews {
+    class getStore {
 
         @Test
-        void 매장과_프리뷰_이미지를_가져온다() {
+        void 매장_정보를_가져온다() {
             // given
 
             // when
@@ -504,20 +401,16 @@ class StoreControllerTest extends AcceptanceTest {
 
             JsonPath jsonPath = response.jsonPath();
 
-            List<String> previewImages = reviewImageRepository.getPreviewImageList(store.getId(), PageRequest.of(0, 5));
-
             // then
-            assertThat(jsonPath.getLong("store.storeId")).isEqualTo(store.getId());
-            assertThat(jsonPath.getLong("store.placeId")).isEqualTo(store.getKakaoPlaceId());
-            assertThat(jsonPath.getString("store.storeName")).isEqualTo(store.getStoreName());
-            assertThat(jsonPath.getString("store.categoryName")).isEqualTo(store.getCategory().getCategoryName());
-            assertThat(jsonPath.getString("store.addressName")).isEqualTo(store.getAddressName());
-            assertThat(jsonPath.getString("store.roadAddressName")).isEqualTo(store.getRoadAddressName());
-            assertThat(jsonPath.getString("store.x")).isEqualTo(store.getX());
-            assertThat(jsonPath.getString("store.y")).isEqualTo(store.getY());
-            assertThat(jsonPath.getInt("store.likeCnt")).isEqualTo(store.getLikeCnt());
-
-            assertThat(jsonPath.getList("previewImages")).isEqualTo(previewImages);
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("placeId")).isEqualTo(store.getKakaoPlaceId());
+            assertThat(jsonPath.getString("storeName")).isEqualTo(store.getStoreName());
+            assertThat(jsonPath.getString("categoryName")).isEqualTo(store.getCategory().getCategoryName());
+            assertThat(jsonPath.getString("addressName")).isEqualTo(store.getAddressName());
+            assertThat(jsonPath.getString("roadAddressName")).isEqualTo(store.getRoadAddressName());
+            assertThat(jsonPath.getString("x")).isEqualTo(store.getX());
+            assertThat(jsonPath.getString("y")).isEqualTo(store.getY());
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
         }
 
         @Test

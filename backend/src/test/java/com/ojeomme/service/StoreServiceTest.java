@@ -11,8 +11,10 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.*;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
+import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
+import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
+import com.ojeomme.dto.response.store.StoreListResponseDto;
+import com.ojeomme.dto.response.store.StoreResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import org.junit.jupiter.api.Nested;
@@ -234,28 +236,6 @@ class StoreServiceTest {
     }
 
     @Nested
-    class getReviewImageList {
-
-        @Test
-        void 리뷰_이미지를_가져온다() {
-            // given
-            ReviewImageListResponseDto images = new ReviewImageListResponseDto(List.of(
-                    "http://localhost:4000/1.png",
-                    "http://localhost:4000/2.png",
-                    "http://localhost:4000/3.png"
-            ), 3L);
-            given(reviewImageRepository.getReviewImageList(anyLong(), anyLong())).willReturn(images);
-
-            // when
-            ReviewImageListResponseDto responseDto = storeService.getReviewImageList(1L, 1L);
-
-            // then
-            assertThat(responseDto.getImages()).hasSameSizeAs(images.getImages());
-            assertThat(responseDto.getImages()).isEqualTo(images.getImages());
-        }
-    }
-
-    @Nested
     class getStoreLikeLogOfUser {
 
         @Test
@@ -348,7 +328,7 @@ class StoreServiceTest {
     class getStore {
 
         @Test
-        void 매장과_프리뷰_이미지를_가져온다() {
+        void 매장_정보를_가져온다() {
             // given
             StoreResponseDto store = StoreResponseDto.builder()
                     .storeId(1L)
@@ -361,35 +341,22 @@ class StoreServiceTest {
                     .y("34")
                     .likeCnt(10)
                     .build();
-            List<String> previewImages = List.of(
-                    "http://localhost:4000/image1.png",
-                    "http://localhost:4000/image2.png",
-                    "http://localhost:4000/image3.png",
-                    "http://localhost:4000/image4.png",
-                    "http://localhost:4000/image5.png"
-            );
 
             given(storeRepository.getStore(anyLong())).willReturn(Optional.of(store));
-            given(reviewImageRepository.getPreviewImageList(anyLong(), any(Pageable.class))).willReturn(previewImages);
 
             // when
-            StorePreviewImagesResponseDto responseDto = storeService.getStore(1L);
+            StoreResponseDto responseDto = storeService.getStore(1L);
 
             // then
-            assertThat(responseDto.getStore().getStoreId()).isEqualTo(store.getStoreId());
-            assertThat(responseDto.getStore().getPlaceId()).isEqualTo(store.getPlaceId());
-            assertThat(responseDto.getStore().getStoreName()).isEqualTo(store.getStoreName());
-            assertThat(responseDto.getStore().getCategoryName()).isEqualTo(store.getCategoryName());
-            assertThat(responseDto.getStore().getAddressName()).isEqualTo(store.getAddressName());
-            assertThat(responseDto.getStore().getRoadAddressName()).isEqualTo(store.getRoadAddressName());
-            assertThat(responseDto.getStore().getX()).isEqualTo(store.getX());
-            assertThat(responseDto.getStore().getY()).isEqualTo(store.getY());
-            assertThat(responseDto.getStore().getLikeCnt()).isEqualTo(store.getLikeCnt());
-
-            assertThat(responseDto.getPreviewImages()).hasSameSizeAs(previewImages);
-            for (int i = 0; i < responseDto.getPreviewImages().size(); i++) {
-                assertThat(responseDto.getPreviewImages().get(i)).isEqualTo(previewImages.get(i));
-            }
+            assertThat(responseDto.getStoreId()).isEqualTo(store.getStoreId());
+            assertThat(responseDto.getPlaceId()).isEqualTo(store.getPlaceId());
+            assertThat(responseDto.getStoreName()).isEqualTo(store.getStoreName());
+            assertThat(responseDto.getCategoryName()).isEqualTo(store.getCategoryName());
+            assertThat(responseDto.getAddressName()).isEqualTo(store.getAddressName());
+            assertThat(responseDto.getRoadAddressName()).isEqualTo(store.getRoadAddressName());
+            assertThat(responseDto.getX()).isEqualTo(store.getX());
+            assertThat(responseDto.getY()).isEqualTo(store.getY());
+            assertThat(responseDto.getLikeCnt()).isEqualTo(store.getLikeCnt());
         }
 
         @Test

@@ -2,7 +2,7 @@ package com.ojeomme.domain.store.repository;
 
 import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
 import com.ojeomme.dto.response.store.StoreListResponseDto;
-import com.ojeomme.dto.response.store.StorePreviewImagesResponseDto.StoreResponseDto;
+import com.ojeomme.dto.response.store.StoreResponseDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;

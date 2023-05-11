@@ -1,16 +1,15 @@
 package com.ojeomme.dto.response.review;
 
-import com.ojeomme.domain.review.Review;
 import lombok.Getter;
 
 @Getter
 public class WriteReviewResponseDto {
 
     private final Long storeId;
-    private final ReviewResponseDto review;
+    private final Long reviewId;
 
-    public WriteReviewResponseDto(Long storeId, Review review) {
+    public WriteReviewResponseDto(Long storeId, Long reviewId) {
         this.storeId = storeId;
-        this.review = new ReviewResponseDto(review);
+        this.reviewId = reviewId;
     }
 }

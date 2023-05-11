@@ -12,10 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.*;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -36,10 +33,10 @@ public class ModifyReviewRequestDto {
 
     private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images = new ArrayList<>();
 
-    private List<String> recommends = new ArrayList<>();
+    private List<Integer> recommends = new ArrayList<>();
 
     @Builder
-    public ModifyReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<String> recommends) {
+    public ModifyReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<Integer> recommends) {
         this.content = content;
         this.starScore = starScore;
         this.revisitYn = revisitYn;
@@ -73,10 +70,10 @@ public class ModifyReviewRequestDto {
 
     private Set<ReviewRecommend> toReviewRecommends(Review review) {
         return recommends.stream()
-                .filter(StringUtils::isNotBlank)
+                .filter(Objects::nonNull)
                 .map(v -> ReviewRecommend.builder()
                         .review(review)
-                        .recommendType(EnumCodeConverterUtils.ofCode(v, RecommendType.class))
+                        .recommendType(EnumCodeConverterUtils.ofCode(String.valueOf(v), RecommendType.class))
                         .build())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
