@@ -42,11 +42,16 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                                 store.roadAddressName,
                                 store.x,
                                 store.y,
-                                store.likeCnt
+                                store.likeCnt,
+                                review.count().as("reviewCnt"),
+                                MathExpressions.round(review.starScore.avg(), 2).as("avgStarScore")
                         ))
                         .from(store)
                         .innerJoin(store.regionCode, regionCode)
+                        .innerJoin(store.category, category)
+                        .innerJoin(store.reviews, review)
                         .where(store.id.eq(storeId))
+                        .groupBy(store.id)
                         .fetchOne()
         );
     }

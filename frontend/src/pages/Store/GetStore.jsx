@@ -22,7 +22,9 @@ const GetStore = () => {
         roadAddressName: '',
         x: '',
         y: '',
-        likeCnt: ''
+        likeCnt: 0,
+        reviewCnt: 0,
+        avgStarScore: 0
     });
     const [isLike, setIsLike] = useState(false);
 
@@ -58,7 +60,9 @@ const GetStore = () => {
                 roadAddressName: store.roadAddressName,
                 x: store.x,
                 y: store.y,
-                likeCnt: store.likeCnt
+                likeCnt: store.likeCnt,
+                reviewCnt: store.reviewCnt,
+                avgStarScore: store.avgStarScore
             });
         }
 
@@ -76,20 +80,12 @@ const GetStore = () => {
         try {
             e.preventDefault();
 
-            const isLike = await storeApi.likeStore(storeId);
-            setIsLike(isLike);
-
-            if (isLike) {
-                setStore({
-                    ...store,
-                    likeCnt: store.likeCnt + 1
-                });
-            } else {
-                setStore({
-                    ...store,
-                    likeCnt: store.likeCnt - 1
-                });
-            }
+            const { result, likeCnt } = await storeApi.likeStore(storeId);
+            setIsLike(result);
+            setStore({
+                ...store,
+                likeCnt
+            });
         } catch (e) {
             alert(e.response.data);
         }
@@ -130,10 +126,10 @@ const GetStore = () => {
                                 </div>
                                 <div className={style.sns_grade}>
                                     <p>
-                                        <span className={style.point}>59명의 평가</span>
-                                        <strong className={style.lbl_review_point}>4.4점</strong>
+                                        <span className={style.point}>{store.reviewCnt}명의 평가</span>
+                                        <strong className={style.lbl_review_point}>{parseFloat(store.avgStarScore).toFixed(1)}점</strong>
                                         <span className={[style.ico_star, style.star_rate].join(' ')}>
-                                            <span className={[style.ico_star, style.inner_star].join(' ')}></span>
+                                            <span className={[style.ico_star, style.inner_star].join(' ')} style={{ width: `${(store.avgStarScore / 5) * 100}%` }}></span>
                                         </span>
                                     </p>
                                 </div>
@@ -148,12 +144,12 @@ const GetStore = () => {
                             </div>
                         </div>
                         <div className={style.review_list}>
-                            <p className={style.review_title}>101건의 방문자 평가</p>
+                            <p className={style.review_title}>{store.reviewCnt}건의 방문자 평가</p>
                             <div className={style.grade_info}>
                                 <p>
-                                    <strong className={style.review_list_point}>4.4점</strong>
+                                    <strong className={style.review_list_point}>{parseFloat(store.avgStarScore).toFixed(1)}점</strong>
                                     <span className={[style.ico_star, style.star_rate].join(' ')}>
-                                            <span className={[style.ico_star, style.inner_star].join(' ')}></span>
+                                            <span className={[style.ico_star, style.inner_star].join(' ')} style={{ width: `${(store.avgStarScore / 5) * 100}%` }}></span>
                                     </span>
                                 </p>
                                 <div className={style.view_like_point}>

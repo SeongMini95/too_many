@@ -10,10 +10,7 @@ import com.ojeomme.domain.storelikelog.repository.StoreLikeLogRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
-import com.ojeomme.dto.response.store.RealTimeStoreRankingResponseDto;
-import com.ojeomme.dto.response.store.SearchPlaceListResponseDto;
-import com.ojeomme.dto.response.store.StoreListResponseDto;
-import com.ojeomme.dto.response.store.StoreResponseDto;
+import com.ojeomme.dto.response.store.*;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +50,7 @@ public class StoreService {
     }
 
     @Transactional
-    public boolean likeStore(Long userId, Long storeId) {
+    public LikeStoreResponseDto likeStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new ApiException(ApiErrorCode.STORE_NOT_FOUND));
 
@@ -66,12 +63,12 @@ public class StoreService {
                     .build());
             store.like();
 
-            return true;
+            return new LikeStoreResponseDto(true, store.getLikeCnt());
         } else {
             storeLikeLogRepository.delete(storeLikeLog);
             store.cancelLike();
 
-            return false;
+            return new LikeStoreResponseDto(false, store.getLikeCnt());
         }
     }
 
