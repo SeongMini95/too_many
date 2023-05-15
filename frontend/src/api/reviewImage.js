@@ -8,7 +8,16 @@ const reviewImageApi = {
         const { data } = await authAxios.get(url);
 
         return data;
-    }
+    },
+    getReviewImageList: async (storeId, moreId) => {
+        let url = urlUtils.setPath(API_PATH.REVIEW_IMAGE.GET_REVIEW_IMAGE_LIST, { storeId });
+        if (moreId) {
+            url = urlUtils.setParam(url, { moreId });
+        }
+        const { data } = await authAxios.get(url);
+
+        return data;
+    },
 };
 
 export default reviewImageApi;

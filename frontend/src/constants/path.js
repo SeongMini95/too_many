@@ -39,7 +39,6 @@ const API_PATH = {
         GET_STORE: '/api/store/:storeId',
         LIKE_STORE: '/api/store/:storeId/like',
         GET_STORE_LIKE_LOG_OF_USER: '/api/store/:storeId/like',
-        GET_REVIEW_IMAGE_LIST: '/api/store/:storeId/reviewImageList',
         GET_REAL_TIME_STORE_RANKING: '/api/store/todayRanking',
         GET_STORE_LIST: '/api/store/list'
     },
@@ -52,7 +51,9 @@ const API_PATH = {
         MODIFY_REVIEW: '/api/review/:reviewId',
         DELETE_REVIEW: '/api/review/:reviewId',
         LIKE_REVIEW: '/api/review/:reviewId/like',
-        GET_REVIEW_LIKE_LOG_LIST_OF_STORE: '/api/review/store/:storeId/like'
+        GET_REVIEW_LIKE_LOG_LIST_OF_STORE: '/api/review/store/:storeId/like',
+        GET_REVIEW: '/api/review/:reviewId',
+        GET_REFRESH_REVIEW_LIST: '/api/review/store/:storeId/refresh'
     },
     USER: {
         GET_MY_INFO: '/api/user/my',
@@ -75,7 +76,8 @@ const API_PATH = {
         GET_CATEGORY_LIST: '/api/category/list'
     },
     REVIEW_IMAGE: {
-        GET_PREVIEW_IMAGE_LIST: '/api/reviewImage/store/:storeId/preview'
+        GET_PREVIEW_IMAGE_LIST: '/api/reviewImage/store/:storeId/preview',
+        GET_REVIEW_IMAGE_LIST: '/api/reviewImage/store/:storeId/list',
     }
 }
 

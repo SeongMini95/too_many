@@ -8,6 +8,8 @@ import com.ojeomme.common.oauth.info.OauthUserInfo;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.enums.OauthProvider;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.domain.userowncount.UserOwnCount;
+import com.ojeomme.domain.userowncount.repository.UserOwnCountRepository;
 import com.ojeomme.domain.usertoken.UserToken;
 import com.ojeomme.domain.usertoken.repository.UserTokenRepository;
 import com.ojeomme.dto.request.auth.ReissueTokenRequestDto;
@@ -32,6 +34,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AuthTokenProvider authTokenProvider;
     private final UserTokenRepository userTokenRepository;
+    private final UserOwnCountRepository userOwnCountRepository;
 
     private static final int REFRESH_TOKEN_LENGTH = 128;
     private static final int REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
@@ -61,6 +64,11 @@ public class AuthService {
                     .email(email)
                     .nickname(nickname)
                     .profile("")
+                    .build());
+            userOwnCountRepository.save(UserOwnCount.builder()
+                    .user(user)
+                    .reviewCnt(0)
+                    .likeCnt(0)
                     .build());
         }
 

@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface StoreCustomRepository {
 
-    Optional<StoreResponseDto> getStore(Long storeId);
+    Optional<StoreResponseDto> getStore(Long userId, Long storeId);
 
     RealTimeStoreRankingResponseDto getRealTimeStoreRanking(String code);
 

@@ -1,11 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from "react-router-dom";
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from "react-router-dom";
 import style from '../../css/Store/GetStore.module.css';
 import reviewImageApi from "../../api/reviewImage";
 import storeApi from "../../api/store";
+import reviewApi from "../../api/review";
+import { useInView } from "react-intersection-observer";
+import WriteReview from "../Review/WriteReview";
 
 const GetStore = () => {
+    const navigate = useNavigate();
     const { storeId } = useParams();
+    const { ref, inView } = useInView();
 
     const [previewImage, setPreviewImage] = useState({
         imageCnt: 0,
@@ -24,70 +29,371 @@ const GetStore = () => {
         y: '',
         likeCnt: 0,
         reviewCnt: 0,
-        avgStarScore: 0
+        avgStarScore: 0,
+        isLike: false
     });
-    const [isLike, setIsLike] = useState(false);
+    const [imageMeta, setImageMeta] = useState({
+        isEnd: false,
+        moreId: 0
+    });
+    const [reviewList, setReviewList] = useState([]);
+    const [reviewMeta, setReviewMeta] = useState({
+        isEnd: false,
+        moreId: 0
+    });
+    const [viewUtil, setViewUtil] = useState(0);
+    const [recommendCounts, setRecommendCounts] = useState([]);
+    const [isViewPhoto, setIsViewPhoto] = useState(false);
+    const [viewPhoto, setViewPhoto] = useState({
+        pIndex: 0,
+        current: '',
+        list: []
+    });
+    const [writeReview, setWriteReview] = useState({
+        isWrite: false,
+        placeInfo: null,
+        reviewInfo: null
+    });
+
+    const refViewImageDiv = useRef(null);
+    const refViewPhotoCurrentImg = useRef(null);
 
     useEffect(() => {
         const getPreviewImageList = async () => {
-            const { imageCnt, images } = await reviewImageApi.getPreviewImageList(storeId);
-            setPreviewImage({
-                ...previewImage,
-                imageCnt,
-                images
-            });
+            try {
+                const { imageCnt, images } = await reviewImageApi.getPreviewImageList(storeId);
+                setPreviewImage({
+                    ...previewImage,
+                    imageCnt,
+                    images
+                });
 
-            if (imageCnt === 2) {
-                setPhotoType(style.photo_type2);
-            } else if (imageCnt === 3) {
-                setPhotoType(style.photo_type3);
-            } else if (imageCnt === 4) {
-                setPhotoType(style.photo_type4);
-            } else if (imageCnt >= 5) {
-                setPhotoType(style.photo_type5);
+                if (imageCnt === 2) {
+                    setPhotoType(style.photo_type2);
+                } else if (imageCnt === 3) {
+                    setPhotoType(style.photo_type3);
+                } else if (imageCnt === 4) {
+                    setPhotoType(style.photo_type4);
+                } else if (imageCnt >= 5) {
+                    setPhotoType(style.photo_type5);
+                }
+            } catch (e) {
+                alert(e.response.data);
             }
         }
 
         const getStore = async () => {
-            const store = await storeApi.getStore(storeId);
-            setStore({
-                storeId: store.storeId,
-                placeId: store.placeId,
-                storeName: store.storeName,
-                categoryName: store.categoryName,
-                regionName: store.regionName,
-                addressName: store.addressName,
-                roadAddressName: store.roadAddressName,
-                x: store.x,
-                y: store.y,
-                likeCnt: store.likeCnt,
-                reviewCnt: store.reviewCnt,
-                avgStarScore: store.avgStarScore
-            });
+            try {
+                const store = await storeApi.getStore(storeId);
+                setStore({
+                    storeId: store.storeId,
+                    placeId: store.placeId,
+                    storeName: store.storeName,
+                    categoryName: store.categoryName,
+                    regionName: store.regionName,
+                    addressName: store.addressName,
+                    roadAddressName: store.roadAddressName,
+                    x: store.x,
+                    y: store.y,
+                    likeCnt: store.likeCnt,
+                    reviewCnt: store.reviewCnt,
+                    avgStarScore: store.avgStarScore,
+                    isLike: store.isLike
+                });
+            } catch (e) {
+                navigate(-1);
+                alert(e.response.data);
+            }
         }
 
-        const getStoreLikeLogOfUser = async () => {
-            const isLike = await storeApi.getStoreLikeLogOfUser(storeId);
-            setIsLike(isLike);
+        const getReviewList = async () => {
+            try {
+                const { reviews, recommendCounts } = await reviewApi.getReviewList(storeId, null);
+                setReviewList(reviews);
+                setRecommendCounts(recommendCounts);
+                setReviewMeta({
+                    ...reviewMeta,
+                    isEnd: reviews.length < 5,
+                    moreId: reviews[reviews.length - 1].reviewId
+                });
+            } catch (e) {
+                alert(e.response.data);
+            }
         }
 
-        getPreviewImageList();
         getStore();
-        getStoreLikeLogOfUser();
+        getPreviewImageList();
+        getReviewList();
     }, []);
+
+    useEffect(() => {
+        if (refViewImageDiv.current == null || refViewPhotoCurrentImg.current == null) {
+            return;
+        }
+
+        const maxWidth = refViewImageDiv.current.clientWidth;
+        const maxHeight = refViewImageDiv.current.clientHeight;
+        const width = refViewPhotoCurrentImg.current.naturalWidth;
+        const height = refViewPhotoCurrentImg.current.naturalHeight;
+
+        let resizeWidth = width;
+        let resizeHeight = height;
+
+        if (width > height) {
+            if (maxWidth < width) {
+                resizeWidth = maxWidth;
+                resizeHeight = height * maxWidth / width;
+
+                if (resizeHeight > maxHeight) {
+                    resizeWidth = width * maxHeight / height;
+                    resizeHeight = maxHeight;
+                }
+            }
+        } else {
+            if (maxHeight < height) {
+                resizeWidth = width * maxHeight / height;
+                resizeHeight = maxHeight;
+
+                if (resizeWidth > maxWidth) {
+                    resizeWidth = maxWidth;
+                    resizeHeight = height * maxWidth / width;
+                }
+            }
+        }
+
+        refViewPhotoCurrentImg.current.style = `width: ${resizeWidth}px; height: ${resizeHeight}px`;
+    }, [isViewPhoto, viewPhoto.pIndex, viewPhoto.current]);
+
+    useEffect(() => {
+        const getMoreReviewList = async () => {
+            try {
+                const { reviews } = await reviewApi.getReviewList(storeId, reviewMeta.moreId);
+                setReviewList(reviewList.concat(reviews));
+                setReviewMeta({
+                    ...reviewMeta,
+                    isEnd: reviews.length < 5,
+                    moreId: reviews[reviews.length - 1].reviewId
+                });
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
+        if (inView && !reviewMeta.isEnd && reviewMeta.moreId !== 0) {
+            getMoreReviewList();
+        }
+    }, [inView]);
+
+    useEffect(() => {
+        const getReviewImageList = async () => {
+            try {
+                if (!imageMeta.isEnd && viewPhoto.list.length - viewPhoto.pIndex < 5) {
+                    const { isEnd, moreId, images } = await reviewImageApi.getReviewImageList(storeId, imageMeta.moreId);
+                    setImageMeta({
+                        ...imageMeta,
+                        isEnd,
+                        moreId
+                    });
+                    setViewPhoto({
+                        ...viewPhoto,
+                        list: viewPhoto.list.concat(images)
+                    });
+                }
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
+        if (viewPhoto.pIndex !== 0) {
+            getReviewImageList();
+        }
+    }, [viewPhoto.pIndex]);
 
     const handlerClickLikeStore = async (e) => {
         try {
             e.preventDefault();
 
             const { result, likeCnt } = await storeApi.likeStore(storeId);
-            setIsLike(result);
             setStore({
                 ...store,
-                likeCnt
+                likeCnt,
+                isLike: result
             });
         } catch (e) {
             alert(e.response.data);
+        }
+    }
+
+    const handlerClickReviewImage = (e, reviewId, pIndex) => {
+        e.preventDefault();
+
+        setIsViewPhoto(true);
+
+        const review = reviewList.find(v => v.reviewId === reviewId);
+        setViewPhoto({
+            ...viewPhoto,
+            pIndex,
+            current: review.images[pIndex],
+            list: review.images
+        });
+        setImageMeta({
+            ...imageMeta,
+            isEnd: true
+        });
+    }
+
+    const handlerClickViewPhotoDirection = (e, increase) => {
+        e.preventDefault();
+
+        if (viewPhoto.pIndex + increase < 0 || viewPhoto.pIndex + increase > viewPhoto.list.length - 1) {
+            return;
+        }
+
+        const pIndex = viewPhoto.pIndex + increase;
+        setViewPhoto({
+            ...viewPhoto,
+            current: viewPhoto.list[pIndex],
+            pIndex: pIndex
+        });
+    }
+
+    const handlerClickPreviewImage = async (e, pIndex) => {
+        e.preventDefault();
+
+        setIsViewPhoto(true);
+
+        const { isEnd, moreId, images } = await reviewImageApi.getReviewImageList(storeId, null);
+        setImageMeta({
+            ...imageMeta,
+            isEnd,
+            moreId
+        });
+
+        pIndex = pIndex === 4 && previewImage.imageCnt > 5 ? 0 : pIndex;
+        setViewPhoto({
+            ...viewPhoto,
+            current: images[pIndex],
+            pIndex: pIndex,
+            list: images
+        });
+    }
+
+    const handlerClickViewPhotoImage = async (e, pIndex) => {
+        try {
+            e.preventDefault();
+
+            setViewPhoto({
+                ...viewPhoto,
+                current: viewPhoto.list[pIndex],
+                pIndex: pIndex
+            });
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickLikeReview = async (reviewId) => {
+        try {
+            const { result, likeCnt } = await reviewApi.likeReview(reviewId);
+            setReviewList(reviewList.map(v => v.reviewId === reviewId ? { ...v, likeCnt, isLike: result } : v));
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickUtilButton = (reviewId) => {
+        setViewUtil(viewUtil !== reviewId ? reviewId : 0);
+    }
+
+    const handlerClickCloseModifyReview = () => {
+        if (window.confirm('리뷰 수정을 취소하시겠습니까?')) {
+            setWriteReview({
+                ...writeReview,
+                isWrite: false,
+                reviewInfo: null
+            });
+        }
+    }
+
+    const handlerModifyReviewConfirm = (review) => {
+        const { content, starScore, images, recommends } = review;
+        setReviewList(reviewList.map(v => v.reviewId === review.reviewId ? {
+            ...v,
+            content,
+            starScore,
+            images,
+            recommends
+        } : v));
+        setWriteReview({
+            ...writeReview,
+            isWrite: false,
+            reviewInfo: null
+        });
+    }
+
+    const handlerWriteReviewConfirm = async () => {
+        try {
+            const { reviews } = await reviewApi.getRefreshReviewList(storeId, reviewList[reviewList.length - 1].reviewId);
+            setReviewList(reviews);
+
+            setWriteReview({
+                ...writeReview,
+                isWrite: false,
+                placeInfo: null,
+                reviewInfo: null
+            });
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickModifyReview = async (reviewId) => {
+        const review = await reviewApi.getReview(reviewId);
+        setWriteReview({
+            ...writeReview,
+            isWrite: true,
+            placeInfo: null,
+            reviewInfo: {
+                ...review,
+                recommends: review.recommends.map(v => v.type)
+            }
+        });
+        setViewUtil(0);
+    }
+
+    const handlerClickDeleteReview = async (reviewId) => {
+        try {
+            if (window.confirm('리뷰를 삭제하시겠습니까?')) {
+                await reviewApi.deleteReview(reviewId);
+                setReviewList(reviewList.filter(v => v.reviewId !== reviewId));
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerWriteReview = () => {
+        setWriteReview({
+            ...writeReview,
+            isWrite: true,
+            placeInfo: {
+                placeId: store.placeId,
+                placeName: store.storeName,
+                x: store.x,
+                y: store.y
+            },
+            reviewInfo: null
+        });
+    }
+
+    const handlerClickCloseWriteReview = () => {
+        if (window.confirm('리뷰 작성을 취소하시겠습니까?')) {
+            setWriteReview({
+                ...writeReview,
+                isWrite: false,
+                placeInfo: null,
+                reviewInfo: null
+            });
         }
     }
 
@@ -100,8 +406,8 @@ const GetStore = () => {
                             <div className={style.pic_grade}>
                                 <ul className={[style.list_photo, photoType].join(' ')}>
                                     {previewImage.images.map((v, i) => (
-                                        <li key={'image' + i} className={i === 0 && previewImage.imageCnt >= 2 ? style.size_l : i === 1 && previewImage.imageCnt === 4 ? style.size_m : ''}>
-                                            <a href={'#none'} className={style.link_photo} style={{ backgroundImage: `url('${v}')` }}>
+                                        <li key={'image_' + v} className={i === 0 && previewImage.imageCnt >= 2 ? style.size_l : i === 1 && previewImage.imageCnt === 4 ? style.size_m : ''}>
+                                            <a href={'#none'} onClick={(e) => handlerClickPreviewImage(e, i)} className={style.link_photo} style={{ backgroundImage: `url('${v}')` }}>
                                                 {previewImage.imageCnt > 5 && i === 4 && (
                                                     <span className={style.more_photo}>
                                                         <span className={style.num_photo}>+{previewImage.imageCnt}</span>
@@ -134,10 +440,10 @@ const GetStore = () => {
                                     </p>
                                 </div>
                                 <div className={style.favor_pic}>
-                                    <a href={'#none'} className={!isLike ? style.favor : [style.favor, style.favor_on].join(' ')} onClick={handlerClickLikeStore}>
+                                    <a href={'#none'} className={!store.isLike ? style.favor : [style.favor, style.favor_on].join(' ')} onClick={handlerClickLikeStore}>
                                         <span>좋아요(<i>{store.likeCnt}</i>)</span>
                                     </a>
-                                    <button className={style.appra}>
+                                    <button onClick={handlerWriteReview} className={style.appra}>
                                         <span>리뷰작성</span>
                                     </button>
                                 </div>
@@ -152,82 +458,149 @@ const GetStore = () => {
                                             <span className={[style.ico_star, style.inner_star].join(' ')} style={{ width: `${(store.avgStarScore / 5) * 100}%` }}></span>
                                     </span>
                                 </p>
-                                <div className={style.view_like_point}>
-                                    <span className={[style.chip_like_point, style.chip_like_point_type1].join(' ')}>맛 11</span>
-                                    <span className={[style.chip_like_point, style.chip_like_point_type2].join(' ')}>친절 11</span>
-                                    <span className={[style.chip_like_point, style.chip_like_point_type3].join(' ')}>분위기 11</span>
-                                    <span className={[style.chip_like_point, style.chip_like_point_type4].join(' ')}>가성비 11</span>
-                                    <span className={[style.chip_like_point, style.chip_like_point_type5].join(' ')}>주차 11</span>
-                                </div>
+                                {!!recommendCounts.length && (
+                                    <div className={style.view_like_point}>
+                                        {recommendCounts.map(v => (
+                                            <span key={'recommend_' + v.type} className={[style.chip_like_point, style['chip_like_point_type' + v.type]].join(' ')}>{v.name} {v.count}</span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <div className={style.review_graph}>
-                                <div style={{ position: 'absolute', width: '70px', height: '70px' }}>
-                                    <div
-                                        style={{
-                                            borderRadius: '50%',
-                                            background: "url('https://s3-ap-northeast-1.amazonaws.com/dc-user-profile-resized/profilephoto_A_20210509013019_160x160.jpg') no-repeat",
-                                            backgroundSize: 'auto 70px',
-                                            backgroundPosition: 'center',
-                                            width: 'auto',
-                                            height: '70px'
-                                        }}></div>
-                                </div>
-                                <p className={style.person_grade}>
+                            {reviewList.map(v => (
+                                <div key={'review' + v.reviewId} className={style.review_graph}>
+                                    <div className={style.profile}>
+                                        <div className={style.profile_img}
+                                             style={{ backgroundImage: `url('${v.profile ? v.profile : `${process.env.PUBLIC_URL}/assets/image/default_profile.png`}')` }}></div>
+                                    </div>
+                                    <p className={style.person_grade}>
                                     <span className={style.person_btxt}>
-                                        <strong>먹고주글테다</strong>
-                                        (406곳 작성, 420개 공감받음)
+                                        <strong>{v.nickname}</strong> ({v.userReviewCnt}곳 작성, {v.userLikeCnt}개 공감받음)
                                     </span>
-                                    <span className={style.star_date}>
-                                        <span className={[style.ico_star, style.review_star_rate].join(' ')}>
-                                            <span className={[style.ico_star, style.review_inner_star].join(' ')}></span>
+                                        <span className={style.star_date}>
+                                        <span className={[style.review_ico_star, style.review_star_rate].join(' ')}>
+                                            <span className={[style.review_ico_star, style.review_inner_star].join(' ')} style={{ width: `${(v.starScore / 5) * 100}%` }}></span>
                                         </span>
-                                        <i className={style.date}>2023년 11월 12일</i>
+                                        <i className={style.date}>{v.createDate}</i>
                                     </span>
-                                </p>
-                                <p className={style.content_btxt}>여기맛이 사이드메뉴 카라카츠고기가떨어져서시킨건데 엄청육즙갇혀있고질긴부위도여리여리하게 맛있었어요 사이드를종류별로시켜보리라생각했어요
-                                    저는 일요일 저녁 여섯시에 전화걸어보니 열팀기다리고있다고하더라구요 저는알죠 요리만드는데 한삼십분기다려야돼오 가게에는 아예붙여있어요 고객이들어올태부터 요리를시작한다고요 손님이많아서일수도있는데 요리하는데오래걸리니까 대기없을때가지않으면 무조건시간걸려요 스파게티는 그냥 그랬는데 사이드 맛집인듯 늘
-                                    수제카라아게는 정말 맛있었어요 밥 먹고 다 못 먹어서 싸왔거든요 싸와서 식었는데도 맛있었어요 웨지감자는 안먹고그냥버렸어요 상온에 한네시간있고도 맛완전좋음</p>
-                                <div className={style.review_image_wrap}>
-                                    <ul className={style.review_image_photo_list}>
-                                        <li>
-                                            <a href={'#none'} className={style.box_photo}>
-                                                <img className={style.img_thumb}
-                                                     src='https://img1.kakaocdn.net/cthumb/local/C139x139/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flocal%2FkakaomapPhoto%2Freview%2F45f3604c404abf3545ea3e0239e9953a18046742%3Foriginal'
-                                                     alt="" />
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href={'#none'} className={style.box_photo}>
-                                                <img className={style.img_thumb}
-                                                     src='https://img1.kakaocdn.net/cthumb/local/C139x139/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flocal%2FkakaomapPhoto%2Freview%2F45f3604c404abf3545ea3e0239e9953a18046742%3Foriginal'
-                                                     alt="" />
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href={'#none'} className={style.box_photo}>
-                                                <img className={style.img_thumb}
-                                                     src='https://img1.kakaocdn.net/cthumb/local/C139x139/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flocal%2FkakaomapPhoto%2Freview%2F45f3604c404abf3545ea3e0239e9953a18046742%3Foriginal'
-                                                     alt="" />
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href={'#none'} className={style.box_photo}>
-                                                <img className={style.img_thumb}
-                                                     src='https://img1.kakaocdn.net/cthumb/local/C139x139/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flocal%2FkakaomapPhoto%2Freview%2F45f3604c404abf3545ea3e0239e9953a18046742%3Foriginal'
-                                                     alt="" />
-                                            </a>
-                                        </li>
-                                    </ul>
+                                    </p>
+                                    <p className={style.point_detail}>
+                                        {v.recommends.map(v2 => (
+                                            <span key={'userRecommend' + v2.type} className={style.point_detail_like_point}>{v2.name}</span>
+                                        ))}
+                                    </p>
+                                    <p className={style.content_btxt}>{v.content}</p>
+                                    <div className={style.review_image_wrap}>
+                                        <ul className={style.review_image_photo_list}>
+                                            {v.images.slice(0, 4).map((v2, i2) => (
+                                                <li key={'reviewImage' + v2} className={v.images.length > 4 && i2 === 3 ? style.lst : ''}>
+                                                    <a href={'#none'} className={style.box_photo} onClick={(e) => handlerClickReviewImage(e, v.reviewId, i2)}>
+                                                        <img className={style.img_thumb} src={v2} alt="" />
+                                                        {v.images.length > 4 && i2 === 3 && (
+                                                            <span className={style.info_photo_num}>
+                                                                <span className={style.txt_num}>+{v.images.length}</span>
+                                                            </span>
+                                                        )}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div onClick={() => handlerClickLikeReview(v.reviewId)}
+                                         className={!v.isLike ? style.review_like_btn : [style.review_like_btn, style.active].join(' ')}>공감({v.likeCnt})
+                                    </div>
+                                    {v.isWrite && (
+                                        <div className={style.wrap_util}>
+                                            <button onClick={() => handlerClickUtilButton(v.reviewId)} className={viewUtil !== v.reviewId ? style.btn_util : [style.btn_util, style.util_on].join(' ')}>
+                                                <span className={[style.btn_util_ico, style.ico_more].join(' ')}>메뉴</span>
+                                            </button>
+                                            <div className={style.layer_util}>
+                                                <ul>
+                                                    <li>
+                                                        <a onClick={() => handlerClickModifyReview(v.reviewId)} href={'#none'} className={style.link_util}>수정</a>
+                                                    </li>
+                                                    <li>
+                                                        <a onClick={() => handlerClickDeleteReview(v.reviewId)} href={'#none'} className={style.link_util}>삭제</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className={style.review_like_btn}>공감(2)</div>
-                            </div>
+                            ))}
                         </div>
-                        <a href={'#none'} className={style.more_btn}>
-                            <span>더보기</span>
-                        </a>
+                        {!reviewMeta.isEnd && (
+                            <a href={'#none'} className={style.more_btn} ref={ref}>
+                                <span>더보기</span>
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {isViewPhoto && (
+                <div className={style.map_layer}>
+                    <div className={style.inner_map_photo}>
+                        <div className={style.layer_head}>
+                            <strong className={style.tit_photo}>
+                                포토
+                                <span className={style.layer_head_num}>
+                                <span>{viewPhoto.pIndex + 1}</span> / <span style={{ fontWeight: '400' }}>{imageMeta.isEnd ? viewPhoto.list.length : previewImage.imageCnt}</span>
+                            </span>
+                            </strong>
+                        </div>
+                        <div className={style.layer_body}>
+                            <div className={style.view_photo}>
+                                <div className={style.view_image} ref={refViewImageDiv}>
+                                    <span className={style.gap_g}></span>
+                                    <img className={style.img_photo} src={viewPhoto.current} ref={refViewPhotoCurrentImg} alt="" />
+                                    <span className={style.layer_body_frame_g}></span>
+                                    <a href={'#none'} onClick={(e) => handlerClickViewPhotoDirection(e, -1)}
+                                       className={[style.link_direction, style.link_prev].join(' ')}
+                                       style={{ display: viewPhoto.pIndex <= 0 ? 'none' : '' }}>
+                                        <span className={[style.ico_comm, style.ico_prev].join(' ')}>이전</span>
+                                    </a>
+                                    <a href={'#none'} onClick={(e) => handlerClickViewPhotoDirection(e, 1)}
+                                       className={[style.link_direction, style.link_next].join(' ')}
+                                       style={{ display: viewPhoto.pIndex >= viewPhoto.list.length - 1 ? 'none' : '' }}>
+                                        <span className={[style.ico_comm, style.ico_next].join(' ')}>다음</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div className={style.item_photo}>
+                                <div className={style.wrap_preview}>
+                                    <ul className={style.list_photo_view} style={{ marginLeft: viewPhoto.pIndex < 4 ? '0px' : `${-30 + (viewPhoto.pIndex - 4) * -90}px` }}>
+                                        {viewPhoto.list.map((v, i) => (
+                                            <li key={'viewImage_' + v}>
+                                                <a href={'#none'} className={style.link_item} onClick={(e) => handlerClickViewPhotoImage(e, i)}>
+                                                    {viewPhoto.pIndex === i && (
+                                                        <em className={style.current_photo}></em>
+                                                    )}
+                                                    <img className={style.img_thumb_view} src={v} alt="" />
+                                                    <span className={style.list_photo_view_frame_g}></span>
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <a href={'#none'} className={style.link_close} onClick={(e) => {
+                                e.preventDefault();
+                                setIsViewPhoto(false);
+                            }}>닫기</a>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {writeReview.isWrite && (
+                <WriteReview onClickClose={writeReview.placeInfo ? handlerClickCloseWriteReview : handlerClickCloseModifyReview}
+                             placeInfo={writeReview.placeInfo}
+                             reviewInfo={writeReview.reviewInfo}
+                             modifyReview={handlerModifyReviewConfirm}
+                             writeInReview={handlerWriteReviewConfirm} />
+            )}
         </div>
     );
 };

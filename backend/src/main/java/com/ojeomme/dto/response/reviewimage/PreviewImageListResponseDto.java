@@ -1,4 +1,4 @@
-package com.ojeomme.dto.response.review;
+package com.ojeomme.dto.response.reviewimage;
 
 import lombok.Getter;
 

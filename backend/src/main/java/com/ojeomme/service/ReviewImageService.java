@@ -1,8 +1,8 @@
 package com.ojeomme.service;
 
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
-import com.ojeomme.dto.response.review.PreviewImageListResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.PreviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.ReviewImageListResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

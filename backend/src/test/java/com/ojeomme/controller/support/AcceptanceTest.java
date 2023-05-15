@@ -14,6 +14,8 @@ import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.enums.OauthProvider;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.domain.userowncount.UserOwnCount;
+import com.ojeomme.domain.userowncount.repository.UserOwnCountRepository;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -58,6 +60,9 @@ public class AcceptanceTest {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private UserOwnCountRepository userOwnCountRepository;
+
     protected User user;
     protected String accessToken;
     protected String notExistAccessToken;
@@ -74,6 +79,12 @@ public class AcceptanceTest {
                 .email("test123@naver.com")
                 .nickname("test123")
                 .profile("http://localhost:4000/profile.png")
+                .build());
+
+        userOwnCountRepository.save(UserOwnCount.builder()
+                .user(user)
+                .reviewCnt(0)
+                .likeCnt(0)
                 .build());
 
         accessToken = authTokenProvider.createAuthToken(user.getId()).getToken();

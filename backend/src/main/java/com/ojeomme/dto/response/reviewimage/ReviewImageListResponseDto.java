@@ -1,4 +1,4 @@
-package com.ojeomme.dto.response.store;
+package com.ojeomme.dto.response.reviewimage;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -12,7 +12,7 @@ public class ReviewImageListResponseDto {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final Long moreId;
-    
+
     private final List<String> images;
 
     public ReviewImageListResponseDto(boolean isEnd, Long moreId, List<String> images) {

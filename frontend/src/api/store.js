@@ -21,21 +21,6 @@ const storeApi = {
 
         return data;
     },
-    getStoreLikeLogOfUser: async (storeId) => {
-        const url = urlUtils.setPath(API_PATH.STORE.GET_STORE_LIKE_LOG_OF_USER, { storeId });
-        const { data } = await authAxios.get(url);
-
-        return data;
-    },
-    getReviewImageList: async (storeId, reviewImageId) => {
-        let url = urlUtils.setPath(API_PATH.STORE.GET_REVIEW_IMAGE_LIST, { storeId });
-        if (reviewImageId) {
-            url = urlUtils.setParam(url, { reviewImageId });
-        }
-        const { data } = await authAxios.get(url);
-
-        return data;
-    },
     getRealTimeStoreRanking: async (regionCode) => {
         const url = urlUtils.setParam(API_PATH.STORE.GET_REAL_TIME_STORE_RANKING, { regionCode });
         const { data } = await defaultAxios.get(url);
