@@ -107,3 +107,15 @@
     width: 80px;
     text-align: center;
 }
+
+.up {
+    position: fixed;
+    background: #7395c8 url('/public/assets/image/arrow.png') no-repeat center center;
+    background-size: 25px auto;
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+    cursor: pointer;
+    right: 750px;
+    bottom: 35px;
+}

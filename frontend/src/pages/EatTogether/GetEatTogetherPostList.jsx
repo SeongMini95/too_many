@@ -6,13 +6,15 @@ import { Link } from "react-router-dom";
 import { BROWSER_PATH } from "../../constants/path";
 import eatTogetherApi from "../../api/eatTogether";
 import { urlUtils } from "../../utils/urlUtils";
+import { useInView } from "react-intersection-observer";
 
 const GetEatTogetherPostList = () => {
     const { lastCode, address } = useRecoilValue(positionState);
+    const { ref, inView } = useInView();
 
     const [postList, setPostList] = useState([]);
     const [meta, setMeta] = useState({
-        isEnd: false,
+        isEnd: true,
         moreId: 0
     });
 
@@ -21,6 +23,11 @@ const GetEatTogetherPostList = () => {
             try {
                 const { posts } = await eatTogetherApi.getEatTogetherPostList(lastCode, null);
                 setPostList(posts);
+                setMeta({
+                    ...meta,
+                    isEnd: posts.length < 30,
+                    moreId: posts[posts.length - 1].postId
+                });
             } catch (e) {
                 alert(e.response.data);
             }
@@ -30,6 +37,30 @@ const GetEatTogetherPostList = () => {
             getPostList();
         }
     }, [lastCode]);
+
+    useEffect(() => {
+        const getPostList = async () => {
+            try {
+                const { posts } = await eatTogetherApi.getEatTogetherPostList(lastCode, meta.moreId);
+                setPostList(postList.concat(posts));
+                setMeta({
+                    ...meta,
+                    isEnd: posts.length < 30,
+                    moreId: posts[posts.length - 1].postId
+                });
+            } catch (e) {
+                alert(e.response.data);
+            }
+        }
+
+        if (inView && lastCode && meta.moreId !== 0) {
+            getPostList();
+        }
+    }, [inView]);
+
+    const handlerScrollTop = () => {
+        window.scrollTo(0, 0);
+    }
 
     return (
         <div className={style.post_wrap}>
@@ -45,7 +76,7 @@ const GetEatTogetherPostList = () => {
                     )}
 
                     {postList.map(v => (
-                        <li className={style.post_li}>
+                        <li key={'post_' + v.postId} className={style.post_li}>
                             <Link to={urlUtils.setPath(BROWSER_PATH.EAT_TOGETHER.GET_POST, { postId: v.postId })} className={style.post_link}>
                                 <span className={style.post_region_name}>[{v.regionName}]</span>
                                 <div className={style.post_title_wrap}>
@@ -58,7 +89,11 @@ const GetEatTogetherPostList = () => {
                         </li>
                     ))}
                 </ul>
+                {!meta.isEnd && (
+                    <div ref={ref}></div>
+                )}
             </div>
+            <span onClick={handlerScrollTop} className={style.up}></span>
         </div>
     );
 };
