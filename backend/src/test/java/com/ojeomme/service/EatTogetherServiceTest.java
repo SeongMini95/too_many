@@ -558,14 +558,14 @@ class EatTogetherServiceTest {
             // given
             List<EatTogetherPostListResponseDto.PostResponseDto> posts = List.of(
                     EatTogetherPostListResponseDto.PostResponseDto.builder()
-                            .id(1L)
+                            .postId(1L)
                             .nickname("test123")
                             .regionName("청진동")
                             .subject("제목1")
                             .oriCreateDatetime(LocalDateTime.now())
                             .build(),
                     EatTogetherPostListResponseDto.PostResponseDto.builder()
-                            .id(1L)
+                            .postId(1L)
                             .nickname("test123")
                             .regionName("청진동")
                             .subject("제목2")
@@ -582,7 +582,7 @@ class EatTogetherServiceTest {
             // then
             assertThat(responseDto.getPosts()).hasSameSizeAs(dto.getPosts());
             for (int i = 0; i < responseDto.getPosts().size(); i++) {
-                assertThat(responseDto.getPosts().get(i).getId()).isEqualTo(dto.getPosts().get(i).getId());
+                assertThat(responseDto.getPosts().get(i).getPostId()).isEqualTo(dto.getPosts().get(i).getPostId());
                 assertThat(responseDto.getPosts().get(i).getNickname()).isEqualTo(dto.getPosts().get(i).getNickname());
                 assertThat(responseDto.getPosts().get(i).getRegionName()).isEqualTo(dto.getPosts().get(i).getRegionName());
                 assertThat(responseDto.getPosts().get(i).getSubject()).isEqualTo(dto.getPosts().get(i).getSubject());

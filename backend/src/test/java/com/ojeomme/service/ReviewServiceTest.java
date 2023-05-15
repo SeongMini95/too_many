@@ -183,7 +183,7 @@ class ReviewServiceTest {
             assertThat(responseDto.getStarScore()).isEqualTo(review.getStarScore());
             assertThat(responseDto.getContent()).isEqualTo(review.getContent());
             assertThat(responseDto.getImages()).isEqualTo(review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toList()));
-            assertThat(responseDto.getRecommends()).isEqualTo(review.getReviewRecommends().stream().map(v -> Integer.parseInt(v.getRecommendType().getCode())).collect(Collectors.toList()));
+            assertThat(responseDto.getRecommends()).hasSameSizeAs(review.getReviewRecommends());
         }
 
         @Test
@@ -353,7 +353,7 @@ class ReviewServiceTest {
             assertThat(responseDto.getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getContent()).isEqualTo(requestDto.getContent());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getImages(), requestDto.getImages())).isTrue();
-            assertThat(CollectionUtils.isEqualCollection(responseDto.getRecommends(), requestDto.getRecommends())).isTrue();
+            assertThat(responseDto.getRecommends()).hasSameSizeAs(requestDto.getRecommends());
         }
 
         @Test

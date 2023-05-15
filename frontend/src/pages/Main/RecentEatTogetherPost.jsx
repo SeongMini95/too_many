@@ -27,7 +27,12 @@ const RecentEatTogetherPost = () => {
 
     return (
         <section className={style.top_box_section_second}>
-            <h1 className={style.section_title}>혼밥 탈출</h1>
+            <h1 className={style.section_title}>
+                <span>혼밥 탈출</span>
+                <div className={style.section_more_post_wrap}>
+                    <Link to={BROWSER_PATH.EAT_TOGETHER.LIST_POST} className={style.section_more_post}>더 보기...</Link>
+                </div>
+            </h1>
             <ul className={style.section_ul}>
                 {isRecentPostListSuccess && (
                     recentPostList.map(v => (

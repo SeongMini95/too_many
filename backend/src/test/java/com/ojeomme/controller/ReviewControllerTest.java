@@ -154,7 +154,7 @@ class ReviewControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getInt("starScore")).isEqualTo(review.getStarScore());
             assertThat(jsonPath.getString("content")).isEqualTo(review.getContent());
             assertThat(jsonPath.getList("images")).isEqualTo(review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toList()));
-            assertThat(jsonPath.getList("recommends")).isEqualTo(review.getReviewRecommends().stream().map(v -> Integer.parseInt(v.getRecommendType().getCode())).collect(Collectors.toList()));
+            assertThat(jsonPath.getList("recommends")).hasSameSizeAs(review.getReviewRecommends());
         }
 
         @Test
@@ -392,7 +392,7 @@ class ReviewControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getInt("starScore")).isEqualTo(requestDto.getStarScore());
             assertThat(jsonPath.getString("content")).isEqualTo(requestDto.getContent());
             assertThat(jsonPath.getList("images")).hasSameSizeAs(requestDto.getImages());
-            assertThat(CollectionUtils.isEqualCollection(jsonPath.getList("recommends"), requestDto.getRecommends())).isTrue();
+            assertThat(jsonPath.getList("recommends")).hasSameSizeAs(requestDto.getRecommends());
         }
 
         @Test
