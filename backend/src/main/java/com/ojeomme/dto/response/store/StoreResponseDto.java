@@ -20,9 +20,10 @@ public class StoreResponseDto {
     private int likeCnt;
     private long reviewCnt;
     private double avgStarScore;
+    private boolean isLike;
 
     @Builder
-    public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String regionName, String addressName, String roadAddressName, String x, String y, int likeCnt, long reviewCnt, double avgStarScore) {
+    public StoreResponseDto(Long storeId, Long placeId, String storeName, String categoryName, String regionName, String addressName, String roadAddressName, String x, String y, int likeCnt, long reviewCnt, double avgStarScore, boolean isLike) {
         this.storeId = storeId;
         this.placeId = placeId;
         this.storeName = storeName;
@@ -35,5 +36,14 @@ public class StoreResponseDto {
         this.likeCnt = likeCnt;
         this.reviewCnt = reviewCnt;
         this.avgStarScore = avgStarScore;
+        this.isLike = isLike;
+    }
+
+    public boolean getIsLike() {
+        return isLike;
+    }
+
+    public void setLike(boolean like) {
+        isLike = like;
     }
 }

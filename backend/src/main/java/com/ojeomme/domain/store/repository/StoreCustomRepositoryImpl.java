@@ -19,6 +19,7 @@ import static com.ojeomme.domain.category.QCategory.category;
 import static com.ojeomme.domain.regioncode.QRegionCode.regionCode;
 import static com.ojeomme.domain.review.QReview.review;
 import static com.ojeomme.domain.store.QStore.store;
+import static com.ojeomme.domain.storelikelog.QStoreLikeLog.storeLikeLog;
 
 @RequiredArgsConstructor
 public class StoreCustomRepositoryImpl implements StoreCustomRepository {
@@ -28,32 +29,46 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Optional<StoreResponseDto> getStore(Long storeId) {
-        return Optional.ofNullable(
-                factory
-                        .select(Projections.fields(
-                                StoreResponseDto.class,
-                                store.id.as("storeId"),
-                                store.kakaoPlaceId.as("placeId"),
-                                store.storeName,
-                                store.category.categoryName,
-                                store.regionCode.regionName,
-                                store.addressName,
-                                store.roadAddressName,
-                                store.x,
-                                store.y,
-                                store.likeCnt,
-                                review.count().as("reviewCnt"),
-                                MathExpressions.round(review.starScore.avg(), 2).as("avgStarScore")
-                        ))
-                        .from(store)
-                        .innerJoin(store.regionCode, regionCode)
-                        .innerJoin(store.category, category)
-                        .innerJoin(store.reviews, review)
-                        .where(store.id.eq(storeId))
-                        .groupBy(store.id)
-                        .fetchOne()
-        );
+    public Optional<StoreResponseDto> getStore(Long userId, Long storeId) {
+        StoreResponseDto getStore = factory
+                .select(Projections.fields(
+                        StoreResponseDto.class,
+                        store.id.as("storeId"),
+                        store.kakaoPlaceId.as("placeId"),
+                        store.storeName,
+                        store.category.categoryName,
+                        store.regionCode.regionName,
+                        store.addressName,
+                        store.roadAddressName,
+                        store.x,
+                        store.y,
+                        store.likeCnt,
+                        review.count().as("reviewCnt"),
+                        MathExpressions.round(review.starScore.avg(), 2).as("avgStarScore")
+                ))
+                .from(store)
+                .innerJoin(store.regionCode, regionCode)
+                .innerJoin(store.category, category)
+                .innerJoin(store.reviews, review)
+                .where(store.id.eq(storeId))
+                .groupBy(store.id)
+                .fetchOne();
+
+        if (getStore == null) {
+            return Optional.empty();
+        }
+
+        boolean isLike = factory
+                .selectOne()
+                .from(storeLikeLog)
+                .where(
+                        storeLikeLog.store.id.eq(storeId),
+                        storeLikeLog.user.id.eq(userId)
+                )
+                .fetchFirst() != null;
+        getStore.setLike(isLike);
+
+        return Optional.of(getStore);
     }
 
     @Override
@@ -75,7 +90,8 @@ public class StoreCustomRepositoryImpl implements StoreCustomRepository {
                 .groupBy(store.id)
                 .orderBy(
                         review.starScore.avg().desc(),
-                        review.count().desc()
+                        review.count().desc(),
+                        review.revisitYn.count().desc()
                 )
                 .limit(10)
                 .fetch());

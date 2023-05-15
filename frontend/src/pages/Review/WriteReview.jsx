@@ -6,18 +6,19 @@ import reviewApi from "../../api/review";
 import { urlUtils } from "../../utils/urlUtils";
 import { BROWSER_PATH } from "../../constants/path";
 
-const WriteReview = ({ onClickClose, placeInfo }) => {
+const WriteReview = ({ onClickClose, placeInfo, reviewInfo, modifyReview, writeInReview }) => {
     const navigate = useNavigate();
 
     const [inputs, setInputs] = useState({
-        starScore: 0,
-        content: '',
-        revisitYn: false,
-        images: [],
-        recommends: [],
-        x: placeInfo.x,
-        y: placeInfo.y
+        starScore: reviewInfo ? reviewInfo.starScore : 0,
+        content: reviewInfo ? reviewInfo.content : '',
+        revisitYn: reviewInfo ? reviewInfo.revisitYn : false,
+        images: reviewInfo ? reviewInfo.images : [],
+        recommends: reviewInfo ? reviewInfo.recommends : [],
+        x: placeInfo ? placeInfo.x : '',
+        y: placeInfo ? placeInfo.y : ''
     });
+
     const refFileUpload = useRef(null);
 
     const handlerClickStarScore = (e) => {
@@ -91,10 +92,35 @@ const WriteReview = ({ onClickClose, placeInfo }) => {
 
     const handlerClickWriteReview = async () => {
         try {
-            const { storeId } = await reviewApi.writeReview(placeInfo.placeId, inputs);
+            if (window.confirm('리뷰를 작성 하시겠습니까?')) {
+                const { storeId } = await reviewApi.writeReview(placeInfo.placeId, inputs);
 
-            const url = urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId });
-            navigate(url, { replace: true });
+                if (!writeInReview) {
+                    const url = urlUtils.setPath(BROWSER_PATH.STORE.GET_STORE_REVIEWS, { storeId });
+                    navigate(url, { replace: true });
+                } else {
+                    writeInReview();
+                }
+            }
+        } catch (e) {
+            alert(e.response.data);
+        }
+    }
+
+    const handlerClickModifyReview = async () => {
+        try {
+            if (window.confirm('리뷰를 수정 하시겠습니까?')) {
+                const param = {
+                    starScore: inputs.starScore,
+                    content: inputs.content,
+                    revisitYn: inputs.revisitYn,
+                    images: inputs.images,
+                    recommends: inputs.recommends
+                };
+
+                const review = await reviewApi.modifyReview(reviewInfo.reviewId, param);
+                modifyReview(review);
+            }
         } catch (e) {
             alert(e.response.data);
         }
@@ -106,8 +132,8 @@ const WriteReview = ({ onClickClose, placeInfo }) => {
                 <div className={style.inner_layer}>
                     <div className={style.layer_head}>
                         <button className={style.btn_reset} onClick={onClickClose}>취소</button>
-                        <strong className={style.tit_layer}>{placeInfo.placeName}</strong>
-                        <button className={style.btn_submit} onClick={handlerClickWriteReview}>등록</button>
+                        <strong className={style.tit_layer}>{placeInfo ? placeInfo.placeName : ''}</strong>
+                        <button className={style.btn_submit} onClick={!reviewInfo ? handlerClickWriteReview : handlerClickModifyReview}>{!reviewInfo ? '등록' : '수정'}</button>
                     </div>
                 </div>
                 <div className={style.layer_body}>
@@ -160,8 +186,8 @@ const WriteReview = ({ onClickClose, placeInfo }) => {
                             <label className={style.lab_upload} onClick={() => refFileUpload.current.click()}>사진 등록하기</label>
                             <input type="file" className={style.inp_upload} onChange={handlerChangeImage} ref={refFileUpload} accept="image/jpeg, image/png" />
                         </span>
-                            {inputs.images.map(v => (
-                                <span key={'image' + v} className={style.thumb_upload}>
+                            {inputs.images.map((v, i) => (
+                                <span key={'image' + i} className={style.thumb_upload}>
                                   <img src={v} className={style.img_thumb} alt="" width="78" height="78" />
                                   <span className={style.frame_g}></span>
                                   <a href={'#none'} className={style.btn_del}>

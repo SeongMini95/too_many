@@ -24,8 +24,8 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreResponseDto> getStore(@PathVariable Long storeId) {
-        StoreResponseDto responseDto = storeService.getStore(storeId);
+    public ResponseEntity<StoreResponseDto> getStore(@LoginUser Long userId, @PathVariable Long storeId) {
+        StoreResponseDto responseDto = storeService.getStore(userId, storeId);
         return ResponseEntity.ok(responseDto);
     }
 

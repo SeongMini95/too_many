@@ -9,10 +9,10 @@ const reviewApi = {
 
         return data;
     },
-    getReviewList: async (storeId, reviewId) => {
+    getReviewList: async (storeId, moreId) => {
         let url = urlUtils.setPath(API_PATH.REVIEW.GET_REVIEW_LIST, { storeId });
-        if (reviewId) {
-            url = urlUtils.setParam(url, { reviewId });
+        if (moreId) {
+            url = urlUtils.setParam(url, { moreId });
         }
         const { data } = await authAxios.get(url);
 
@@ -34,8 +34,16 @@ const reviewApi = {
 
         return data;
     },
-    getReviewLikeLogListOfStore: async (storeId) => {
-        const url = urlUtils.setPath(API_PATH.REVIEW.GET_REVIEW_LIKE_LOG_LIST_OF_STORE, { storeId });
+    getReview: async (reviewId) => {
+        const url = urlUtils.setPath(API_PATH.REVIEW.GET_REVIEW, { reviewId });
+        const { data } = await authAxios.get(url);
+
+        return data;
+    },
+    getRefreshReviewList: async (storeId, lastId) => {
+        let url = urlUtils.setPath(API_PATH.REVIEW.GET_REFRESH_REVIEW_LIST, { storeId });
+        url = urlUtils.setParam(url, { lastId });
+
         const { data } = await authAxios.get(url);
 
         return data;

@@ -12,7 +12,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.*;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -31,9 +34,9 @@ public class ModifyReviewRequestDto {
 
     private boolean revisitYn;
 
-    private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images = new ArrayList<>();
+    private List<@URL(message = "이미지 URL 형식이 올바르지 않습니다.") String> images;
 
-    private List<Integer> recommends = new ArrayList<>();
+    private List<Integer> recommends;
 
     @Builder
     public ModifyReviewRequestDto(String content, Integer starScore, boolean revisitYn, List<String> images, List<Integer> recommends) {

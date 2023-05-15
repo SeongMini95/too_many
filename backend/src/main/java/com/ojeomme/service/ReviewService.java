@@ -23,6 +23,7 @@ import com.ojeomme.domain.user.repository.UserRepository;
 import com.ojeomme.dto.request.review.ModifyReviewRequestDto;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.review.LikeReviewResponseDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
 import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.ojeomme.dto.response.review.WriteReviewResponseDto;
@@ -37,7 +38,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -140,6 +140,7 @@ public class ReviewService {
 
         Review saveReview = reviewRepository.save(requestDto.toReview(user, store, images));
         store.writeReview(saveReview);
+        user.getUserOwnCount().increaseReview();
 
         // 메인 이미지가 등록이 안되어있으면
         if (StringUtils.isBlank(store.getMainImageUrl()) && !images.isEmpty()) {
@@ -170,48 +171,59 @@ public class ReviewService {
 
     @Transactional
     public void deleteReview(Long userId, Long reviewId) {
-        reviewRepository.findByIdAndUserId(reviewId, userId).ifPresentOrElse(
-                reviewRepository::delete,
+        reviewRepository.findByIdAndUserId(reviewId, userId).ifPresentOrElse(v -> {
+                    v.getUser().getUserOwnCount().decreaseReview();
+                    v.getUser().getUserOwnCount().decreaseLike(v.getLikeCnt());
+                    reviewRepository.delete(v);
+                },
                 () -> {
                     throw new ApiException(ApiErrorCode.REVIEW_NOT_FOUND);
                 });
     }
 
     @Transactional
-    public boolean likeReview(Long userId, Long reviewId) {
+    public LikeReviewResponseDto likeReview(Long userId, Long reviewId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
         Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ApiException(ApiErrorCode.REVIEW_NOT_FOUND));
 
         // 있으면 취소, 없으면 저장
-        boolean isLike;
+        boolean result;
         ReviewLikeLog reviewLikeLog = reviewLikeLogRepository.findById(new ReviewLikeLogId(reviewId, userId)).orElse(null);
         if (reviewLikeLog == null) {
             reviewLikeLogRepository.save(ReviewLikeLog.builder()
                     .review(review)
                     .user(user)
                     .build());
+
             review.like();
-            isLike = true;
+            user.getUserOwnCount().increaseLike();
+            result = true;
         } else {
             reviewLikeLogRepository.delete(reviewLikeLog);
+
             review.cancelLike();
-            isLike = false;
+            user.getUserOwnCount().decreaseLike(1);
+            result = false;
         }
 
-        // 좋아요 수가 제일 많으면 이미지가 존재하면 메인 이미지 변경
+        // 좋아요 수가 제일 많으면, 이미지가 존재하면 메인 이미지 변경
         int likeCnt = review.getLikeCnt();
         boolean changeMainImage = !reviewRepository.existsByStoreIdAndLikeCntGreaterThan(review.getStore().getId(), likeCnt);
         if (changeMainImage) {
             reviewImageRepository.findTopByReviewId(reviewId).ifPresent(v -> review.getStore().changeMainImage(v.getImageUrl()));
         }
 
-        return isLike;
+        return new LikeReviewResponseDto(result, review.getLikeCnt());
     }
 
     @Transactional(readOnly = true)
-    public List<Long> getReviewLikeLogListOfUser(Long userId, Long storeId) {
-        return reviewLikeLogRepository.findByUserIdAndReviewStoreId(userId, storeId).stream()
-                .map(v -> v.getReview().getId())
-                .collect(Collectors.toList());
+    public ReviewResponseDto getReview(Long userId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndUserId(reviewId, userId).orElseThrow(() -> new ApiException(ApiErrorCode.REVIEW_NOT_FOUND));
+        return new ReviewResponseDto(review);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewListResponseDto getRefreshReviewList(Long userId, Long storeId, Long lastId) {
+        return reviewRepository.getRefreshReviewList(userId, storeId, lastId);
     }
 }

@@ -40,8 +40,8 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public StoreResponseDto getStore(Long storeId) {
-        return storeRepository.getStore(storeId).orElseThrow(() -> new ApiException(ApiErrorCode.STORE_NOT_FOUND));
+    public StoreResponseDto getStore(Long userId, Long storeId) {
+        return storeRepository.getStore(userId, storeId).orElseThrow(() -> new ApiException(ApiErrorCode.STORE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)

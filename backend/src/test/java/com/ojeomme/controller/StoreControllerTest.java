@@ -9,7 +9,6 @@ import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.review.Review;
 import com.ojeomme.domain.review.repository.ReviewRepository;
 import com.ojeomme.domain.reviewimage.ReviewImage;
-import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
 import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.storelikelog.StoreLikeLog;
@@ -49,9 +48,6 @@ class StoreControllerTest extends AcceptanceTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
-    private ReviewImageRepository reviewImageRepository;
 
     @Autowired
     private StoreLikeLogRepository storeLikeLogRepository;
@@ -326,7 +322,7 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
             assertThat(jsonPath.getBoolean("result")).isTrue();
-            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt() + 1);
         }
 
         @Test
@@ -353,7 +349,7 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
             assertThat(jsonPath.getBoolean("result")).isFalse();
-            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt() - 1);
         }
 
         @Test
@@ -417,6 +413,43 @@ class StoreControllerTest extends AcceptanceTest {
             assertThat(jsonPath.getString("x")).isEqualTo(store.getX());
             assertThat(jsonPath.getString("y")).isEqualTo(store.getY());
             assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
+            assertThat(jsonPath.getInt("reviewCnt")).isEqualTo(store.getReviews().size());
+            assertThat(jsonPath.getDouble("avgStarScore")).isEqualTo(store.getReviews().stream().mapToDouble(Review::getStarScore).average().orElse(0));
+            assertThat(jsonPath.getBoolean("isLike")).isFalse();
+        }
+
+        @Test
+        void 매장_정보를_가져온다_좋아요_누름() {
+            // given
+            StoreLikeLog storeLikeLog = StoreLikeLog.builder()
+                    .store(store)
+                    .user(user)
+                    .build();
+            storeLikeLog.setDateTime(LocalDateTime.now(), LocalDateTime.now());
+            storeLikeLogRepository.save(storeLikeLog);
+
+            // when
+            ExtractableResponse<Response> response = RestAssured.given().log().all()
+                    .auth().oauth2(accessToken)
+                    .when().get("/api/store/{storeId}", store.getId())
+                    .then().log().all()
+                    .extract();
+
+            JsonPath jsonPath = response.jsonPath();
+
+            // then
+            assertThat(jsonPath.getLong("storeId")).isEqualTo(store.getId());
+            assertThat(jsonPath.getLong("placeId")).isEqualTo(store.getKakaoPlaceId());
+            assertThat(jsonPath.getString("storeName")).isEqualTo(store.getStoreName());
+            assertThat(jsonPath.getString("categoryName")).isEqualTo(store.getCategory().getCategoryName());
+            assertThat(jsonPath.getString("addressName")).isEqualTo(store.getAddressName());
+            assertThat(jsonPath.getString("roadAddressName")).isEqualTo(store.getRoadAddressName());
+            assertThat(jsonPath.getString("x")).isEqualTo(store.getX());
+            assertThat(jsonPath.getString("y")).isEqualTo(store.getY());
+            assertThat(jsonPath.getInt("likeCnt")).isEqualTo(store.getLikeCnt());
+            assertThat(jsonPath.getInt("reviewCnt")).isEqualTo(store.getReviews().size());
+            assertThat(jsonPath.getDouble("avgStarScore")).isEqualTo(store.getReviews().stream().mapToDouble(Review::getStarScore).average().orElse(0));
+            assertThat(jsonPath.getBoolean("isLike")).isTrue();
         }
 
         @Test
