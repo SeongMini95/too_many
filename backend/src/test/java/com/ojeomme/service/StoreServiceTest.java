@@ -337,12 +337,15 @@ class StoreServiceTest {
                     .x("127")
                     .y("34")
                     .likeCnt(10)
+                    .reviewCnt(10)
+                    .avgStarScore(5.0)
+                    .isLike(false)
                     .build();
 
-            given(storeRepository.getStore(anyLong())).willReturn(Optional.of(store));
+            given(storeRepository.getStore(anyLong(), anyLong())).willReturn(Optional.of(store));
 
             // when
-            StoreResponseDto responseDto = storeService.getStore(1L);
+            StoreResponseDto responseDto = storeService.getStore(1L, 1L);
 
             // then
             assertThat(responseDto.getStoreId()).isEqualTo(store.getStoreId());
@@ -354,15 +357,18 @@ class StoreServiceTest {
             assertThat(responseDto.getX()).isEqualTo(store.getX());
             assertThat(responseDto.getY()).isEqualTo(store.getY());
             assertThat(responseDto.getLikeCnt()).isEqualTo(store.getLikeCnt());
+            assertThat(responseDto.getReviewCnt()).isEqualTo(store.getReviewCnt());
+            assertThat(responseDto.getAvgStarScore()).isEqualTo(store.getAvgStarScore());
+            assertThat(responseDto.getIsLike()).isEqualTo(store.getIsLike());
         }
 
         @Test
         void 매장이_없으면_StoreNotFoundException를_발생한다() {
             // given
-            given(storeRepository.getStore(anyLong())).willReturn(Optional.empty());
+            given(storeRepository.getStore(anyLong(), anyLong())).willReturn(Optional.empty());
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> storeService.getStore(1L));
+            ApiException exception = assertThrows(ApiException.class, () -> storeService.getStore(1L, 1L));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.STORE_NOT_FOUND);

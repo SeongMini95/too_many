@@ -24,11 +24,15 @@ import com.ojeomme.domain.store.Store;
 import com.ojeomme.domain.store.repository.StoreRepository;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.domain.userowncount.UserOwnCount;
 import com.ojeomme.dto.request.review.ModifyReviewRequestDto;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
 import com.ojeomme.dto.request.store.SearchPlaceListRequestDto;
+import com.ojeomme.dto.response.review.LikeReviewResponseDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
+import com.ojeomme.dto.response.review.ReviewListResponseDto.RecommendCount;
 import com.ojeomme.dto.response.review.ReviewResponseDto;
+import com.ojeomme.dto.response.review.ReviewResponseDto.RecommendResponseDto;
 import com.ojeomme.dto.response.review.WriteReviewResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
@@ -44,6 +48,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -94,23 +99,103 @@ class ReviewServiceTest {
     private ReviewImageRepository reviewImageRepository;
 
     @Nested
-    class getReviewLikeLogListOfUser {
+    class getRefreshReviewList {
 
         @Test
-        void 유저의_해당_매장의_리뷰_좋아요_목록을_가져온다() {
+        void 최근_작성된_리뷰를_가져온다() {
             // given
-            List<ReviewLikeLog> reviewLikeLogs = List.of(
-                    ReviewLikeLog.builder().review(Review.builder().id(1L).build()).user(User.builder().id(1L).build()).build(),
-                    ReviewLikeLog.builder().review(Review.builder().id(3L).build()).user(User.builder().id(1L).build()).build(),
-                    ReviewLikeLog.builder().review(Review.builder().id(5L).build()).user(User.builder().id(1L).build()).build()
-            );
-            given(reviewLikeLogRepository.findByUserIdAndReviewStoreId(anyLong(), anyLong())).willReturn(reviewLikeLogs);
+            ReviewListResponseDto.ReviewResponseDto reviewResponseDto1 = ReviewListResponseDto.ReviewResponseDto.builder()
+                    .reviewId(1L)
+                    .nickname("nick1")
+                    .starScore(4)
+                    .content("리뷰1")
+                    .likeCnt(3)
+                    .images(List.of("http://localhost:4000/image1.png"))
+                    .recommends(List.of(new RecommendResponseDto(1, "맛")))
+                    .createDate(LocalDateTime.of(2023, 4, 18, 0, 0))
+                    .build();
+            ReviewListResponseDto.ReviewResponseDto reviewResponseDto2 = ReviewListResponseDto.ReviewResponseDto.builder()
+                    .reviewId(2L)
+                    .nickname("nick2")
+                    .starScore(5)
+                    .content("리뷰2")
+                    .likeCnt(5)
+                    .images(List.of("http://localhost:4000/image2.png"))
+                    .recommends(List.of(new RecommendResponseDto(1, "맛")))
+                    .createDate(LocalDateTime.of(2023, 4, 17, 0, 0))
+                    .build();
+            RecommendCount recommendCount1 = new RecommendCount(1, "맛", 2L);
+            RecommendCount recommendCount2 = new RecommendCount(2, "주차", 3L);
+            ReviewListResponseDto reviewListResponseDto = new ReviewListResponseDto(List.of(reviewResponseDto1, reviewResponseDto2), List.of(recommendCount1, recommendCount2));
+
+            given(reviewRepository.getRefreshReviewList(anyLong(), anyLong(), anyLong())).willReturn(reviewListResponseDto);
 
             // when
-            List<Long> reviewLikeLogList = reviewService.getReviewLikeLogListOfUser(1L, 1L);
+            ReviewListResponseDto responseDto = reviewService.getRefreshReviewList(1L, 1L, 1L);
 
             // then
-            assertThat(reviewLikeLogList).isEqualTo(reviewLikeLogs.stream().map(v -> v.getReview().getId()).collect(Collectors.toList()));
+            assertThat(responseDto.getReviews()).hasSameSizeAs(reviewListResponseDto.getReviews());
+            for (int i = 0; i < responseDto.getReviews().size(); i++) {
+                assertThat(responseDto.getReviews().get(i).getReviewId()).isEqualTo(reviewListResponseDto.getReviews().get(i).getReviewId());
+                assertThat(responseDto.getReviews().get(i).getNickname()).isEqualTo(reviewListResponseDto.getReviews().get(i).getNickname());
+                assertThat(responseDto.getReviews().get(i).getStarScore()).isEqualTo(reviewListResponseDto.getReviews().get(i).getStarScore());
+                assertThat(responseDto.getReviews().get(i).getContent()).isEqualTo(reviewListResponseDto.getReviews().get(i).getContent());
+                assertThat(responseDto.getReviews().get(i).getLikeCnt()).isEqualTo(reviewListResponseDto.getReviews().get(i).getLikeCnt());
+                assertThat(responseDto.getReviews().get(i).getImages()).isEqualTo(reviewListResponseDto.getReviews().get(i).getImages());
+                assertThat(responseDto.getReviews().get(i).getRecommends()).isEqualTo(reviewListResponseDto.getReviews().get(i).getRecommends());
+                assertThat(responseDto.getReviews().get(i).getCreateDate()).isEqualTo(reviewListResponseDto.getReviews().get(i).getCreateDate());
+            }
+
+            assertThat(responseDto.getRecommendCounts()).hasSameSizeAs(reviewListResponseDto.getRecommendCounts());
+            for (int i = 0; i < responseDto.getRecommendCounts().size(); i++) {
+                assertThat(responseDto.getRecommendCounts().get(i).getType()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getType());
+                assertThat(responseDto.getRecommendCounts().get(i).getName()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getName());
+                assertThat(responseDto.getRecommendCounts().get(i).getCount()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getCount());
+            }
+        }
+    }
+
+    @Nested
+    class getReview {
+
+        @Test
+        void 리뷰를_가져온다() {
+            // given
+            Review review = Review.builder()
+                    .id(1L)
+                    .starScore(5)
+                    .content("테스트")
+                    .likeCnt(1)
+                    .build();
+            review.addImages(Set.of(
+                    ReviewImage.builder().imageUrl("1").build()
+            ));
+            review.addRecommends(Set.of(
+                    ReviewRecommend.builder().recommendType(RecommendType.TASTE).build()
+            ));
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(review));
+
+            // when
+            ReviewResponseDto responseDto = reviewService.getReview(1L, 1L);
+
+            // then
+            assertThat(responseDto.getReviewId()).isEqualTo(review.getId());
+            assertThat(responseDto.getStarScore()).isEqualTo(review.getStarScore());
+            assertThat(responseDto.getContent()).isEqualTo(review.getContent());
+            assertThat(responseDto.getImages()).isEqualTo(review.getReviewImages().stream().map(ReviewImage::getImageUrl).collect(Collectors.toList()));
+            assertThat(responseDto.getRecommends()).isEqualTo(review.getReviewRecommends().stream().map(v -> Integer.parseInt(v.getRecommendType().getCode())).collect(Collectors.toList()));
+        }
+
+        @Test
+        void 리뷰가_존재하지_않으면_ReviewNotFoundException를_발생한다() {
+            // given
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.empty());
+
+            // when
+            ApiException exception = assertThrows(ApiException.class, () -> reviewService.getReview(1L, 1L));
+
+            // then
+            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.REVIEW_NOT_FOUND);
         }
     }
 
@@ -120,7 +205,11 @@ class ReviewServiceTest {
         @Test
         void 리뷰_좋아요를_누른다() {
             // given
-            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             Review review = mock(Review.class);
             given(reviewRepository.findById(anyLong())).willReturn(Optional.of(review));
@@ -131,16 +220,20 @@ class ReviewServiceTest {
             given(reviewRepository.existsByStoreIdAndLikeCntGreaterThan(anyLong(), anyInt())).willReturn(true);
 
             // when
-            boolean savedYn = reviewService.likeReview(1L, 1L);
+            LikeReviewResponseDto responseDto = reviewService.likeReview(1L, 1L);
 
             // then
-            assertThat(savedYn).isTrue();
+            assertThat(responseDto.isResult()).isTrue();
         }
 
         @Test
         void 리뷰가_이미_존재한다() {
             // given
-            given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
+            User user = mock(User.class);
+            given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             Review review = mock(Review.class);
             given(reviewRepository.findById(anyLong())).willReturn(Optional.of(review));
@@ -152,10 +245,10 @@ class ReviewServiceTest {
             given(reviewImageRepository.findTopByReviewId(anyLong())).willReturn(Optional.of(mock(ReviewImage.class)));
 
             // when
-            boolean savedYn = reviewService.likeReview(1L, 1L);
+            LikeReviewResponseDto responseDto = reviewService.likeReview(1L, 1L);
 
             // then
-            assertThat(savedYn).isFalse();
+            assertThat(responseDto.isResult()).isFalse();
         }
 
         @Test
@@ -190,7 +283,14 @@ class ReviewServiceTest {
         @Test
         void 리뷰를_삭제한다() {
             // given
-            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(mock(Review.class)));
+            Review review = mock(Review.class);
+            given(reviewRepository.findByIdAndUserId(anyLong(), anyLong())).willReturn(Optional.of(review));
+
+            User user = mock(User.class);
+            given(review.getUser()).willReturn(user);
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             // when
             reviewService.deleteReview(1L, 1L);
@@ -250,7 +350,6 @@ class ReviewServiceTest {
 
             // then
             assertThat(responseDto.getReviewId()).isEqualTo(1L);
-            assertThat(responseDto.getNickname()).isEqualTo(user.getNickname());
             assertThat(responseDto.getStarScore()).isEqualTo(requestDto.getStarScore());
             assertThat(responseDto.getContent()).isEqualTo(requestDto.getContent());
             assertThat(CollectionUtils.isEqualCollection(responseDto.getImages(), requestDto.getImages())).isTrue();
@@ -276,29 +375,29 @@ class ReviewServiceTest {
         @Test
         void 리뷰_리스트를_가져온다() {
             // given
-            ReviewResponseDto reviewResponseDto1 = ReviewResponseDto.builder()
+            ReviewListResponseDto.ReviewResponseDto reviewResponseDto1 = ReviewListResponseDto.ReviewResponseDto.builder()
                     .reviewId(1L)
                     .nickname("nick1")
                     .starScore(4)
                     .content("리뷰1")
-                    .revisitYn(false)
                     .likeCnt(3)
                     .images(List.of("http://localhost:4000/image1.png"))
-                    .recommends(List.of(1))
+                    .recommends(List.of(new RecommendResponseDto(1, "맛")))
                     .createDate(LocalDateTime.of(2023, 4, 18, 0, 0))
                     .build();
-            ReviewResponseDto reviewResponseDto2 = ReviewResponseDto.builder()
+            ReviewListResponseDto.ReviewResponseDto reviewResponseDto2 = ReviewListResponseDto.ReviewResponseDto.builder()
                     .reviewId(2L)
                     .nickname("nick2")
                     .starScore(5)
                     .content("리뷰2")
-                    .revisitYn(false)
                     .likeCnt(5)
                     .images(List.of("http://localhost:4000/image2.png"))
-                    .recommends(List.of(2))
+                    .recommends(List.of(new RecommendResponseDto(1, "맛")))
                     .createDate(LocalDateTime.of(2023, 4, 17, 0, 0))
                     .build();
-            ReviewListResponseDto reviewListResponseDto = new ReviewListResponseDto(List.of(reviewResponseDto1, reviewResponseDto2));
+            RecommendCount recommendCount1 = new RecommendCount(1, "맛", 2L);
+            RecommendCount recommendCount2 = new RecommendCount(2, "주차", 3L);
+            ReviewListResponseDto reviewListResponseDto = new ReviewListResponseDto(List.of(reviewResponseDto1, reviewResponseDto2), List.of(recommendCount1, recommendCount2));
             given(reviewRepository.getReviewList(anyLong(), anyLong(), anyLong())).willReturn(reviewListResponseDto);
 
             // when
@@ -311,11 +410,17 @@ class ReviewServiceTest {
                 assertThat(responseDto.getReviews().get(i).getNickname()).isEqualTo(reviewListResponseDto.getReviews().get(i).getNickname());
                 assertThat(responseDto.getReviews().get(i).getStarScore()).isEqualTo(reviewListResponseDto.getReviews().get(i).getStarScore());
                 assertThat(responseDto.getReviews().get(i).getContent()).isEqualTo(reviewListResponseDto.getReviews().get(i).getContent());
-                assertThat(responseDto.getReviews().get(i).isRevisitYn()).isEqualTo(reviewListResponseDto.getReviews().get(i).isRevisitYn());
                 assertThat(responseDto.getReviews().get(i).getLikeCnt()).isEqualTo(reviewListResponseDto.getReviews().get(i).getLikeCnt());
                 assertThat(responseDto.getReviews().get(i).getImages()).isEqualTo(reviewListResponseDto.getReviews().get(i).getImages());
                 assertThat(responseDto.getReviews().get(i).getRecommends()).isEqualTo(reviewListResponseDto.getReviews().get(i).getRecommends());
                 assertThat(responseDto.getReviews().get(i).getCreateDate()).isEqualTo(reviewListResponseDto.getReviews().get(i).getCreateDate());
+            }
+
+            assertThat(responseDto.getRecommendCounts()).hasSameSizeAs(reviewListResponseDto.getRecommendCounts());
+            for (int i = 0; i < responseDto.getRecommendCounts().size(); i++) {
+                assertThat(responseDto.getRecommendCounts().get(i).getType()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getType());
+                assertThat(responseDto.getRecommendCounts().get(i).getName()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getName());
+                assertThat(responseDto.getRecommendCounts().get(i).getCount()).isEqualTo(reviewListResponseDto.getRecommendCounts().get(i).getCount());
             }
         }
     }
@@ -392,6 +497,9 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -477,6 +585,9 @@ class ReviewServiceTest {
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
 
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
+
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
             given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
@@ -526,6 +637,9 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -598,6 +712,9 @@ class ReviewServiceTest {
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
 
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
+
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
             given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
@@ -655,6 +772,9 @@ class ReviewServiceTest {
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
 
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
+
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
             given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
@@ -706,6 +826,9 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
@@ -762,6 +885,9 @@ class ReviewServiceTest {
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
 
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
+
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);
             given(kakaoKeywordClient.getKakaoPlaceList(any(SearchPlaceListRequestDto.class), eq(true))).willReturn(kakaoPlaceList);
@@ -807,6 +933,9 @@ class ReviewServiceTest {
             // given
             User user = mock(User.class);
             given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+
+            UserOwnCount userOwnCount = mock(UserOwnCount.class);
+            given(user.getUserOwnCount()).willReturn(userOwnCount);
 
             given(storeRepository.findByKakaoPlaceId(anyLong())).willReturn(Optional.empty());
             given(kakaoPlaceClient.getKakaoPlaceInfo(anyLong())).willReturn(kakaoPlaceInfo);

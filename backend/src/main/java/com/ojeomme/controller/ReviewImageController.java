@@ -1,8 +1,8 @@
 package com.ojeomme.controller;
 
 
-import com.ojeomme.dto.response.review.PreviewImageListResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.PreviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.ReviewImageListResponseDto;
 import com.ojeomme.service.ReviewImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

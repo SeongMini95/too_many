@@ -10,4 +10,6 @@ public interface ReviewCustomRepository {
     ReviewListResponseDto getReviewList(Long userId, Long storeId, Long moreId);
 
     Optional<Review> getWithinAWeek(Long userId, Long placeId);
+
+    ReviewListResponseDto getRefreshReviewList(Long userId, Long storeId, Long lastId);
 }

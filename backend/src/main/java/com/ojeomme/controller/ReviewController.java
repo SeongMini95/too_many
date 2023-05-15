@@ -3,6 +3,7 @@ package com.ojeomme.controller;
 import com.ojeomme.config.auth.LoginUser;
 import com.ojeomme.dto.request.review.ModifyReviewRequestDto;
 import com.ojeomme.dto.request.review.WriteReviewRequestDto;
+import com.ojeomme.dto.response.review.LikeReviewResponseDto;
 import com.ojeomme.dto.response.review.ReviewListResponseDto;
 import com.ojeomme.dto.response.review.ReviewResponseDto;
 import com.ojeomme.dto.response.review.WriteReviewResponseDto;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -47,14 +47,20 @@ public class ReviewController {
     }
 
     @PostMapping("/{reviewId}/like")
-    public ResponseEntity<Boolean> likeReview(@LoginUser Long userId, @PathVariable Long reviewId) {
-        boolean savedYn = reviewService.likeReview(userId, reviewId);
-        return ResponseEntity.ok(savedYn);
+    public ResponseEntity<LikeReviewResponseDto> likeReview(@LoginUser Long userId, @PathVariable Long reviewId) {
+        LikeReviewResponseDto responseDto = reviewService.likeReview(userId, reviewId);
+        return ResponseEntity.ok(responseDto);
     }
 
-    @GetMapping("/store/{storeId}/like")
-    public ResponseEntity<List<Long>> getReviewLikeLogListOfStore(@LoginUser Long userId, @PathVariable Long storeId) {
-        List<Long> reviewListLogList = reviewService.getReviewLikeLogListOfUser(userId, storeId);
-        return ResponseEntity.ok(reviewListLogList);
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<ReviewResponseDto> getReview(@LoginUser Long userId, @PathVariable Long reviewId) {
+        ReviewResponseDto responseDto = reviewService.getReview(userId, reviewId);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/store/{storeId}/refresh")
+    public ResponseEntity<ReviewListResponseDto> getRefreshReviewList(@LoginUser Long userId, @PathVariable Long storeId, @RequestParam Long lastId) {
+        ReviewListResponseDto responseDto = reviewService.getRefreshReviewList(userId, storeId, lastId);
+        return ResponseEntity.ok(responseDto);
     }
 }

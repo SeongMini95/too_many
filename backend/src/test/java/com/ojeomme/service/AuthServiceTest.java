@@ -7,6 +7,8 @@ import com.ojeomme.common.oauth.info.OauthUserInfo;
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.enums.OauthProvider;
 import com.ojeomme.domain.user.repository.UserRepository;
+import com.ojeomme.domain.userowncount.UserOwnCount;
+import com.ojeomme.domain.userowncount.repository.UserOwnCountRepository;
 import com.ojeomme.domain.usertoken.UserToken;
 import com.ojeomme.domain.usertoken.repository.UserTokenRepository;
 import com.ojeomme.dto.request.auth.ReissueTokenRequestDto;
@@ -56,6 +58,9 @@ class AuthServiceTest {
 
     @Mock
     private UserTokenRepository userTokenRepository;
+
+    @Mock
+    private UserOwnCountRepository userOwnCountRepository;
 
     private static final String REDIRECT_URI = "http://localhost:3000/auth/";
 
@@ -141,6 +146,7 @@ class AuthServiceTest {
             given(mockAuthToken.getToken()).willReturn(accessToken);
 
             given(userTokenRepository.save(any(UserToken.class))).willReturn(mock(UserToken.class));
+            given(userOwnCountRepository.save(any(UserOwnCount.class))).willReturn(mock(UserOwnCount.class));
 
             // when
             LoginTokenResponseDto responseDto = authService.login(oauthProvider.name().toLowerCase(), "redirectUri", "code");

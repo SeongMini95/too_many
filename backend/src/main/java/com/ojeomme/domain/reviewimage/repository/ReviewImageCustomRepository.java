@@ -1,7 +1,7 @@
 package com.ojeomme.domain.reviewimage.repository;
 
-import com.ojeomme.dto.response.review.PreviewImageListResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.PreviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.ReviewImageListResponseDto;
 
 public interface ReviewImageCustomRepository {
 

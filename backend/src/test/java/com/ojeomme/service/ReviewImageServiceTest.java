@@ -1,8 +1,8 @@
 package com.ojeomme.service;
 
 import com.ojeomme.domain.reviewimage.repository.ReviewImageRepository;
-import com.ojeomme.dto.response.review.PreviewImageListResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.PreviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.ReviewImageListResponseDto;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

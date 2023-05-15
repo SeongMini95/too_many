@@ -3,6 +3,7 @@ package com.ojeomme.domain.user;
 import com.ojeomme.domain.BaseTimeEntity;
 import com.ojeomme.domain.user.enums.OauthProvider;
 import com.ojeomme.domain.user.enums.converter.OauthProviderConverter;
+import com.ojeomme.domain.userowncount.UserOwnCount;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +37,9 @@ public class User extends BaseTimeEntity {
 
     @Column(name = "profile", nullable = false, length = 2083)
     private String profile;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = false)
+    private UserOwnCount userOwnCount;
 
     @Builder
     public User(Long id, String oauthId, OauthProvider oauthProvider, String nickname, String email, String profile) {

@@ -1,7 +1,7 @@
 package com.ojeomme.domain.reviewimage.repository;
 
-import com.ojeomme.dto.response.review.PreviewImageListResponseDto;
-import com.ojeomme.dto.response.store.ReviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.PreviewImageListResponseDto;
+import com.ojeomme.dto.response.reviewimage.ReviewImageListResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -45,11 +45,11 @@ public class ReviewImageCustomRepositoryImpl implements ReviewImageCustomReposit
     }
 
     @Override
-    public ReviewImageListResponseDto getReviewImageList(Long storeId, Long reviewImageId) {
+    public ReviewImageListResponseDto getReviewImageList(Long storeId, Long moreId) {
         // 페이징
         BooleanBuilder ltReviewImageId = new BooleanBuilder();
-        if (reviewImageId != null) {
-            ltReviewImageId.and(reviewImage.id.lt(reviewImageId));
+        if (moreId != null) {
+            ltReviewImageId.and(reviewImage.id.lt(moreId));
         }
 
         long imageCnt = factory
@@ -68,7 +68,7 @@ public class ReviewImageCustomRepositoryImpl implements ReviewImageCustomReposit
                         reviewImage.imageUrl
                 )
                 .from(reviewImage)
-                .innerJoin(reviewImage.review)
+                .innerJoin(reviewImage.review, review)
                 .where(
                         reviewImage.review.store.id.eq(storeId),
                         ltReviewImageId
