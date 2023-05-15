@@ -10,7 +10,7 @@ public interface EatTogetherPostCustomRepository {
 
     Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long postId);
 
-    EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId);
+    EatTogetherPostListResponseDto getEatTogetherPostList(String code, Long moreId);
 
     RecentEatTogetherPostListResponseDto getRecentEatTogetherPostList(String regionCode);
 }

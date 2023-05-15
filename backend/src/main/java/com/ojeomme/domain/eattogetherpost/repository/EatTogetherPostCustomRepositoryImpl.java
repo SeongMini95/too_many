@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.ojeomme.domain.eattogetherpost.QEatTogetherPost.eatTogetherPost;
+import static com.ojeomme.domain.eattogetherreply.QEatTogetherReply.eatTogetherReply;
+import static com.ojeomme.domain.regioncode.QRegionCode.regionCode;
 import static com.ojeomme.domain.user.QUser.user;
 
 @RequiredArgsConstructor
@@ -23,6 +25,8 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
 
     private final JPAQueryFactory factory;
     private final RegionCodeRepository regionCodeRepository;
+
+    private static final int POST_LIST_PAGE_SIZE = 30;
 
     @Override
     public Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long postId) {
@@ -44,9 +48,9 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
     }
 
     @Override
-    public EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId) {
+    public EatTogetherPostListResponseDto getEatTogetherPostList(String code, Long moreId) {
         // 하위 지역 코드 가져오기
-        Set<String> regionCodes = regionCodeRepository.getDownCode(regionCode);
+        Set<String> regionCodes = regionCodeRepository.getDownCode(code);
 
         BooleanBuilder ltPostId = new BooleanBuilder();
         if (moreId != null) {
@@ -56,21 +60,24 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
         return new EatTogetherPostListResponseDto(factory
                 .select(Projections.fields(
                         EatTogetherPostListResponseDto.PostResponseDto.class,
-                        eatTogetherPost.id,
+                        eatTogetherPost.id.as("postId"),
                         eatTogetherPost.user.nickname,
                         eatTogetherPost.regionCode.regionName,
                         eatTogetherPost.subject,
+                        eatTogetherReply.count().as("replyCnt"),
                         eatTogetherPost.createDatetime.as("oriCreateDatetime")
                 ))
                 .from(eatTogetherPost)
-                .innerJoin(eatTogetherPost.regionCode, QRegionCode.regionCode)
+                .innerJoin(eatTogetherPost.regionCode, regionCode)
                 .innerJoin(eatTogetherPost.user, user)
+                .leftJoin(eatTogetherReply).on(eatTogetherPost.id.eq(eatTogetherReply.eatTogetherPost.id))
                 .where(
                         ltPostId,
                         eatTogetherPost.regionCode.code.in(regionCodes)
                 )
+                .groupBy(eatTogetherPost.id)
                 .orderBy(eatTogetherPost.id.desc())
-                .limit(30)
+                .limit(POST_LIST_PAGE_SIZE)
                 .fetch());
     }
 

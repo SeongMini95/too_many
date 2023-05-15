@@ -23,21 +23,24 @@ public class EatTogetherPostListResponseDto {
     @Getter
     public static class PostResponseDto {
 
-        private Long id;
+        private Long postId;
         private String nickname;
         private String regionName;
         private String subject;
+        private long replyCnt;
         private String createDatetime;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private LocalDateTime oriCreateDatetime;
 
         @Builder
-        public PostResponseDto(Long id, String nickname, String regionName, String subject, LocalDateTime oriCreateDatetime) {
-            this.id = id;
+        public PostResponseDto(Long postId, String nickname, String regionName, String subject, long replyCnt, String createDatetime, LocalDateTime oriCreateDatetime) {
+            this.postId = postId;
             this.nickname = nickname;
             this.regionName = regionName;
             this.subject = subject;
+            this.replyCnt = replyCnt;
+            this.createDatetime = createDatetime;
             this.oriCreateDatetime = oriCreateDatetime;
         }
 
@@ -45,7 +48,7 @@ public class EatTogetherPostListResponseDto {
             if (day == oriCreateDatetime.getDayOfMonth()) {
                 createDatetime = oriCreateDatetime.format(DateTimeFormatter.ofPattern("HH:mm"));
             } else {
-                createDatetime = oriCreateDatetime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+                createDatetime = oriCreateDatetime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd."));
             }
 
             oriCreateDatetime = null;

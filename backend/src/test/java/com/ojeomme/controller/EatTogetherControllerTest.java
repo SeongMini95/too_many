@@ -698,7 +698,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getList("posts")).hasSameSizeAs(dummyData);
             for (int i = 0; i < jsonPath.getList("posts").size(); i++) {
-                assertThat(jsonPath.getLong("posts[" + i + "].id")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getId());
+                assertThat(jsonPath.getLong("posts[" + i + "].postId")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getId());
                 assertThat(jsonPath.getString("posts[" + i + "].nickname")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getUser().getNickname());
                 assertThat(jsonPath.getString("posts[" + i + "].regionName")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getRegionCode().getRegionName());
                 assertThat(jsonPath.getString("posts[" + i + "].subject")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getSubject());
@@ -739,7 +739,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getList("posts")).hasSameSizeAs(posts);
             for (int i = 0; i < jsonPath.getList("posts").size(); i++) {
-                assertThat(jsonPath.getLong("posts[" + i + "].id")).isEqualTo(posts.get(i).getId());
+                assertThat(jsonPath.getLong("posts[" + i + "].postId")).isEqualTo(posts.get(i).getId());
                 assertThat(jsonPath.getString("posts[" + i + "].nickname")).isEqualTo(posts.get(i).getUser().getNickname());
                 assertThat(jsonPath.getString("posts[" + i + "].regionName")).isEqualTo(posts.get(i).getRegionCode().getRegionName());
                 assertThat(jsonPath.getString("posts[" + i + "].subject")).isEqualTo(posts.get(i).getSubject());
