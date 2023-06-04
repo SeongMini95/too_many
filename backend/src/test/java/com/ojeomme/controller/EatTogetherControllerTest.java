@@ -5,8 +5,6 @@ import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
 import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
 import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
-import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
-import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.dto.request.eattogether.ModifyEatTogetherPostRequestDto;
 import com.ojeomme.dto.request.eattogether.ModifyEatTogetherReplyRequestDto;
@@ -47,9 +45,6 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
     @Autowired
     private EatTogetherReplyRepository eatTogetherReplyRepository;
-
-    @Autowired
-    private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Nested
     class getRecentEatTogetherPostList {
@@ -109,6 +104,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .eatTogetherPost(post)
                     .upId(seq)
                     .content("댓글")
+                    .imageUrl("")
                     .build());
 
             // when
@@ -164,6 +160,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .eatTogetherPost(post)
                     .upId(seq)
                     .content("댓글")
+                    .imageUrl("")
                     .build());
 
             ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
@@ -196,6 +193,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .eatTogetherPost(post)
                     .upId(seq)
                     .content("댓글")
+                    .imageUrl("")
                     .build());
 
             ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
@@ -229,9 +227,6 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .eatTogetherPost(post)
                     .upId(seq)
                     .content("댓글")
-                    .build());
-            eatTogetherReplyImageRepository.save(EatTogetherReplyImage.builder()
-                    .eatTogetherReply(reply)
                     .imageUrl("http://localhost:4000/temp/2023/4/28/image.png")
                     .build());
 
@@ -422,7 +417,6 @@ class EatTogetherControllerTest extends AcceptanceTest {
             EatTogetherPost post = createPost();
 
             List<EatTogetherReply> replies = new ArrayList<>();
-            List<EatTogetherReplyImage> images = new ArrayList<>();
 
             for (int i = 0; i < 10; i++) {
                 Long seq = eatTogetherReplyRepository.nextval();
@@ -432,14 +426,10 @@ class EatTogetherControllerTest extends AcceptanceTest {
                         .eatTogetherPost(post)
                         .upId(seq)
                         .content("댓글" + i)
-                        .build());
-                EatTogetherReplyImage image = eatTogetherReplyImageRepository.save(EatTogetherReplyImage.builder()
-                        .eatTogetherReply(reply)
-                        .imageUrl("image" + i)
+                        .imageUrl("image1")
                         .build());
 
                 replies.add(reply);
-                images.add(image);
             }
 
             // when
@@ -456,28 +446,13 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getList("replies")).hasSameSizeAs(replies);
             for (int i = 0; i < jsonPath.getList("replies").size(); i++) {
-                assertThat(jsonPath.getLong("replies[" + i + "].userId")).isEqualTo(replies.get(i).getUser().getId());
+                assertThat(jsonPath.getBoolean("replies[" + i + "].isWrite")).isEqualTo(replies.get(i).getUser().getId().equals(user.getId()));
                 assertThat(jsonPath.getString("replies[" + i + "].nickname")).isEqualTo(user.getNickname());
+                assertThat(jsonPath.getString("replies[" + i + "].profile")).isEqualTo(user.getProfile());
                 assertThat(jsonPath.getString("replies[" + i + "].content")).isEqualTo(replies.get(i).getContent());
-                assertThat(jsonPath.getString("replies[" + i + "].image")).isEqualTo(images.get(i).getImageUrl());
-                assertThat(jsonPath.getString("replies[" + i + "].createDatetime")).isEqualTo(replies.get(i).getCreateDatetime().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")));
+                assertThat(jsonPath.getString("replies[" + i + "].image")).isEqualTo(replies.get(i).getImageUrl());
+                assertThat(jsonPath.getString("replies[" + i + "].createDatetime")).isEqualTo(replies.get(i).getCreateDatetime().format(DateTimeFormatter.ofPattern("yyyy.MM.dd. HH:mm:ss")));
             }
-        }
-
-        @Test
-        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
-            // given
-
-            // when
-            ExtractableResponse<Response> response = RestAssured.given().log().all()
-                    .auth().oauth2(accessToken)
-                    .when().get("/api/eatTogether/post/{postId}/reply/list", -1L)
-                    .then().log().all()
-                    .extract();
-
-            // then
-            assertThat(response.statusCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getHttpStatus().value());
-            assertThat(response.asString()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND.getMessage());
         }
 
         private EatTogetherPost createPost() {
@@ -551,6 +526,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
                     .eatTogetherPost(post)
                     .upId(-1L)
                     .content("댓글")
+                    .imageUrl("")
                     .build());
 
             WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
@@ -698,7 +674,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getList("posts")).hasSameSizeAs(dummyData);
             for (int i = 0; i < jsonPath.getList("posts").size(); i++) {
-                assertThat(jsonPath.getLong("posts[" + i + "].id")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getId());
+                assertThat(jsonPath.getLong("posts[" + i + "].postId")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getId());
                 assertThat(jsonPath.getString("posts[" + i + "].nickname")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getUser().getNickname());
                 assertThat(jsonPath.getString("posts[" + i + "].regionName")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getRegionCode().getRegionName());
                 assertThat(jsonPath.getString("posts[" + i + "].subject")).isEqualTo(dummyData.get(dummyData.size() - 1 - i).getSubject());
@@ -739,7 +715,7 @@ class EatTogetherControllerTest extends AcceptanceTest {
 
             assertThat(jsonPath.getList("posts")).hasSameSizeAs(posts);
             for (int i = 0; i < jsonPath.getList("posts").size(); i++) {
-                assertThat(jsonPath.getLong("posts[" + i + "].id")).isEqualTo(posts.get(i).getId());
+                assertThat(jsonPath.getLong("posts[" + i + "].postId")).isEqualTo(posts.get(i).getId());
                 assertThat(jsonPath.getString("posts[" + i + "].nickname")).isEqualTo(posts.get(i).getUser().getNickname());
                 assertThat(jsonPath.getString("posts[" + i + "].regionName")).isEqualTo(posts.get(i).getRegionCode().getRegionName());
                 assertThat(jsonPath.getString("posts[" + i + "].subject")).isEqualTo(posts.get(i).getSubject());
@@ -772,14 +748,15 @@ class EatTogetherControllerTest extends AcceptanceTest {
             // then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-            assertThat(jsonPath.getLong("id")).isEqualTo(eatTogetherPost.getId());
-            assertThat(jsonPath.getLong("userId")).isEqualTo(eatTogetherPost.getUser().getId());
-            assertThat(jsonPath.getString("nickname")).isEqualTo(eatTogetherPost.getUser().getNickname());
+            assertThat(jsonPath.getLong("postId")).isEqualTo(eatTogetherPost.getId());
+            assertThat(jsonPath.getBoolean("isWrite")).isEqualTo(user.getId().equals(eatTogetherPost.getUser().getId()));
+            assertThat(jsonPath.getString("nickname")).isEqualTo(user.getNickname());
+            assertThat(jsonPath.getString("profile")).isEqualTo(user.getProfile());
             assertThat(jsonPath.getString("regionCode")).isEqualTo(eatTogetherPost.getRegionCode().getCode());
             assertThat(jsonPath.getString("regionName")).isEqualTo(eatTogetherPost.getRegionCode().getRegionName());
             assertThat(jsonPath.getString("subject")).isEqualTo(eatTogetherPost.getSubject());
             assertThat(jsonPath.getString("content")).isEqualTo(eatTogetherPost.getContent());
-            assertThat(jsonPath.getString("createDatetime")).isEqualTo(eatTogetherPost.getCreateDatetime().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm:ss")));
+            assertThat(jsonPath.getString("createDatetime")).isEqualTo(eatTogetherPost.getCreateDatetime().format(DateTimeFormatter.ofPattern("yyyy.MM.dd. HH:mm:ss")));
         }
 
         @Test

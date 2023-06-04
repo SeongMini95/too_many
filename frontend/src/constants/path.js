@@ -14,7 +14,7 @@ const BROWSER_PATH = {
     },
     EAT_TOGETHER: {
         WRITE_POST: '/eatTogether/post/write',
-        LIST_POST: '/eatTogether/post/list',
+        POST_LIST: '/eatTogether/post/list',
         GET_POST: '/eatTogether/post/:postId',
         MODIFY_POST: '/eatTogether/post/:postId/modify'
     }

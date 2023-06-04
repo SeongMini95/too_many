@@ -4,7 +4,6 @@ import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
 import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
 import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
-import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
@@ -41,10 +40,11 @@ public class EatTogetherService {
     private final EatTogetherPostRepository eatTogetherPostRepository;
     private final ImageService imageService;
     private final EatTogetherReplyRepository eatTogetherReplyRepository;
-    private final EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Value("${image.host}")
     private String host;
+
+    private static final int GET_REPLY_LIST_PAGE_SIZE = 30;
 
     @Transactional
     public Long writeEatTogetherPost(Long userId, WriteEatTogetherPostRequestDto requestDto) throws IOException {
@@ -73,8 +73,8 @@ public class EatTogetherService {
     }
 
     @Transactional(readOnly = true)
-    public EatTogetherPostResponseDto getEatTogetherPost(Long postId) {
-        return eatTogetherPostRepository.getEatTogetherPost(postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));
+    public EatTogetherPostResponseDto getEatTogetherPost(Long userId, Long postId) {
+        return eatTogetherPostRepository.getEatTogetherPost(userId, postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
@@ -114,53 +114,49 @@ public class EatTogetherService {
     }
 
     @Transactional
-    public void writeEatTogetherReply(Long userId, Long postId, WriteEatTogetherReplyRequestDto requestDto) throws IOException {
+    public Long writeEatTogetherReply(Long userId, Long postId, WriteEatTogetherReplyRequestDto requestDto) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
         EatTogetherPost eatTogetherPost = eatTogetherPostRepository.findById(postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND));
 
         Long upReplyId = requestDto.getUpReplyId();
-        if (upReplyId != null && eatTogetherReplyRepository.findById(upReplyId).isEmpty()) {
+        if (upReplyId != null && !eatTogetherReplyRepository.exists(upReplyId)) {
             throw new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
         }
-
-        Long seq = eatTogetherReplyRepository.nextval();
-        EatTogetherReply eatTogetherReply = eatTogetherReplyRepository.save(requestDto.toEntity(seq, user, eatTogetherPost));
 
         String image = requestDto.getImage();
         if (StringUtils.isNotBlank(image)) {
             image = imageService.copyImage(image);
-            eatTogetherReplyImageRepository.save(requestDto.toEntity(eatTogetherReply, image));
+        } else {
+            image = "";
         }
+
+        Long seq = eatTogetherReplyRepository.nextval();
+        return eatTogetherReplyRepository.save(requestDto.toEntity(seq, user, eatTogetherPost, image)).getId();
     }
 
     @Transactional(readOnly = true)
-    public EatTogetherReplyListResponseDto getEatTogetherReplyList(Long postId) {
-        if (eatTogetherPostRepository.findById(postId).isEmpty()) {
-            throw new ApiException(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
-        }
-
-        return eatTogetherReplyRepository.getReplyList(postId);
+    public EatTogetherReplyListResponseDto getEatTogetherReplyList(Long userId, Long postId) {
+        return eatTogetherReplyRepository.getReplyList(userId, postId);
     }
 
     @Transactional
     public void modifyEatTogetherReply(Long userId, Long postId, Long replyId, ModifyEatTogetherReplyRequestDto requestDto) throws IOException {
         EatTogetherReply eatTogetherReply = eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(replyId, userId, postId).orElseThrow(() -> new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND));
-        eatTogetherReply.modifyContent(requestDto.getContent());
+        eatTogetherReply.modifyContent(requestDto.getContent().trim());
 
         // 이미지가 있으면 수정, 없으면 저장
         if (StringUtils.isNotBlank(requestDto.getImage())) {
             String convertImage = imageService.copyImage(requestDto.getImage());
-            eatTogetherReplyImageRepository.findByEatTogetherReplyId(replyId).ifPresentOrElse(
-                    v -> v.modifyImage(convertImage),
-                    () -> eatTogetherReplyImageRepository.save(requestDto.toReplyImage(eatTogetherReply, convertImage))
-            );
+            eatTogetherReply.modifyImageUrl(convertImage);
+        } else {
+            eatTogetherReply.modifyImageUrl("");
         }
     }
 
     @Transactional
     public void deleteEatTogetherReply(Long userId, Long postId, Long replyId) {
         eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(replyId, userId, postId).ifPresentOrElse(
-                eatTogetherReplyRepository::delete,
+                EatTogetherReply::delete,
                 () -> {
                     throw new ApiException(ApiErrorCode.EAT_TOGETHER_REPLY_NOT_FOUND);
                 }

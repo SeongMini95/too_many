@@ -49,6 +49,19 @@
     padding: 15px 0;
     border-bottom: 1px solid #dbcfcf;
     font-weight: bolder;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.section_more_post_wrap {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.section_more_post {
+    font-size: 15px;
+    color: #767171;
 }
 
 .section_ul {

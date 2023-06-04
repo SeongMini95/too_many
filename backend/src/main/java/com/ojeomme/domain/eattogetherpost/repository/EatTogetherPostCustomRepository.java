@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface EatTogetherPostCustomRepository {
 
-    Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long postId);
+    Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long userId, Long postId);
 
-    EatTogetherPostListResponseDto getEatTogetherPostList(String regionCode, Long moreId);
+    EatTogetherPostListResponseDto getEatTogetherPostList(String code, Long moreId);
 
     RecentEatTogetherPostListResponseDto getRecentEatTogetherPostList(String regionCode);
 }

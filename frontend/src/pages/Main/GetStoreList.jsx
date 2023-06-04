@@ -18,7 +18,7 @@ const GetStoreList = () => {
     const [category, setCategory] = useState(['', '', '', '']);
     const [storeList, setStoreList] = useState([]);
     const [meta, setMeta] = useState({
-        page: 1,
+        page: 0,
         isEnd: false
     });
 
@@ -40,7 +40,7 @@ const GetStoreList = () => {
     }, [lastCode]);
 
     useEffect(() => {
-        if (inView) {
+        if (inView && meta.page !== 0) {
             handlerGetStoreList(meta.page + 1);
         }
     }, [inView]);
