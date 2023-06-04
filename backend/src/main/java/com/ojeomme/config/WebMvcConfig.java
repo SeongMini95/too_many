@@ -27,7 +27,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
             "/api/store/todayRanking",
             "/api/eatTogether/post/recent",
             "/api/category/list",
-            "/api/store/list"
+            "/api/store/list",
+            "/api/image/upload/editor"
     );
 
     @Value("${security.cors.host.front}")

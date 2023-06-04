@@ -4,8 +4,6 @@ import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherpost.repository.EatTogetherPostRepository;
 import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
 import com.ojeomme.domain.eattogetherreply.repository.EatTogetherReplyRepository;
-import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
-import com.ojeomme.domain.eattogetherreplyimage.repository.EatTogetherReplyImageRepository;
 import com.ojeomme.domain.regioncode.RegionCode;
 import com.ojeomme.domain.regioncode.repository.RegionCodeRepository;
 import com.ojeomme.domain.user.User;
@@ -59,9 +57,6 @@ class EatTogetherServiceTest {
 
     @Mock
     private EatTogetherReplyRepository eatTogetherReplyRepository;
-
-    @Mock
-    private EatTogetherReplyImageRepository eatTogetherReplyImageRepository;
 
     @Mock
     private ImageService imageService;
@@ -200,13 +195,14 @@ class EatTogetherServiceTest {
         @Test
         void 댓글을_삭제한다() {
             // given
-            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.of(mock(EatTogetherReply.class)));
+            EatTogetherReply eatTogetherReply = mock(EatTogetherReply.class);
+            given(eatTogetherReplyRepository.findByIdAndUserIdAndEatTogetherPostId(anyLong(), anyLong(), anyLong())).willReturn(Optional.of(eatTogetherReply));
 
             // when
             eatTogetherService.deleteEatTogetherReply(1L, 1L, 1L);
 
             // then
-            then(eatTogetherReplyRepository).should(times(1)).delete(any(EatTogetherReply.class));
+            then(eatTogetherReply).should(times(1)).delete();
         }
 
         @Test
@@ -250,9 +246,6 @@ class EatTogetherServiceTest {
 
             given(imageService.copyImage(anyString())).willReturn("http://localhost:4000/image2.png");
 
-            given(eatTogetherReplyImageRepository.findByEatTogetherReplyId(anyLong())).willReturn(Optional.empty());
-            given(eatTogetherReplyImageRepository.save(any(EatTogetherReplyImage.class))).willReturn(mock(EatTogetherReplyImage.class));
-
             ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
                     .content("수정 댓글")
                     .image("http://localhost:4000/image1.png")
@@ -273,9 +266,6 @@ class EatTogetherServiceTest {
 
             given(imageService.copyImage(anyString())).willReturn("http://localhost:4000/image2.png");
 
-            EatTogetherReplyImage eatTogetherReplyImage = mock(EatTogetherReplyImage.class);
-            given(eatTogetherReplyImageRepository.findByEatTogetherReplyId(anyLong())).willReturn(Optional.of(eatTogetherReplyImage));
-
             ModifyEatTogetherReplyRequestDto requestDto = ModifyEatTogetherReplyRequestDto.builder()
                     .content("수정 댓글")
                     .image("http://localhost:4000/image1.png")
@@ -286,7 +276,6 @@ class EatTogetherServiceTest {
 
             // then
             then(eatTogetherReply).should(times(1)).modifyContent(anyString());
-            then(eatTogetherReplyImage).should(times(1)).modifyImage(anyString());
         }
 
         @Test
@@ -373,56 +362,50 @@ class EatTogetherServiceTest {
     }
 
     @Nested
-    class getReplyList {
+    class getEatTogetherReplyList {
 
         @Test
         void 댓글_리스트를_가져온다() {
             // given
-            EatTogetherReplyListResponseDto dto = new EatTogetherReplyListResponseDto(List.of(
-                    EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
-                            .userId(1L)
-                            .nickname("test1")
-                            .content("댓글1")
-                            .image("image1")
-                            .createDatetime(LocalDateTime.now())
-                            .build(),
-                    EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
-                            .userId(1L)
-                            .nickname("test2")
-                            .upNickname("test1")
-                            .content("댓글2")
-                            .createDatetime(LocalDateTime.now())
-                            .build()
-            ));
+            EatTogetherReplyListResponseDto dto = new EatTogetherReplyListResponseDto(10L,
+                    List.of(
+                            EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
+                                    .isWrite(true)
+                                    .nickname("test1")
+                                    .profile("")
+                                    .content("댓글1")
+                                    .image("image1")
+                                    .createDatetime(LocalDateTime.now())
+                                    .build(),
+                            EatTogetherReplyListResponseDto.ReplyResponseDto.builder()
+                                    .isWrite(true)
+                                    .nickname("test2")
+                                    .profile("")
+                                    .upReplyId(1L)
+                                    .upNickname("test1")
+                                    .content("댓글2")
+                                    .createDatetime(LocalDateTime.now())
+                                    .build()
+                    ));
 
-            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
-            given(eatTogetherReplyRepository.getReplyList(anyLong())).willReturn(dto);
+            given(eatTogetherReplyRepository.getReplyList(anyLong(), anyLong())).willReturn(dto);
 
             // when
-            EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(1L);
+            EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(1L, 1L);
 
             // then
+            assertThat(responseDto.getReplyCnt()).isEqualTo(dto.getReplyCnt());
             assertThat(responseDto.getReplies()).hasSameSizeAs(dto.getReplies());
             for (int i = 0; i < responseDto.getReplies().size(); i++) {
-                assertThat(responseDto.getReplies().get(i).getUserId()).isEqualTo(dto.getReplies().get(i).getUserId());
+                assertThat(responseDto.getReplies().get(i).getIsWrite()).isTrue();
                 assertThat(responseDto.getReplies().get(i).getNickname()).isEqualTo(dto.getReplies().get(i).getNickname());
+                assertThat(responseDto.getReplies().get(i).getProfile()).isEqualTo(dto.getReplies().get(i).getProfile());
+                assertThat(responseDto.getReplies().get(i).getUpReplyId()).isEqualTo(dto.getReplies().get(i).getUpReplyId());
                 assertThat(responseDto.getReplies().get(i).getUpNickname()).isEqualTo(dto.getReplies().get(i).getUpNickname());
                 assertThat(responseDto.getReplies().get(i).getContent()).isEqualTo(dto.getReplies().get(i).getContent());
                 assertThat(responseDto.getReplies().get(i).getImage()).isEqualTo(dto.getReplies().get(i).getImage());
                 assertThat(responseDto.getReplies().get(i).getCreateDatetime()).isEqualTo(dto.getReplies().get(i).getCreateDatetime());
             }
-        }
-
-        @Test
-        void 게시글이_없으면_EatTogetherPostNotFoundException를_발생한다() {
-            // given
-            given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.empty());
-
-            // when
-            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.getEatTogetherReplyList(1L));
-
-            // then
-            assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);
         }
     }
 
@@ -458,8 +441,6 @@ class EatTogetherServiceTest {
             given(eatTogetherReplyRepository.nextval()).willReturn(1L);
             given(eatTogetherReplyRepository.save(any(EatTogetherReply.class))).willReturn(mock(EatTogetherReply.class));
 
-            given(eatTogetherReplyImageRepository.save(any(EatTogetherReplyImage.class))).willReturn(mock(EatTogetherReplyImage.class));
-
             WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
                     .content("테스트 댓글")
                     .image("image1")
@@ -478,7 +459,7 @@ class EatTogetherServiceTest {
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
 
-            given(eatTogetherReplyRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherReply.class)));
+            given(eatTogetherReplyRepository.exists(anyLong())).willReturn(true);
 
             given(eatTogetherReplyRepository.nextval()).willReturn(2L);
             given(eatTogetherReplyRepository.save(any(EatTogetherReply.class))).willReturn(mock(EatTogetherReply.class));
@@ -502,7 +483,7 @@ class EatTogetherServiceTest {
             given(userRepository.findById(anyLong())).willReturn(Optional.of(mock(User.class)));
             given(eatTogetherPostRepository.findById(anyLong())).willReturn(Optional.of(mock(EatTogetherPost.class)));
 
-            given(eatTogetherReplyRepository.findById(anyLong())).willReturn(Optional.empty());
+            given(eatTogetherReplyRepository.exists(anyLong())).willReturn(false);
 
             WriteEatTogetherReplyRequestDto requestDto = WriteEatTogetherReplyRequestDto.builder()
                     .upReplyId(1L)
@@ -598,22 +579,23 @@ class EatTogetherServiceTest {
         void 게시글을_가져온다() {
             // given
             EatTogetherPostResponseDto dto = EatTogetherPostResponseDto.builder()
-                    .id(1L)
-                    .userId(1L)
+                    .postId(1L)
+                    .isWrite(true)
                     .nickname("test123")
+                    .profile("")
                     .regionCode("12345")
                     .regionName("청진동")
                     .subject("제목")
                     .content("본문 내용")
                     .build();
-            given(eatTogetherPostRepository.getEatTogetherPost(anyLong())).willReturn(Optional.of(dto));
+            given(eatTogetherPostRepository.getEatTogetherPost(anyLong(), anyLong())).willReturn(Optional.of(dto));
 
             // when
-            EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(1L);
+            EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(1L, 1L);
 
             // then
-            assertThat(responseDto.getId()).isEqualTo(dto.getId());
-            assertThat(responseDto.getUserId()).isEqualTo(dto.getUserId());
+            assertThat(responseDto.getPostId()).isEqualTo(dto.getPostId());
+            assertThat(responseDto.getIsWrite()).isTrue();
             assertThat(responseDto.getNickname()).isEqualTo(dto.getNickname());
             assertThat(responseDto.getRegionCode()).isEqualTo(dto.getRegionCode());
             assertThat(responseDto.getRegionName()).isEqualTo(dto.getRegionName());
@@ -624,10 +606,10 @@ class EatTogetherServiceTest {
         @Test
         void 게시물을_못찾으면_EatTogetherPostNotFound를_발생한다() {
             // given
-            given(eatTogetherPostRepository.getEatTogetherPost(anyLong())).willReturn(Optional.empty());
+            given(eatTogetherPostRepository.getEatTogetherPost(anyLong(), anyLong())).willReturn(Optional.empty());
 
             // when
-            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.getEatTogetherPost(1L));
+            ApiException exception = assertThrows(ApiException.class, () -> eatTogetherService.getEatTogetherPost(1L, 1L));
 
             // then
             assertThat(exception.getErrorCode()).isEqualTo(ApiErrorCode.EAT_TOGETHER_POST_NOT_FOUND);

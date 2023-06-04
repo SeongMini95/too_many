@@ -2,7 +2,6 @@ package com.ojeomme.dto.request.eattogether;
 
 import com.ojeomme.domain.eattogetherpost.EatTogetherPost;
 import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
-import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
 import com.ojeomme.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,20 +33,15 @@ public class WriteEatTogetherReplyRequestDto {
         this.image = image;
     }
 
-    public EatTogetherReply toEntity(Long seq, User user, EatTogetherPost eatTogetherPost) {
+    public EatTogetherReply toEntity(Long seq, User user, EatTogetherPost eatTogetherPost, String imageUrl) {
         return EatTogetherReply.builder()
                 .id(seq)
                 .user(user)
                 .eatTogetherPost(eatTogetherPost)
                 .upId(upReplyId == null ? seq : upReplyId)
-                .content(content)
-                .build();
-    }
-
-    public EatTogetherReplyImage toEntity(EatTogetherReply eatTogetherReply, String image) {
-        return EatTogetherReplyImage.builder()
-                .eatTogetherReply(eatTogetherReply)
-                .imageUrl(image)
+                .content(content.trim())
+                .imageUrl(imageUrl)
+                .deleteYn(false)
                 .build();
     }
 }
