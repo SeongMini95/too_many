@@ -11,26 +11,32 @@ import java.time.LocalDateTime;
 @Getter
 public class EatTogetherPostResponseDto {
 
-    private Long id;
-    private Long userId;
+    private long postId;
+    private boolean isWrite;
     private String nickname;
+    private String profile;
     private String regionCode;
     private String regionName;
     private String subject;
     private String content;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy년 MM월 dd일 HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd. HH:mm:ss")
     private LocalDateTime createDatetime;
 
     @Builder
-    public EatTogetherPostResponseDto(Long id, Long userId, String nickname, String regionCode, String regionName, String subject, String content, LocalDateTime createDatetime) {
-        this.id = id;
-        this.userId = userId;
+    public EatTogetherPostResponseDto(long postId, boolean isWrite, String nickname, String profile, String regionCode, String regionName, String subject, String content, LocalDateTime createDatetime) {
+        this.postId = postId;
+        this.isWrite = isWrite;
         this.nickname = nickname;
+        this.profile = profile;
         this.regionCode = regionCode;
         this.regionName = regionName;
         this.subject = subject;
         this.content = content;
         this.createDatetime = createDatetime;
+    }
+
+    public boolean getIsWrite() {
+        return isWrite;
     }
 }

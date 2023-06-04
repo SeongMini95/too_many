@@ -31,8 +31,8 @@ public class EatTogetherController {
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<EatTogetherPostResponseDto> getEatTogetherPost(@PathVariable Long postId) {
-        EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(postId);
+    public ResponseEntity<EatTogetherPostResponseDto> getEatTogetherPost(@LoginUser Long userId, @PathVariable Long postId) {
+        EatTogetherPostResponseDto responseDto = eatTogetherService.getEatTogetherPost(userId, postId);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -55,14 +55,14 @@ public class EatTogetherController {
     }
 
     @PostMapping("/post/{postId}/reply")
-    public ResponseEntity<Void> writeEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody WriteEatTogetherReplyRequestDto requestDto) throws IOException {
-        eatTogetherService.writeEatTogetherReply(userId, postId, requestDto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Long> writeEatTogetherReply(@LoginUser Long userId, @PathVariable Long postId, @Valid @RequestBody WriteEatTogetherReplyRequestDto requestDto) throws IOException {
+        Long replyId = eatTogetherService.writeEatTogetherReply(userId, postId, requestDto);
+        return ResponseEntity.ok(replyId);
     }
 
     @GetMapping("/post/{postId}/reply/list")
-    public ResponseEntity<EatTogetherReplyListResponseDto> getEatTogetherReplyList(@PathVariable Long postId) {
-        EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(postId);
+    public ResponseEntity<EatTogetherReplyListResponseDto> getEatTogetherReplyList(@LoginUser Long userId, @PathVariable Long postId) {
+        EatTogetherReplyListResponseDto responseDto = eatTogetherService.getEatTogetherReplyList(userId, postId);
         return ResponseEntity.ok(responseDto);
     }
 

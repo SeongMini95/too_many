@@ -94,7 +94,7 @@ const SearchPlaceList = () => {
                             </span>
                                 <div className={style.cnt}>
                                     <div className={style.box_tit}>
-                                        <strong className={style.store_name}>{v.placeName}</strong>
+                                        <strong className={style.store_name} title={v.placeName}>{v.placeName}</strong>
                                     </div>
                                     <p>{v.categoryName}</p>
                                     <p id={style['road_address']}>{v.roadAddressName}</p>

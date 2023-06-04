@@ -93,6 +93,9 @@ const GetEatTogetherPostList = () => {
                     <div ref={ref}></div>
                 )}
             </div>
+            <Link to={BROWSER_PATH.EAT_TOGETHER.WRITE_POST}>
+                <span className={style.write}></span>
+            </Link>
             <span onClick={handlerScrollTop} className={style.up}></span>
         </div>
     );

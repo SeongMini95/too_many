@@ -37,7 +37,7 @@ function App() {
 
                         {/* eat together */}
                         <Route path={BROWSER_PATH.EAT_TOGETHER.WRITE_POST} element={<WriteEatTogetherPost />} />
-                        <Route path={BROWSER_PATH.EAT_TOGETHER.LIST_POST} element={<GetEatTogetherPostList />} />
+                        <Route path={BROWSER_PATH.EAT_TOGETHER.POST_LIST} element={<GetEatTogetherPostList />} />
                         <Route path={BROWSER_PATH.EAT_TOGETHER.GET_POST} element={<GetEatTogetherPost />} />
                         <Route path={BROWSER_PATH.EAT_TOGETHER.MODIFY_POST} element={<ModifyEatTogetherPost />} />
                     </Route>

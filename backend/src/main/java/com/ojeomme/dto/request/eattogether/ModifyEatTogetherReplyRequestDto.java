@@ -1,7 +1,5 @@
 package com.ojeomme.dto.request.eattogether;
 
-import com.ojeomme.domain.eattogetherreply.EatTogetherReply;
-import com.ojeomme.domain.eattogetherreplyimage.EatTogetherReplyImage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,12 +25,5 @@ public class ModifyEatTogetherReplyRequestDto {
     public ModifyEatTogetherReplyRequestDto(String content, String image) {
         this.content = content;
         this.image = image;
-    }
-
-    public EatTogetherReplyImage toReplyImage(EatTogetherReply eatTogetherReply, String image) {
-        return EatTogetherReplyImage.builder()
-                .eatTogetherReply(eatTogetherReply)
-                .imageUrl(image)
-                .build();
     }
 }

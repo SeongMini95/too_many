@@ -8,6 +8,7 @@ import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto
 import com.ojeomme.dto.response.eattogether.RecentEatTogetherPostListResponseDto.PostResponseDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -29,13 +30,17 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
     private static final int POST_LIST_PAGE_SIZE = 30;
 
     @Override
-    public Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long postId) {
+    public Optional<EatTogetherPostResponseDto> getEatTogetherPost(Long userId, Long postId) {
         return Optional.ofNullable(factory
                 .select(Projections.fields(
                         EatTogetherPostResponseDto.class,
-                        eatTogetherPost.id,
-                        eatTogetherPost.user.id.as("userId"),
+                        eatTogetherPost.id.as("postId"),
+                        new CaseBuilder()
+                                .when(eatTogetherPost.user.id.eq(userId))
+                                .then(true)
+                                .otherwise(false).as("isWrite"),
                         eatTogetherPost.user.nickname,
+                        eatTogetherPost.user.profile,
                         eatTogetherPost.regionCode.code.as("regionCode"),
                         eatTogetherPost.regionCode.regionName,
                         eatTogetherPost.subject,
@@ -43,7 +48,11 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
                         eatTogetherPost.createDatetime
                 ))
                 .from(eatTogetherPost)
+                .innerJoin(eatTogetherPost.user, user)
+                .innerJoin(eatTogetherPost.regionCode, regionCode)
+                .leftJoin(eatTogetherReply).on(eatTogetherPost.id.eq(eatTogetherReply.eatTogetherPost.id))
                 .where(eatTogetherPost.id.eq(postId))
+                .groupBy(eatTogetherPost.id)
                 .fetchOne());
     }
 
@@ -70,7 +79,10 @@ public class EatTogetherPostCustomRepositoryImpl implements EatTogetherPostCusto
                 .from(eatTogetherPost)
                 .innerJoin(eatTogetherPost.regionCode, regionCode)
                 .innerJoin(eatTogetherPost.user, user)
-                .leftJoin(eatTogetherReply).on(eatTogetherPost.id.eq(eatTogetherReply.eatTogetherPost.id))
+                .leftJoin(eatTogetherReply).on(
+                        eatTogetherPost.id.eq(eatTogetherReply.eatTogetherPost.id),
+                        eatTogetherReply.deleteYn.eq(false)
+                )
                 .where(
                         ltPostId,
                         eatTogetherPost.regionCode.code.in(regionCodes)
