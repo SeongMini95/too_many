@@ -157,7 +157,7 @@ const Header = () => {
                                     <img className={style.user_button_ico} src={`${process.env.PUBLIC_URL}/assets/image/arrow.png`} alt="" />
                                     {userModal && (
                                         <div className={style.user_modal}>
-                                            <a href={'#none'}>나의 정보</a>
+                                            <Link to={BROWSER_PATH.USER.MY_INFO}>나의 정보</Link>
                                             <a href={'#none'} onClick={handlerClickLogout}>로그아웃</a>
                                         </div>
                                     )}

@@ -1,8 +1,8 @@
 package com.ojeomme.controller;
 
 import com.ojeomme.config.auth.LoginUser;
-import com.ojeomme.dto.request.user.ModifyNicknameRequestDto;
-import com.ojeomme.dto.request.user.ModifyProfileRequestDto;
+import com.ojeomme.dto.request.user.ModifyMyInfoRequestDto;
+import com.ojeomme.dto.response.user.ModifyMyInfoResponseDto;
 import com.ojeomme.dto.response.user.MyInfoResponseDto;
 import com.ojeomme.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +25,9 @@ public class UserController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @PutMapping("/my/nickname")
-    public ResponseEntity<Void> modifyNickname(@LoginUser Long userId, @Valid @RequestBody ModifyNicknameRequestDto requestDto) {
-        userService.modifyNickname(userId, requestDto);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/my/profile")
-    public ResponseEntity<String> modifyProfile(@LoginUser Long userId, @Valid @RequestBody ModifyProfileRequestDto requestDto) throws IOException {
-        String profile = userService.modifyProfile(userId, requestDto);
-        return ResponseEntity.ok(profile);
+    @PutMapping("/my")
+    public ResponseEntity<ModifyMyInfoResponseDto> modifyMyInfo(@LoginUser Long userId, @Valid @RequestBody ModifyMyInfoRequestDto requestDto) throws IOException {
+        ModifyMyInfoResponseDto responseDto = userService.modifyMyInfo(userId, requestDto);
+        return ResponseEntity.ok(responseDto);
     }
 }
