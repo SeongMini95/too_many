@@ -17,6 +17,12 @@ const userApi = {
         const { data } = await authAxios.put(url, { profile });
 
         return data;
+    },
+    modifyMyInfo: async (param) => {
+        const url = API_PATH.USER.MODIFY_MY_INFO;
+        const { data } = await authAxios.put(url, param);
+
+        return data;
     }
 }
 
