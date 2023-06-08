@@ -1,0 +1,133 @@
+.post_wrap {
+    display: flex;
+    min-width: 900px;
+    position: relative;
+    width: 100%;
+    background-color: #f0f0f0;
+    flex-flow: column;
+    align-items: center;
+}
+
+.post_inner_wrap {
+    display: flex;
+    height: 100%;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    position: relative;
+    width: 900px;
+    flex-direction: column;
+}
+
+.location_title {
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+.post_ul {
+    border-radius: 5px;
+    box-shadow: 0 0 3px 0;
+    background: white;
+}
+
+.post_li {
+    width: 100%;
+    border-bottom: 1px solid gray;
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.post_li:hover {
+    background-color: #f0f0f0;
+}
+
+.post_li:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.post_li:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.post_link {
+    padding: 12px;
+    display: flex;
+    width: 100%;
+    color: black;
+    align-items: center;
+}
+
+.post_link:hover {
+    color: black;
+}
+
+.post_title_wrap {
+    width: 540px;
+    display: flex;
+    align-items: center;
+}
+
+.post_region_name {
+    font-size: 13px;
+    width: 120px;
+    text-align: center;
+}
+
+.post_title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 5px;
+}
+
+.reply_count {
+    flex-shrink: 0;
+    background: url('/public/assets/image/comment_16x16.png') no-repeat 0 4px;
+    background-size: 13px auto;
+    padding-left: 16px;
+    font-size: 13px;
+}
+
+.post_nickname {
+    font-size: 13px;
+    width: 100px;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: auto;
+    text-align: center;
+}
+
+.post_create {
+    flex-shrink: 0;
+    margin-left: 16px;
+    font-size: 13px;
+    width: 80px;
+    text-align: center;
+}
+
+.up {
+    position: fixed;
+    background: #414141 url('/public/assets/image/arrow.png') no-repeat center center;
+    background-size: 25px auto;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    right: 750px;
+    bottom: 35px;
+}
+
+.write {
+    position: fixed;
+    background: #414141 url('/public/assets/image/write_post.png') no-repeat center center;
+    background-size: 50px auto;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    right: 750px;
+    bottom: 105px;
+}

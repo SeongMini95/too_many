@@ -1,0 +1,217 @@
+.location_modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.location_modal_wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal_box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 604px;
+    height: 90vh;
+    max-height: 843px;
+    padding: 25px 29px;
+    border-radius: 16px;
+    box-shadow: rgba(54, 54, 54, 0.5) 0px 3px 8px 0px;
+    background-color: rgb(255, 255, 255);
+}
+
+.modal_header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 32px;
+}
+
+.modal_title {
+    font-size: 1.375rem;
+    font-weight: 500;
+    letter-spacing: -0.0688rem;
+}
+
+.modal_close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+}
+
+.modal_close_img {
+    width: 18px;
+    height: 18px;
+}
+
+.modal_main {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    width: 100%;
+    height: 100%;
+    max-height: 791px;
+    margin-top: 25px;
+}
+
+.modal_main_header {
+    display: flex;
+    width: 100%;
+    height: 45px;
+    background-color: rgb(255, 255, 255);
+    border-width: 2px 1px 1px;
+    border-style: solid;
+    border-color: rgb(0, 82, 116) rgb(234, 234, 234) rgb(234, 234, 234);
+    border-image: initial;
+}
+
+.modal_main_header_title:first-child {
+    width: 162px;
+}
+
+.modal_main_header_title {
+    display: flex;
+    align-items: center;
+    width: 192px;
+    height: 42px;
+    padding-left: 21px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.0469rem;
+    color: rgb(32, 32, 32);
+}
+
+.list_box {
+    display: flex;
+    width: 100%;
+    overflow-y: hidden;
+    border-left: 1px solid rgb(234, 234, 234);
+    border-right: 1px solid rgb(234, 234, 234);
+    border-bottom: 1px solid rgb(234, 234, 234);
+}
+
+.list::-webkit-scrollbar {
+    display: none;
+}
+
+.list {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    width: 192px;
+    height: 100%;
+    border-right: 1px solid rgb(234, 234, 234);
+}
+
+.list:first-child {
+    width: 164px;
+}
+
+.list:last-child {
+    border-right: none;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 5px 7px;
+}
+
+.item_button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 6px 12px 7px 14px;
+    border-radius: 7px;
+    font-size: 0.9375rem;
+    letter-spacing: -0.0469rem;
+    color: rgb(32, 32, 32);
+}
+
+.item_button:hover {
+    background-color: rgb(255, 255, 255);
+    font-weight: bold;
+}
+
+.item_button.now {
+    font-weight: 500;
+    background-color: rgb(12, 75, 117) !important;
+    color: rgb(255, 255, 255) !important;
+}
+
+.item_button_img {
+    width: 6px;
+    height: 11px;
+}
+
+.modal_footer {
+    display: flex;
+    gap: 12px;
+    padding-top: 21px;
+}
+
+.modal_footer .button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 42px;
+    transition: all 0.3s ease-in-out 0s;
+    border-radius: 6px;
+    border: 1px solid rgb(25, 183, 194);
+}
+
+.modal_footer .button:hover {
+    background-color: rgb(25, 183, 194);
+}
+
+.modal_footer .button.cancel {
+    border: 1px solid rgb(196, 196, 196);
+}
+
+.modal_footer .button.cancel:hover {
+    background-color: rgb(196, 196, 196);
+}
+
+.modal_footer .button .span {
+    padding-bottom: 2px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.0437rem;
+    color: rgb(25, 183, 194);
+}
+
+.modal_footer .button:hover .span {
+    color: rgb(255, 255, 255);
+}
+
+.modal_footer .button .span.cancel {
+    color: rgb(196, 196, 196);
+}
+
+.modal_footer .button:hover .span.cancel {
+    color: rgb(255, 255, 255);
+}
