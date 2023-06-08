@@ -29,7 +29,7 @@ function App() {
 
                     <Route element={<PrivateRouter />}>
                         {/* user */}
-                        <Route path={BROWSER_PATH.USER.GET_MY_INFO} element={<MyInfo />} />
+                        <Route path={BROWSER_PATH.USER.MY_INFO} element={<MyInfo />} />
 
                         {/* store */}
                         <Route path={BROWSER_PATH.STORE.SEARCH_PLACE_LIST} element={<SearchPlaceList />} />

@@ -1,0 +1,102 @@
+.my_info_wrap {
+    width: 960px;
+    margin: 50px auto 0;
+}
+
+.title {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.table_user {
+    text-align: left;
+    border-top: solid #E0E0E0 1px;
+    width: 100%;
+}
+
+.table_user th {
+    width: 260px;
+    border-left: solid #E0E0E0 1px;
+    border-bottom: solid #E0E0E0 1px;
+    padding-left: 48px;
+    font-weight: normal;
+    background-color: #eee8e8;
+}
+
+.table_user td {
+    width: 700px;
+    border-bottom: solid #E0E0E0 1px;
+    border-left: solid #E0E0E0 1px;
+    border-right: solid #E0E0E0 1px;
+    background-color: #F9F9F9;
+    padding: 24px 48px;
+}
+
+.profile {
+    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+}
+
+.btn_profile_wrap {
+    margin-top: 10px;
+}
+
+.btn_profile {
+    border: 1px solid black;
+    width: 100px;
+    height: 35px;
+    background-color: white;
+    margin-right: 10px;
+}
+
+.btn_profile:hover {
+    background-color: #ccb77c;
+    color: white;
+}
+
+.social_login_img {
+    display: flex;
+    align-items: center;
+}
+
+.social_login_img:before {
+    content: '';
+    background: url("/public/assets/image/login_provider.png") no-repeat;
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    background-size: auto 100%;
+    margin-right: 5px;
+}
+
+.social_login_img.kakao:before {
+    background-position: -30px 0;
+}
+
+.btn_confirm_wrap {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.btn_confirm {
+    width: 100px;
+    height: 50px;
+    border: 1px solid black;
+    background-color: white;
+    margin-right: 10px;
+}
+
+.btn_confirm:hover {
+    background-color: #ccb77c;
+    color: white;
+}
+
+.input {
+    width: 400px;
+    height: 40px;
+    border: solid #d5d5d5 1px;
+    font-size: 13px;
+    line-height: 1.5;
+    padding-left: 10px;
+}

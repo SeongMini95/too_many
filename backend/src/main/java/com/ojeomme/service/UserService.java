@@ -2,8 +2,8 @@ package com.ojeomme.service;
 
 import com.ojeomme.domain.user.User;
 import com.ojeomme.domain.user.repository.UserRepository;
-import com.ojeomme.dto.request.user.ModifyNicknameRequestDto;
-import com.ojeomme.dto.request.user.ModifyProfileRequestDto;
+import com.ojeomme.dto.request.user.ModifyMyInfoRequestDto;
+import com.ojeomme.dto.response.user.ModifyMyInfoResponseDto;
 import com.ojeomme.dto.response.user.MyInfoResponseDto;
 import com.ojeomme.exception.ApiErrorCode;
 import com.ojeomme.exception.ApiException;
@@ -28,25 +28,18 @@ public class UserService {
     }
 
     @Transactional
-    public void modifyNickname(Long userId, ModifyNicknameRequestDto requestDto) {
+    public ModifyMyInfoResponseDto modifyMyInfo(Long userId, ModifyMyInfoRequestDto requestDto) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-        user.modifyNickname(requestDto.getNickname());
-    }
 
-    @Transactional
-    public String modifyProfile(Long userId, ModifyProfileRequestDto requestDto) throws IOException {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+        user.modifyNickname(requestDto.getNickname());
 
         String profile = requestDto.getProfile();
-        if (StringUtils.isBlank(profile)) { // 기본 프로필
+        if (StringUtils.isBlank(profile)) {
             user.setDefaultProfile();
-
-            return "";
         } else {
-            profile = imageService.copyImage(profile);
-            user.modifyProfile(profile);
-
-            return profile;
+            user.modifyProfile(imageService.copyImage(profile));
         }
+
+        return new ModifyMyInfoResponseDto(user.getNickname(), user.getProfile());
     }
 }

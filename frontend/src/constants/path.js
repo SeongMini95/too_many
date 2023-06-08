@@ -10,7 +10,7 @@ const BROWSER_PATH = {
         GET_STORE_REVIEWS: '/store/:storeId'
     },
     USER: {
-        GET_MY_INFO: '/user/my'
+        MY_INFO: '/user/my'
     },
     EAT_TOGETHER: {
         WRITE_POST: '/eatTogether/post/write',
@@ -58,7 +58,8 @@ const API_PATH = {
     USER: {
         GET_MY_INFO: '/api/user/my',
         MODIFY_NICKNAME: '/api/user/my/nickname',
-        MODIFY_PROFILE: '/api/user/my/profile'
+        MODIFY_PROFILE: '/api/user/my/profile',
+        MODIFY_MY_INFO: '/api/user/my'
     },
     EAT_TOGETHER: {
         WRITE_POST: '/api/eatTogether/post',
