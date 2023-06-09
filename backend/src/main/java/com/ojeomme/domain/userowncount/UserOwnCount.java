@@ -1,5 +1,6 @@
 package com.ojeomme.domain.userowncount;
 
+import com.ojeomme.domain.BaseTimeEntity;
 import com.ojeomme.domain.user.User;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import javax.persistence.*;
 @Getter
 @Entity
 @Table(name = "user_own_count")
-public class UserOwnCount {
+public class UserOwnCount extends BaseTimeEntity {
 
     @Id
     private Long userId;
