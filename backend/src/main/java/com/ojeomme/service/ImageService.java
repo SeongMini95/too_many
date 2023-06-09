@@ -62,11 +62,16 @@ public class ImageService {
 
     @Transactional
     public String copyImage(String tempUrl) throws IOException {
+        // 이미지 호스트
+        URL hostUrl = new URL(host);
+        String imageHost = hostUrl.getHost();
+
+        // 파라미터의 호스트
         URL url = new URL(tempUrl);
         String path = url.getPath().substring(1);
-        String fullUrl = String.format("%s://%s:%d", url.getProtocol(), url.getHost(), url.getPort());
+        String tempHost = url.getHost();
 
-        if (fullUrl.equals(host)) {
+        if (imageHost.equals(tempHost)) {
             if (path.startsWith("temp")) {
                 Path tempFilePath = uploadPath.resolve(path);
 
