@@ -22,7 +22,7 @@ const WriteEatTogetherPost = () => {
 
     const ckConfig = {
         simpleUpload: {
-            uploadUrl: 'http://localhost:8080/api/image/upload/editor',
+            uploadUrl: `${process.env.REACT_APP_BASE_URL}/api/image/upload/editor`,
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
