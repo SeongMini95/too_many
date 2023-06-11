@@ -11,10 +11,6 @@ const authAxios = axios.create({
     baseURL: process.env.REACT_APP_BASE_URL
 });
 
-const imageAxios = axios.create({
-    baseURL: process.env.REACT_APP_IMAGE_BASE_URL
-});
-
 authAxios.interceptors.request.use(
     (config) => {
         const accessToken = tokenProvider.getAccessToken();
@@ -122,4 +118,4 @@ authAxios.interceptors.response.use(
     }
 );
 
-export { defaultAxios, authAxios, imageAxios };
+export { defaultAxios, authAxios };
